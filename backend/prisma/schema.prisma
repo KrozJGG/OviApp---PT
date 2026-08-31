@@ -1,0 +1,406 @@
+// OviApp - modelo de datos
+// Deriva del MER del capitulo 6 de la tesis, con los hallazgos H2, H3, H4, H5,
+// H7, H8, H10 y H11 del plan (docs/PLAN_DESARROLLO.md) aplicados.
+//
+// Convencion: modelos y campos en camelCase para el cliente TypeScript,
+// mapeados a snake_case en PostgreSQL con @map / @@map.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Enumerados
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum RolUsuario {
+  PRODUCTOR
+  TRABAJADOR
+
+  @@map("rol_usuario")
+}
+
+enum EstadoUsuario {
+  HABILITADO
+  INHABILITADO
+
+  @@map("estado_usuario")
+}
+
+enum Plataforma {
+  ANDROID
+  IOS
+
+  @@map("plataforma")
+}
+
+enum SexoAnimal {
+  MACHO
+  HEMBRA
+
+  @@map("sexo_animal")
+}
+
+enum EstadoAnimal {
+  ACTIVO
+  INACTIVO
+
+  @@map("estado_animal")
+}
+
+enum MotivoBaja {
+  VENTA
+  MUERTE
+  FAENA
+
+  @@map("motivo_baja")
+}
+
+enum TipoEvento {
+  ENCASTE
+  ESQUILA
+  ATENCION_SANITARIA
+  OTRO
+
+  @@map("tipo_evento")
+}
+
+enum EstadoEvento {
+  PROGRAMADO
+  REALIZADO
+  ELIMINADO
+
+  @@map("estado_evento")
+}
+
+enum EstadoTarea {
+  ACTIVA
+  COMPLETADA
+
+  @@map("estado_tarea")
+}
+
+/// Tipos de entrada de bitacora. ALTA / MODIFICACION / BAJA / EVENTO las genera
+/// el sistema (RF_06); NOTA la escribe un usuario (Nota_bitacora del MER).
+enum TipoBitacora {
+  ALTA
+  MODIFICACION
+  BAJA
+  EVENTO
+  NOTA
+
+  @@map("tipo_bitacora")
+}
+
+enum TipoAlerta {
+  CONTEO
+  DISPERSION
+  AMENAZA
+
+  @@map("tipo_alerta")
+}
+
+enum NivelAlerta {
+  INFO
+  ADVERTENCIA
+  CRITICA
+
+  @@map("nivel_alerta")
+}
+
+enum EstadoAlerta {
+  NUEVA
+  REVISADA
+
+  @@map("estado_alerta")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Entidades
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// H3 - raiz del aislamiento multi-predio (RNF_07, RNF_08).
+model Predio {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre    String
+  ubicacion String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  usuarios          Usuario[]
+  animales          Animal[]
+  eventos           Evento[]
+  tareas            Tarea[]
+  alertas           Alerta[]
+  dispositivosEdge  DispositivoEdge[]
+
+  @@map("predio")
+}
+
+model Usuario {
+  id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idPredio     String        @map("id_predio") @db.Uuid
+  nombre       String
+  rut          String?
+  telefono     String?
+  /// Se almacena siempre en minusculas; la unicidad es global (RF_20).
+  email        String        @unique
+  fotoUrl      String?       @map("foto_url")
+  /// RNF_03 - hash bcrypt, nunca la contrasena en claro.
+  passwordHash String        @map("password_hash")
+  rol          RolUsuario    @default(TRABAJADOR)
+  estado       EstadoUsuario @default(HABILITADO)
+  createdAt    DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  predio               Predio                @relation(fields: [idPredio], references: [id])
+  dispositivos         DispositivoUsuario[]
+  refreshTokens        RefreshToken[]
+  animalesRegistrados  Animal[]              @relation("AnimalRegistrador")
+  entradasBitacora     BitacoraEntrada[]
+  eventosCreados       Evento[]              @relation("EventoCreador")
+  tareasCreadas        Tarea[]               @relation("TareaCreador")
+  tareasCompletadas    Tarea[]               @relation("TareaCompletadaPor")
+  tareasAsignadas      TareaUsuario[]
+  alertasRevisadas     Alerta[]              @relation("AlertaRevisadaPor")
+
+  @@index([idPredio, estado])
+  @@map("usuario")
+}
+
+/// H5 - destino de las notificaciones push (RF_18, IF3-SAL, IF4-SAL).
+model DispositivoUsuario {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idUsuario  String     @map("id_usuario") @db.Uuid
+  tokenPush  String     @unique @map("token_push")
+  plataforma Plataforma
+  ultimoUso  DateTime   @default(now()) @map("ultimo_uso") @db.Timestamptz(6)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  usuario Usuario @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario])
+  @@map("dispositivo_usuario")
+}
+
+/// Permite revocar sesiones en el logout (H13).
+model RefreshToken {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idUsuario  String    @map("id_usuario") @db.Uuid
+  tokenHash  String    @unique @map("token_hash")
+  expiraEn   DateTime  @map("expira_en") @db.Timestamptz(6)
+  revocadoEn DateTime? @map("revocado_en") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  usuario Usuario @relation(fields: [idUsuario], references: [id], onDelete: Cascade)
+
+  @@index([idUsuario])
+  @@map("refresh_token")
+}
+
+model Animal {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  idPredio String @map("id_predio") @db.Uuid
+
+  /// H7 - identificador de negocio (numero de oreja). Unico por predio (RF_01)
+  /// e inmutable despues del alta (RF_03).
+  numeroOreja String @map("numero_oreja")
+
+  idRegistrador   String        @map("id_registrador") @db.Uuid
+  sexo            SexoAnimal
+  raza            String?
+  /// H8 - lo exige RF_01 y faltaba en el MER.
+  color           String?
+  pesoKg          Decimal?      @map("peso_kg") @db.Decimal(6, 2)
+  fechaNacimiento DateTime?     @map("fecha_nacimiento") @db.Date
+  descripcion     String?
+  estado          EstadoAnimal  @default(ACTIVO)
+  /// RF_04 - solo presentes cuando estado = INACTIVO.
+  motivoBaja      MotivoBaja?   @map("motivo_baja")
+  fechaBaja       DateTime?     @map("fecha_baja") @db.Date
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  predio       Predio            @relation(fields: [idPredio], references: [id])
+  registrador  Usuario           @relation("AnimalRegistrador", fields: [idRegistrador], references: [id])
+  bitacora     BitacoraEntrada[]
+  eventos      EventoAnimal[]
+  tareas       TareaAnimal[]
+
+  @@unique([idPredio, numeroOreja], map: "uq_animal_oreja")
+  @@index([idPredio, estado])
+  @@index([idPredio, numeroOreja])
+  @@map("animal")
+}
+
+/// H2 - unifica el log automatico de RF_06 con la nota manual del MER.
+/// Append-only: no se modifica ni se elimina (RF_06).
+model BitacoraEntrada {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idAnimal    String       @map("id_animal") @db.Uuid
+  /// NULL cuando la entrada la genera el sistema sin usuario asociado.
+  idUsuario   String?      @map("id_usuario") @db.Uuid
+  tipo        TipoBitacora
+  titulo      String
+  descripcion String?
+  /// En MODIFICACION guarda { campo, valorAnterior, valorNuevo }.
+  datos       Json?        @db.JsonB
+  idEvento    String?      @map("id_evento") @db.Uuid
+  /// RF_10 - queda en true cuando el evento de origen fue eliminado.
+  eventoEliminado Boolean  @default(false) @map("evento_eliminado")
+  fechaEvento DateTime     @default(now()) @map("fecha_evento") @db.Timestamptz(6)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  animal  Animal   @relation(fields: [idAnimal], references: [id])
+  usuario Usuario? @relation(fields: [idUsuario], references: [id])
+  evento  Evento?  @relation(fields: [idEvento], references: [id])
+
+  @@index([idAnimal, fechaEvento(sort: Desc)])
+  @@index([idEvento])
+  @@map("bitacora_entrada")
+}
+
+model Evento {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idPredio    String       @map("id_predio") @db.Uuid
+  idCreador   String       @map("id_creador") @db.Uuid
+  /// RF_09 - inmutable una vez creado.
+  tipo        TipoEvento
+  descripcion String?
+  fechaInicio DateTime     @map("fecha_inicio") @db.Timestamptz(6)
+  estado      EstadoEvento @default(PROGRAMADO)
+  /// RF_10 - soft delete; el historico de bitacora se conserva.
+  eliminadoEn DateTime?    @map("eliminado_en") @db.Timestamptz(6)
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  predio           Predio            @relation(fields: [idPredio], references: [id])
+  creador          Usuario           @relation("EventoCreador", fields: [idCreador], references: [id])
+  animales         EventoAnimal[]
+  entradasBitacora BitacoraEntrada[]
+
+  @@index([idPredio, fechaInicio])
+  @@index([idPredio, estado])
+  @@map("evento")
+}
+
+model EventoAnimal {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idEvento String @map("id_evento") @db.Uuid
+  idAnimal String @map("id_animal") @db.Uuid
+
+  evento Evento @relation(fields: [idEvento], references: [id], onDelete: Cascade)
+  animal Animal @relation(fields: [idAnimal], references: [id])
+
+  @@unique([idEvento, idAnimal], map: "uq_evento_animal")
+  @@index([idAnimal])
+  @@map("evento_animal")
+}
+
+model Tarea {
+  id              String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idPredio        String      @map("id_predio") @db.Uuid
+  idCreador       String      @map("id_creador") @db.Uuid
+  titulo          String
+  descripcion     String?
+  fechaLimite     DateTime    @map("fecha_limite") @db.Date
+  estado          EstadoTarea @default(ACTIVA)
+  /// RF_13 - se registran al marcarla como completada.
+  completadaEn    DateTime?   @map("completada_en") @db.Timestamptz(6)
+  idCompletadaPor String?     @map("id_completada_por") @db.Uuid
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  predio        Predio         @relation(fields: [idPredio], references: [id])
+  creador       Usuario        @relation("TareaCreador", fields: [idCreador], references: [id])
+  completadaPor Usuario?       @relation("TareaCompletadaPor", fields: [idCompletadaPor], references: [id])
+  responsables  TareaUsuario[]
+  animales      TareaAnimal[]
+
+  @@index([idPredio, fechaLimite])
+  @@index([idPredio, estado])
+  @@map("tarea")
+}
+
+model TareaUsuario {
+  id        String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idTarea   String @map("id_tarea") @db.Uuid
+  idUsuario String @map("id_usuario") @db.Uuid
+
+  tarea   Tarea   @relation(fields: [idTarea], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [idUsuario], references: [id])
+
+  @@unique([idTarea, idUsuario], map: "uq_tarea_usuario")
+  @@index([idUsuario])
+  @@map("tarea_usuario")
+}
+
+/// H10 - presente en el MER; la UI la expone como campo opcional de la tarea.
+model TareaAnimal {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idTarea  String @map("id_tarea") @db.Uuid
+  idAnimal String @map("id_animal") @db.Uuid
+
+  tarea  Tarea  @relation(fields: [idTarea], references: [id], onDelete: Cascade)
+  animal Animal @relation(fields: [idAnimal], references: [id])
+
+  @@unique([idTarea, idAnimal], map: "uq_tarea_animal")
+  @@index([idAnimal])
+  @@map("tarea_animal")
+}
+
+/// H4 - emisor de IF5-ENT; su estado alimenta IF2-SAL.
+model DispositivoEdge {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idPredio        String    @map("id_predio") @db.Uuid
+  nombre          String
+  /// Hash bcrypt de la API key entregada al dispositivo.
+  apiKeyHash      String    @map("api_key_hash")
+  /// Prefijo publico de la key, para localizar el dispositivo sin exponer el secreto.
+  apiKeyPrefijo   String    @unique @map("api_key_prefijo")
+  ultimoHeartbeat DateTime? @map("ultimo_heartbeat") @db.Timestamptz(6)
+  ultimoConteo    Int?      @map("ultimo_conteo")
+  /// Conteo esperado del rebano, usado como linea base de las alertas.
+  conteoEsperado  Int?      @map("conteo_esperado")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  predio  Predio   @relation(fields: [idPredio], references: [id])
+  alertas Alerta[]
+
+  @@index([idPredio])
+  @@map("dispositivo_edge")
+}
+
+model Alerta {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  /// H11 - RF_19 exige filtrar por el predio del usuario autenticado.
+  idPredio          String       @map("id_predio") @db.Uuid
+  idDispositivoEdge String?      @map("id_dispositivo_edge") @db.Uuid
+  tipoAlerta        TipoAlerta   @map("tipo_alerta")
+  descripcion       String?
+  nivel             NivelAlerta  @default(ADVERTENCIA)
+  conteoAnimales    Int?         @map("conteo_animales")
+  conteoEsperado    Int?         @map("conteo_esperado")
+  /// Marca de tiempo emitida por el modulo edge (RF_17).
+  fechaHora         DateTime     @map("fecha_hora") @db.Timestamptz(6)
+  estado            EstadoAlerta @default(NUEVA)
+  idRevisadoPor     String?      @map("id_revisado_por") @db.Uuid
+  fechaRevision     DateTime?    @map("fecha_revision") @db.Timestamptz(6)
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  predio          Predio           @relation(fields: [idPredio], references: [id])
+  dispositivoEdge DispositivoEdge? @relation(fields: [idDispositivoEdge], references: [id])
+  revisadoPor     Usuario?         @relation("AlertaRevisadaPor", fields: [idRevisadoPor], references: [id])
+
+  /// Idempotencia de la ingesta edge: la conectividad rural obliga a reintentos.
+  @@unique([idDispositivoEdge, fechaHora, tipoAlerta], map: "uq_alerta_edge")
+  @@index([idPredio, fechaHora(sort: Desc)])
+  @@index([idPredio, estado])
+  @@map("alerta")
+}
