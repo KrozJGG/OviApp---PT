@@ -1,0 +1,77 @@
+name: oviapp
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: oviapp-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oviapp
+      POSTGRES_PASSWORD: oviapp
+      POSTGRES_DB: oviapp
+    ports:
+      - "5433:5432"
+    volumes:
+      - oviapp-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oviapp -d oviapp"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: oviapp-streamer
+    restart: unless-stopped
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml
+    ports:
+      - "8554:8554"
+      - "8888:8888"
+      - "8889:8889"
+      - "8189:8189/udp"
+
+  camara_mock:
+    image: linuxserver/ffmpeg:latest
+    container_name: oviapp-camara-mock
+    restart: unless-stopped
+    volumes:
+      - ./videos:/videos
+    depends_on:
+      mediamtx:
+        condition: service_started
+    entrypoint: >
+      ffmpeg -re -stream_loop -1 -i /videos/rebano.mp4 -c copy -f rtsp rtsp://mediamtx:8554/rebano
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: oviapp-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgresql://oviapp:oviapp@db:5432/oviapp?schema=public
+      DB_POOL_MAX: 10
+      JWT_SECRET: "rk6qbi7Yxa-KVKJapDBvbCN5bgoqQj_yMuFuZYr3plVOK4u__hnuC-9lWgWuQhcf"
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL_DIAS: 30
+      BCRYPT_ROUNDS: 12
+      CORS_ORIGINS: "*"
+      LOG_LEVEL: info
+      PUSH_HABILITADO: "false"
+      FIREBASE_CREDENCIALES_JSON: ""
+      CRON_HABILITADO: "false"
+      CRON_RECORDATORIOS: "0 8 * * *"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && node dist/server.js"
+
+
+volumes:
+  oviapp-db-data:

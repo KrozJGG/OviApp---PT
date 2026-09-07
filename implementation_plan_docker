@@ -1,0 +1,48 @@
+# Plan de Implementación: Entorno Docker para Microservicios
+
+Este documento detalla el plan para establecer y configurar el entorno de desarrollo local utilizando Docker Compose para la aplicación OviApp, abarcando el backend, la base de datos y la simulación de cámaras IP mediante MediaMTX.
+
+## Revisión del Estado Actual
+
+He revisado los archivos clave en tu proyecto:
+*   **`docker-compose.yml`**: Ya se encuentra estructurado con los 4 servicios necesarios:
+    *   `db`: PostgreSQL.
+    *   `mediamtx`: Servidor de streaming.
+    *   `camara_mock`: Usa FFmpeg para leer `videos/rebano.mp4` y transmitirlo en bucle (`-stream_loop -1`) vía RTSP a MediaMTX.
+    *   `backend`: Construye desde `./backend` y ejecuta migraciones de Prisma al iniciar.
+*   **`backend/Dockerfile`**: Está bien configurado (Node 22, instala dependencias, genera Prisma, hace build y ejecuta).
+*   **`mediamtx.yml`**: Tiene HLS habilitado y define el path `rebano`.
+
+## Recomendación: WebRTC vs HLS
+
+> [!TIP]
+> **Recomiendo encarecidamente utilizar WebRTC** para tu aplicación.
+
+**¿Por qué WebRTC?**
+1.  **Latencia Ultra Baja:** WebRTC ofrece latencia sub-segundo, lo cual es ideal para monitorear el predio "en vivo" real, a diferencia de HLS que puede tener un retraso de 3 a 10 segundos.
+2.  **Soporte Nativo de MediaMTX:** MediaMTX ya expone por defecto un puerto WebRTC (8889) que está mapeado en tu `docker-compose.yml`.
+3.  **Facilidad de visualización:** MediaMTX provee una interfaz web lista para usar. Podrás ver el streaming inmediatamente abriendo `http://localhost:8889/rebano` en tu navegador, y es muy fácil de embeber (mediante iframe o API de WebRTC) en tu frontend sin necesidad de instalar reproductores de video adicionales.
+
+## Open Questions / Decisiones
+
+> [!IMPORTANT]
+> 1.  ¿Estás de acuerdo en proceder utilizando WebRTC como método principal de visualización para la web?
+> 2.  He verificado que el archivo `videos/rebano.mp4` existe. ¿Hay alguna configuración extra de red que debamos tener en cuenta para tu máquina host?
+
+## Pasos de Ejecución Propuestos
+
+### 1. Ajustes Mínimos de Configuración (Opcional)
+Asegurarnos de que `mediamtx.yml` esté explícitamente preparado para WebRTC (aunque lo hace por defecto, es buena práctica documentarlo). Asegurar que el archivo `.env` del backend exista y coincida con las credenciales de `docker-compose.yml`.
+
+### 2. Construcción y Despliegue (Build & Up)
+Ejecutar el comando de Docker Compose para construir las imágenes (especialmente el backend) y levantar todos los servicios en segundo plano.
+Comando a ejecutar: `docker compose up -d --build`
+
+### 3. Verificación de Servicios
+*   Comprobar logs de la base de datos para asegurar que inició.
+*   Comprobar logs del backend para asegurar que las migraciones de Prisma (`prisma migrate deploy`) se ejecutaron con éxito y el servidor está escuchando en el puerto 3000.
+*   Comprobar logs de `camara_mock` y `mediamtx` para certificar que FFmpeg está enviando el flujo RTSP y MediaMTX lo está publicando sin errores.
+
+### 4. Prueba Final de Visualización
+Acceder al navegador web a través de la interfaz nativa WebRTC de MediaMTX para confirmar que el video en bucle se está retransmitiendo correctamente.
+URL de prueba esperada: `http://localhost:8889/rebano`

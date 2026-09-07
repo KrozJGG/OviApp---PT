@@ -1,0 +1,9 @@
+# mediamtx.yml
+hls: yes
+webrtc: yes
+webrtcICEHostNAT1To1IPs: [127.0.0.1]
+
+paths:
+  rebano:
+    source: publisher
+    record: no
