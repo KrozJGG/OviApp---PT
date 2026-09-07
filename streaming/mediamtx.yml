@@ -1,7 +1,7 @@
 # mediamtx.yml
 hls: yes
-webrtc: yes
-webrtcICEHostNAT1To1IPs: [127.0.0.1]
+webrtc: no
+webrtcICEHostNAT1To1IPs: []
 
 paths:
   rebano:

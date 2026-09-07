@@ -1,0 +1,13 @@
+body {
+  margin: 0;
+  background: #111;
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+video {
+  width: min(90vw, 1280px);
+  background: black;
+  border-radius: 12px;
+}

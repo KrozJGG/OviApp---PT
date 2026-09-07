@@ -25,12 +25,10 @@ services:
     container_name: oviapp-streamer
     restart: unless-stopped
     volumes:
-      - ./mediamtx.yml:/mediamtx.yml
+      - ./streaming/mediamtx.yml:/mediamtx.yml
     ports:
       - "8554:8554"
       - "8888:8888"
-      - "8889:8889"
-      - "8189:8189/udp"
 
   camara_mock:
     image: linuxserver/ffmpeg:latest
