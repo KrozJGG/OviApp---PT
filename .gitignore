@@ -1,1 +1,5 @@
-.git
+backend/.env
+backend/.env.example
+backend/.env.test
+backend/node_modules/
+ia-engine/venv/

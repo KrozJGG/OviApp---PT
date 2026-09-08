@@ -17,4 +17,4 @@ El módulo de IA es responsable del procesamiento de video en tiempo real en el 
 ## 4. Requerimientos No Funcionales
 - **Procesamiento Local:** Todo el análisis de imágenes se realiza localmente (Edge) sin enviar video a la nube, reduciendo la dependencia de internet.
 - **Tolerancia a Fallos de Red:** Debe poder almacenar alertas temporalmente o manejar cortes de red hacia el backend.
-- **Rendimiento Edge:** Procesar señales RTSP con latencia mínima (< 5 segundos desde la detección hasta el envío de alerta al backend).
+- **Rendimiento Edge:** Procesar señales RTSP con latencia mínima.
