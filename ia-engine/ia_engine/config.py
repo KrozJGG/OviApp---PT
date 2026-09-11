@@ -29,8 +29,8 @@ class Config(BaseSettings):
     """
 
     # ── Modelo YOLO ──────────────────────────────────────────────────────
-    model_path: str = "/app/models/ovejas.pt"
-    """Ruta absoluta al archivo .pt del modelo YOLO entrenado."""
+    model_path: str = "yolo26n.pt"
+    """Nombre o ruta del modelo YOLO. Por defecto usa YOLO26n preentrenado (se descarga automáticamente)."""
 
     confianza_minima: float = 0.5
     """Umbral de confianza mínimo para aceptar una detección."""
