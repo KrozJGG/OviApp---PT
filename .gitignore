@@ -1,5 +1,24 @@
+# ─── Secretos ────────────────────────────────────────────────────────────────
+# Solo el .env real queda fuera. .env.example y .env.test SI se versionan:
+# el primero es la plantilla que necesita quien clone el repo y el segundo es
+# la configuracion que hace correr la suite de pruebas. Ninguno lleva secretos
+# reales.
 backend/.env
-backend/.env.example
-backend/.env.test
-backend/node_modules/
+
+# ─── Dependencias y artefactos de build ──────────────────────────────────────
+node_modules/
+backend/dist/
+backend/coverage/
+
+# ─── Python (ia-engine) ──────────────────────────────────────────────────────
 ia-engine/venv/
+__pycache__/
+*.py[cod]
+
+# Modelo YOLO entrenado: pesa demasiado para git. Se copia a mano segun
+# ia-engine/models/.gitkeep
+ia-engine/models/*.pt
+
+# ─── Sistema operativo / editores ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
