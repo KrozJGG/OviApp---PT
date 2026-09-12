@@ -151,14 +151,22 @@ class Analizador:
         Alerta DISPERSION — las ovejas están excesivamente separadas,
         lo que puede indicar pánico, ataque o comportamiento anormal.
 
-        Se calcula la distancia promedio entre todos los pares de
-        centroides, normalizada por la distancia diagonal máxima.
+        Se calcula la distancia promedio entre todos los pares de centroides y
+        se normaliza contra la diagonal del FOTOGRAMA, que es una referencia
+        fija. Normalizar contra la caja que envuelve a las propias detecciones
+        haría la medida invariante a la escala —numerador y denominador crecen
+        juntos cuando el rebaño se abre— y acabaría midiendo la forma de la
+        distribución en vez de cuánto se dispersó.
         """
         if not estado.puede_alertar("DISPERSION"):
             return
 
         # Necesitamos al menos 3 ovejas para evaluar dispersión.
         if len(resultado.centroides) < 3:
+            return
+
+        # Sin referencia del fotograma no hay contra qué normalizar.
+        if resultado.diagonal_frame <= 0:
             return
 
         # Calcular distancia promedio entre todos los pares de centroides.
@@ -179,18 +187,9 @@ class Analizador:
 
         dist_promedio = total_dist / pares
 
-        # Normalizar por la diagonal del bounding box que contiene todas
-        # las detecciones (aproximación del área de la zona).
-        xs = [c[0] for c in centroides]
-        ys = [c[1] for c in centroides]
-        diagonal = math.sqrt(
-            (max(xs) - min(xs)) ** 2 + (max(ys) - min(ys)) ** 2
-        )
-
-        if diagonal < 1:  # Todas las ovejas muy juntas → sin dispersión.
-            return
-
-        dispersion_normalizada = dist_promedio / diagonal
+        # Referencia fija: la diagonal del fotograma. Un rebaño apiñado da un
+        # índice cercano a 0 y uno repartido por toda la imagen se acerca a 1.
+        dispersion_normalizada = dist_promedio / resultado.diagonal_frame
 
         if dispersion_normalizada < config.dispersion_umbral:
             return

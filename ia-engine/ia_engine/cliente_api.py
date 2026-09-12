@@ -93,6 +93,28 @@ class ClienteAPI:
             self._encolar(payload)
         return ok
 
+    def obtener_configuracion(self) -> dict[str, Any] | None:
+        """
+        Lee la configuración del dispositivo desde el backend.
+
+        Devuelve {idDispositivo, nombre, conteoEsperado} o None si no se pudo
+        consultar. El campo que importa es `conteoEsperado`: es la línea base
+        contra la que el Analizador decide si faltan ovejas.
+        """
+        url = f"{self._base_url}/api/v1/edge/configuracion"
+        try:
+            resp = self._session.get(url, timeout=_TIMEOUT_SEG)
+            if resp.status_code == 200:
+                return resp.json()
+            logger.warning(
+                "No se pudo leer la configuración (HTTP %d): %s",
+                resp.status_code,
+                resp.text[:200],
+            )
+        except (requests.RequestException, ValueError) as e:
+            logger.warning("Error al leer la configuración del dispositivo: %s", e)
+        return None
+
     def enviar_heartbeat(self, conteo_actual: int | None = None) -> bool:
         """Envía un latido de presencia al backend."""
         payload: dict[str, Any] = {

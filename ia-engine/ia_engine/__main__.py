@@ -37,6 +37,40 @@ logging.basicConfig(
 logger = logging.getLogger("ia_engine")
 
 
+def _sincronizar_conteo_esperado(
+    cliente: ClienteAPI,
+    lectores: list[LectorStream],
+) -> None:
+    """
+    Lee la línea base del rebaño desde el backend y la aplica a cada stream.
+
+    Es lo que habilita la alerta de CONTEO: el Analizador solo puede decidir si
+    faltan ovejas comparando lo detectado contra este número. Si el backend no
+    responde se usa CONTEO_ESPERADO del entorno, y si tampoco existe se deja el
+    valor anterior en lugar de borrarlo.
+    """
+    remoto = cliente.obtener_configuracion()
+    esperado = remoto.get("conteoEsperado") if remoto else None
+    origen = "backend"
+
+    if esperado is None:
+        esperado = config.conteo_esperado
+        origen = "variable de entorno"
+
+    if esperado is None:
+        logger.warning(
+            "Sin conteo esperado: el predio no fijó una línea base y no hay "
+            "CONTEO_ESPERADO en el entorno. Las alertas de CONTEO quedan "
+            "inactivas; las de DISPERSION siguen funcionando."
+        )
+        return
+
+    for lector in lectores:
+        lector.estado.conteo_esperado = esperado
+
+    logger.info("Conteo esperado = %d (según %s).", esperado, origen)
+
+
 def main() -> None:
     """Punto de entrada principal."""
     logger.info("═══════════════════════════════════════════════════")
@@ -78,6 +112,11 @@ def main() -> None:
         lector.iniciar()
         lectores.append(lector)
 
+    # ── Línea base del rebaño ────────────────────────────────────────
+    # Sin conteo esperado, la regla de CONTEO no puede evaluarse: es la
+    # comparación contra este número la que decide si faltan ovejas.
+    _sincronizar_conteo_esperado(cliente, lectores)
+
     # ── Manejo de señales para cierre limpio ─────────────────────────
     detenido = threading.Event()
 
@@ -117,6 +156,11 @@ def main() -> None:
                     "Stream '%s' se detuvo inesperadamente.",
                     lector.nombre,
                 )
+
+        # Refrescar la línea base: el Productor puede cambiarla en cualquier
+        # momento, y esto también la recupera si el backend estaba caído al
+        # arrancar el módulo.
+        _sincronizar_conteo_esperado(cliente, lectores)
 
         detenido.wait(config.heartbeat_intervalo_seg)
 
