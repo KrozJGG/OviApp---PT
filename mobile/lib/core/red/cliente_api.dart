@@ -42,7 +42,9 @@ class ClienteApi {
                 validateStatus: (s) => s != null && s < 400,
               ),
             ) {
-    dio.interceptors.add(
+    // `this.` es obligatorio: dentro del cuerpo, `dio` es el parametro
+    // opcional (nullable), no el campo ya inicializado.
+    this.dio.interceptors.add(
       QueuedInterceptorsWrapper(
         onRequest: _alEnviar,
         onError: _alFallar,
