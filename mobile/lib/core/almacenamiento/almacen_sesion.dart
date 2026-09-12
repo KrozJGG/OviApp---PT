@@ -26,11 +26,11 @@ class SesionGuardada {
 /// SharedPreferences: RNF_03 pide proteger el acceso al predio, y un token en
 /// texto plano en el dispositivo seria la puerta mas facil.
 class AlmacenSesion {
+  // Desde flutter_secure_storage 10 el respaldo cifrado es el comportamiento
+  // por defecto en Android y la opcion `encryptedSharedPreferences` ya no
+  // existe, asi que no hay nada que configurar.
   AlmacenSesion({FlutterSecureStorage? almacen})
-      : _almacen = almacen ??
-            const FlutterSecureStorage(
-              aOptions: AndroidOptions(encryptedSharedPreferences: true),
-            );
+      : _almacen = almacen ?? const FlutterSecureStorage();
 
   final FlutterSecureStorage _almacen;
 
@@ -38,10 +38,26 @@ class AlmacenSesion {
   static const _claveRefresh = 'oviapp.refreshToken';
   static const _claveUsuario = 'oviapp.usuario';
 
+  /// El almacen seguro no esta disponible en todas partes: en web se apoya en
+  /// SubtleCrypto y en un contexto seguro, y sus operaciones pueden lanzar.
+  ///
+  /// Ninguna de las de abajo propaga ese fallo. Si el almacen no responde, la
+  /// consecuencia correcta es que la sesion no sobreviva a un reinicio de la
+  /// app; NO que la app deje de funcionar. El interceptor de red llama a
+  /// `leer()` antes de cada peticion, asi que una excepcion aqui impedia que
+  /// saliera cualquier peticion y el login moria antes de tocar la red.
   Future<SesionGuardada?> leer() async {
-    final acceso = await _almacen.read(key: _claveAcceso);
-    final refresh = await _almacen.read(key: _claveRefresh);
-    final usuario = await _almacen.read(key: _claveUsuario);
+    final String? acceso;
+    final String? refresh;
+    final String? usuario;
+
+    try {
+      acceso = await _almacen.read(key: _claveAcceso);
+      refresh = await _almacen.read(key: _claveRefresh);
+      usuario = await _almacen.read(key: _claveUsuario);
+    } catch (_) {
+      return null;
+    }
 
     if (acceso == null || refresh == null || usuario == null) return null;
 
@@ -59,25 +75,36 @@ class AlmacenSesion {
   }
 
   Future<void> guardar(SesionGuardada sesion) async {
-    await Future.wait([
-      _almacen.write(key: _claveAcceso, value: sesion.accessToken),
-      _almacen.write(key: _claveRefresh, value: sesion.refreshToken),
-      _almacen.write(key: _claveUsuario, value: jsonEncode(sesion.usuario)),
+    await _intentar([
+      () => _almacen.write(key: _claveAcceso, value: sesion.accessToken),
+      () => _almacen.write(key: _claveRefresh, value: sesion.refreshToken),
+      () => _almacen.write(key: _claveUsuario, value: jsonEncode(sesion.usuario)),
     ]);
   }
 
   Future<void> actualizarTokens({required String accessToken, required String refreshToken}) async {
-    await Future.wait([
-      _almacen.write(key: _claveAcceso, value: accessToken),
-      _almacen.write(key: _claveRefresh, value: refreshToken),
+    await _intentar([
+      () => _almacen.write(key: _claveAcceso, value: accessToken),
+      () => _almacen.write(key: _claveRefresh, value: refreshToken),
     ]);
   }
 
   Future<void> limpiar() async {
-    await Future.wait([
-      _almacen.delete(key: _claveAcceso),
-      _almacen.delete(key: _claveRefresh),
-      _almacen.delete(key: _claveUsuario),
+    await _intentar([
+      () => _almacen.delete(key: _claveAcceso),
+      () => _almacen.delete(key: _claveRefresh),
+      () => _almacen.delete(key: _claveUsuario),
     ]);
+  }
+
+  /// Ejecuta las escrituras ignorando un almacen que no responde.
+  static Future<void> _intentar(List<Future<void> Function()> operaciones) async {
+    for (final operacion in operaciones) {
+      try {
+        await operacion();
+      } catch (_) {
+        // Sin almacen persistente la sesion vive solo en memoria.
+      }
+    }
   }
 }

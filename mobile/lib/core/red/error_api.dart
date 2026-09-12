@@ -41,6 +41,7 @@ class ErrorApi implements Exception {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
+      case DioExceptionType.transformTimeout:
         return const ErrorApi(
           codigo: 'TIEMPO_AGOTADO',
           mensaje: 'El servidor tardó demasiado en responder. Revisa tu señal e inténtalo de nuevo.',
@@ -89,7 +90,10 @@ class ErrorApi implements Exception {
         401 => 'Tu sesión expiró. Vuelve a iniciar sesión.',
         403 => 'Tu rol no permite realizar esta acción.',
         404 => 'No se encontró lo que buscabas.',
-        >= 500 => 'El servidor tuvo un problema. Inténtalo nuevamente en unos minutos.',
+        // `status` es int?, asi que el patron relacional necesita capturar
+        // primero un valor no nulo.
+        final int s when s >= 500 =>
+          'El servidor tuvo un problema. Inténtalo nuevamente en unos minutos.',
         _ => 'Ocurrió un error inesperado.',
       },
       status: status,

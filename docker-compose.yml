@@ -19,6 +19,24 @@ services:
       timeout: 5s
       retries: 10
 
+  # Base exclusiva de la suite de pruebas. `tests/apoyo/setupGlobal.ts` la
+  # espera en el 5434 y se niega a correr si DATABASE_URL no dice "test", asi
+  # que no hay riesgo de que la suite toque la base de desarrollo.
+  db-test:
+    image: postgres:16-alpine
+    container_name: oviapp-db-test
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: oviapp
+      POSTGRES_PASSWORD: oviapp
+      POSTGRES_DB: oviapp_test
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oviapp -d oviapp_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   mediamtx:
     image: bluenviron/mediamtx:latest
@@ -55,7 +73,10 @@ services:
       PORT: 3000
       DATABASE_URL: postgresql://oviapp:oviapp@db:5432/oviapp?schema=public
       DB_POOL_MAX: 10
-      JWT_SECRET: "rk6qbi7Yxa-KVKJapDBvbCN5bgoqQj_yMuFuZYr3plVOK4u__hnuC-9lWgWuQhcf"
+      # Se toma del entorno del host (o de un .env junto a este archivo). El
+      # valor por defecto sirve solo para desarrollo local: en despliegue hay
+      # que exportar JWT_SECRET con un secreto generado (RNF_03).
+      JWT_SECRET: "${JWT_SECRET:-desarrollo-local-cambiar-en-produccion-min-32-chars}"
       JWT_ACCESS_TTL: 15m
       JWT_REFRESH_TTL_DIAS: 30
       BCRYPT_ROUNDS: 12
@@ -70,7 +91,17 @@ services:
         condition: service_healthy
     command: sh -c "npx prisma migrate deploy && node dist/server.js"
 
+  # ───────────────────────────────────────────────────────────────────────────
+  # Modulo de vision por computadora.
+  #
+  # Va en el perfil "ia" y NO arranca con un `docker compose up` normal, por
+  # dos razones: la imagen base de CUDA pesa varios GB, y el contenedor no
+  # levanta si falta ia-engine/models/ovejas.pt, que no se versiona.
+  #
+  # Para levantarlo:  docker compose --profile ia up -d ia-engine
+  # ───────────────────────────────────────────────────────────────────────────
   ia-engine:
+    profiles: ["ia"]
     build:
       context: ./ia-engine
       dockerfile: Dockerfile
@@ -78,17 +109,30 @@ services:
     restart: unless-stopped
     environment:
       BACKEND_URL: "http://backend:3000"
-      EDGE_API_KEY: "edge_hatonorte.7f3a91c4e08b45d2a6f1"
+      # Debe coincidir con la key del dispositivo en la tabla dispositivo_edge.
+      # La que genera el seed es edge_hatonorte.7f3a91c4e08b45d2a6f1
+      EDGE_API_KEY: "${EDGE_API_KEY:-edge_hatonorte.7f3a91c4e08b45d2a6f1}"
       RTSP_STREAMS: "rebano=rtsp://mediamtx:8554/rebano"
-      MODEL_PATH: "/app/models/ovejas.pt"
+      # yolo26n.pt es el preentrenado de COCO que viene versionado. Cuando
+      # exista un modelo propio entrenado con ovejas del predio, apuntar aqui.
+      MODEL_PATH: "/app/yolo26n.pt"
+      # Clases a contar. yolo26n detecta las 80 de COCO, asi que sin este
+      # filtro el conteo sumaria personas, perros y vehiculos como si fueran
+      # ovejas. Vacio = contar todas las detecciones (modelo de una sola clase).
+      CLASES_OBJETIVO: "sheep"
       FPS_PROCESAMIENTO: 2
       HEARTBEAT_INTERVALO_SEG: 300
       CONFIANZA_MINIMA: 0.5
+      # El conteo esperado se lee de GET /edge/configuracion. Definir
+      # CONTEO_ESPERADO aqui solo sirve como respaldo si el backend no responde.
     depends_on:
       mediamtx:
         condition: service_started
       backend:
         condition: service_started
+    # Reserva de GPU NVIDIA. El Detector cae a CPU por su cuenta si CUDA no
+    # esta disponible, pero esta reserva impide que el contenedor arranque en
+    # una maquina sin GPU: comentar este bloque para correr en CPU.
     deploy:
       resources:
         reservations:

@@ -17,6 +17,7 @@ const HORA_ALERTA = '2026-03-10T15:04:05.000Z';
 function edge(e: Escenario, apiKey = e.dispositivoEdge.apiKey) {
   return {
     post: (ruta: string) => api(e.app).post(ruta).set('X-Edge-Key', apiKey),
+    get: (ruta: string) => api(e.app).get(ruta).set('X-Edge-Key', apiKey),
   };
 }
 
@@ -227,6 +228,36 @@ describe('Vigilancia y deteccion (RF_17 a RF_19)', () => {
 
     it('exige API key', async () => {
       const r = await api(e.app).post('/edge/heartbeat').send({ timestamp: HORA_ALERTA });
+      expect(r.status).toBe(401);
+    });
+  });
+
+  describe('GET /edge/configuracion', () => {
+    it('entrega la linea base que el dispositivo usa para las alertas de conteo', async () => {
+      const r = await edge(e).get('/edge/configuracion');
+
+      expect(r.status).toBe(200);
+      expect(r.body).toEqual({
+        idDispositivo: e.dispositivoEdge.id,
+        nombre: 'Camara de prueba',
+        conteoEsperado: 10,
+      });
+    });
+
+    it('entrega conteoEsperado nulo si el predio no fijo una linea base', async () => {
+      await prisma.dispositivoEdge.update({
+        where: { id: e.dispositivoEdge.id },
+        data: { conteoEsperado: null },
+      });
+
+      const r = await edge(e).get('/edge/configuracion');
+
+      expect(r.status).toBe(200);
+      expect(r.body.conteoEsperado).toBeNull();
+    });
+
+    it('exige API key', async () => {
+      const r = await api(e.app).get('/edge/configuracion');
       expect(r.status).toBe(401);
     });
   });

@@ -35,6 +35,18 @@ class Config(BaseSettings):
     confianza_minima: float = 0.5
     """Umbral de confianza mínimo para aceptar una detección."""
 
+    clases_objetivo: str = "sheep"
+    """
+    Nombres de clase que cuentan como oveja, separados por coma.
+
+    yolo26n es el preentrenado de COCO y detecta 80 clases: sin filtrar, el
+    conteo sumaría personas, perros y vehículos. Los nombres se comparan contra
+    los del propio modelo (`model.names`), sin distinguir mayúsculas.
+
+    Dejarlo vacío desactiva el filtro, que es lo correcto para un modelo
+    entrenado con una sola clase.
+    """
+
     # ── Procesamiento ────────────────────────────────────────────────────
     fps_procesamiento: int = 2
     """Fotogramas por segundo a enviar al modelo (el resto se descarta)."""
@@ -59,12 +71,29 @@ class Config(BaseSettings):
     anormal antes de emitir la alerta. Evita picos transitorios.
     """
 
-    # ── Dispersión ───────────────────────────────────────────────────────
-    dispersion_umbral: float = 0.6
+    conteo_esperado: int | None = None
     """
-    Umbral normalizado de dispersión del rebaño (0-1).
-    Si la distancia promedio entre centroides supera este porcentaje
-    del área de la zona, se considera dispersión anormal.
+    Línea base del rebaño, como respaldo si el backend no responde.
+
+    Normalmente NO se define: el valor autoritativo vive en la tabla
+    dispositivo_edge y se lee al arrancar desde GET /api/v1/edge/configuracion.
+    Definir esta variable solo tiene sentido para pruebas sin backend.
+    """
+
+    # ── Dispersión ───────────────────────────────────────────────────────
+    dispersion_umbral: float = 0.35
+    """
+    Umbral del índice de dispersión del rebaño.
+
+    El índice es la distancia promedio entre centroides dividida por la
+    diagonal del fotograma. Referencias de la escala:
+
+      ~0.05 – 0.15  rebaño apiñado, comportamiento normal
+      ~0.20 – 0.30  repartido por buena parte del cuadro
+      ~0.37         máximo práctico: ovejas distribuidas por todo el fotograma
+
+    Como el máximo alcanzable ronda 0.37, cualquier umbral sobre ~0.4 hace que
+    la alerta nunca se dispare. Conviene ajustarlo con vídeo real del predio.
     """
 
     model_config = {"env_prefix": "", "case_sensitive": False}
@@ -86,6 +115,11 @@ def parsear_streams(raw: str) -> dict[str, str]:
         nombre, url = entrada.split("=", 1)
         streams[nombre.strip()] = url.strip()
     return streams
+
+
+def parsear_clases(raw: str) -> set[str]:
+    """Convierte «sheep,oveja» en {'sheep', 'oveja'}. Vacío = sin filtro."""
+    return {c.strip().lower() for c in raw.split(",") if c.strip()}
 
 
 # Instancia global — se carga al importar el módulo.

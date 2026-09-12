@@ -28,6 +28,10 @@ enrutadorEdge.post('/alertas', controlador.ingestar);
 // Latido de presencia; alimenta el indicador "en linea" de IF2-SAL.
 enrutadorEdge.post('/heartbeat', controlador.heartbeat);
 
+// El dispositivo lee su propia linea base (conteo esperado del rebano). Sin
+// esto el modulo edge no puede decidir si faltan animales.
+enrutadorEdge.get('/configuracion', controlador.configuracion);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // /api/v1/alertas - historial para la app (JWT)
 // ─────────────────────────────────────────────────────────────────────────────

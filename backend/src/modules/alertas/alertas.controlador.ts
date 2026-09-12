@@ -3,6 +3,7 @@ import { ctxDe, edgeDe } from '../../shared/contexto';
 import { esquemaParamId, validarCuerpo, validarParams, validarQuery } from '../../shared/validacion';
 import { esquemaHeartbeat, esquemaIngestaAlerta, esquemaListadoAlertas } from './alertas.esquemas';
 import {
+  configuracionEdge,
   estadoVigilancia,
   ingestarAlerta,
   listarAlertas,
@@ -36,6 +37,13 @@ export async function heartbeat(req: Request, res: Response): Promise<void> {
   await registrarHeartbeat(edge.idDispositivo, datos);
 
   res.status(204).end();
+}
+
+/** GET /edge/configuracion - linea base que el dispositivo usa para sus reglas. */
+export async function configuracion(req: Request, res: Response): Promise<void> {
+  const edge = edgeDe(req);
+
+  res.json(await configuracionEdge(edge.idDispositivo));
 }
 
 /** GET /alertas - RF_19 */

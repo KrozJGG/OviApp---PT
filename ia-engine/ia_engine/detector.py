@@ -9,13 +9,14 @@ la misma oveja dos veces.
 from __future__ import annotations
 
 import logging
+import math
 from dataclasses import dataclass, field
 
 import numpy as np
 import supervision as sv
 from ultralytics import YOLO
 
-from .config import config
+from .config import config, parsear_clases
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,16 @@ class ResultadoDeteccion:
 
     confianza_promedio: float = 0.0
     """Confianza promedio de las detecciones."""
+
+    diagonal_frame: float = 0.0
+    """
+    Diagonal en píxeles del fotograma analizado.
+
+    Es la referencia fija contra la que el Analizador normaliza la dispersión.
+    Tiene que ser el frame y no el área que ocupan las propias detecciones:
+    si se normaliza contra sí mismas, la medida se vuelve invariante a la
+    escala y deja de detectar que el rebaño se abrió.
+    """
 
 
 class Detector:
@@ -60,6 +71,41 @@ class Detector:
 
         self._dispositivo = dispositivo
         self._confianza = confianza
+        self._clases = self._resolver_clases()
+
+    def _resolver_clases(self) -> list[int] | None:
+        """
+        Traduce los nombres de CLASES_OBJETIVO a los ids del modelo cargado.
+
+        Devuelve None cuando no hay que filtrar: o porque la configuración está
+        vacía, o porque el modelo tiene una sola clase y ya es un detector de
+        ovejas por construcción.
+        """
+        objetivo = parsear_clases(config.clases_objetivo)
+        nombres: dict[int, str] = dict(self._modelo.names or {})
+
+        if not objetivo or len(nombres) <= 1:
+            logger.info("Sin filtro de clases: se cuentan todas las detecciones.")
+            return None
+
+        ids = [i for i, nombre in nombres.items() if str(nombre).lower() in objetivo]
+
+        if not ids:
+            logger.error(
+                "Ninguna de las clases %s existe en el modelo (tiene %d clases). "
+                "Se contarán TODAS las detecciones, lo que inflará el conteo.",
+                sorted(objetivo),
+                len(nombres),
+            )
+            return None
+
+        logger.info(
+            "Contando solo las clases %s (ids %s) de las %d del modelo.",
+            sorted(str(nombres[i]) for i in ids),
+            ids,
+            len(nombres),
+        )
+        return ids
 
     def crear_tracker(self) -> sv.ByteTrack:
         """Crea un tracker independiente para un stream."""
@@ -84,15 +130,19 @@ class Detector:
         Returns:
             ResultadoDeteccion con conteo, centroides y confianza.
         """
+        alto, ancho = frame.shape[:2]
+        diagonal_frame = math.sqrt(ancho * ancho + alto * alto)
+
         resultados = self._modelo.predict(
             frame,
             device=self._dispositivo,
             conf=self._confianza,
+            classes=self._clases,
             verbose=False,
         )
 
         if not resultados or len(resultados[0].boxes) == 0:
-            return ResultadoDeteccion(conteo=0)
+            return ResultadoDeteccion(conteo=0, diagonal_frame=diagonal_frame)
 
         # Convertir resultados YOLO al formato de supervision.
         detecciones = sv.Detections.from_ultralytics(resultados[0])
@@ -118,4 +168,5 @@ class Detector:
             conteo=conteo,
             centroides=centroides,
             confianza_promedio=confianza_promedio,
+            diagonal_frame=diagonal_frame,
         )

@@ -29,8 +29,11 @@ class SesionNotifier extends AsyncNotifier<SesionGuardada?> {
 
   /// RF_00 / IF6-ENT — inicia sesion y deja los tokens listos para el cliente.
   Future<void> iniciarSesion(String email, String password) async {
-    state = const AsyncValue.loading();
-
+    // Ojo: aqui NO se pasa el estado a `loading`. El router interpreta
+    // «cargando» como «la app esta arrancando» y redirige a /arranque, lo que
+    // destruiria la pantalla de login a mitad de la peticion y se llevaria por
+    // delante el mensaje de error. El indicador de progreso del boton Entrar es
+    // local a esa pantalla y basta.
     try {
       final dio = ref.read(dioProvider);
       final r = await dio.post<Map<String, dynamic>>(
