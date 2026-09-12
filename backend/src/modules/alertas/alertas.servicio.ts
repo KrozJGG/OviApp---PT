@@ -158,6 +158,39 @@ export async function registrarHeartbeat(
   await tocarDispositivo(idDispositivo, datos.conteoActual);
 }
 
+/** Configuracion que el dispositivo edge necesita para evaluar sus reglas. */
+export interface ConfiguracionEdge {
+  idDispositivo: string;
+  nombre: string;
+  /// Linea base del rebano. Sin este valor el modulo edge no puede emitir
+  /// alertas de CONTEO, porque no tiene contra que comparar lo que detecta.
+  conteoEsperado: number | null;
+}
+
+/**
+ * GET /edge/configuracion - el dispositivo lee su propia configuracion.
+ *
+ * Va en un endpoint aparte y no en la respuesta del heartbeat porque el latido
+ * responde 204 sin cuerpo por contrato (IF5-ENT) y porque la configuracion se
+ * consulta al arrancar, no en cada latido.
+ */
+export async function configuracionEdge(idDispositivo: string): Promise<ConfiguracionEdge> {
+  const dispositivo = await prisma.dispositivoEdge.findUnique({
+    where: { id: idDispositivo },
+    select: { id: true, nombre: true, conteoEsperado: true },
+  });
+
+  if (!dispositivo) {
+    throw new ErrorNoEncontrado('El dispositivo edge no existe.');
+  }
+
+  return {
+    idDispositivo: dispositivo.id,
+    nombre: dispositivo.nombre,
+    conteoEsperado: dispositivo.conteoEsperado,
+  };
+}
+
 async function tocarDispositivo(
   idDispositivo: string,
   conteo: number | undefined,
