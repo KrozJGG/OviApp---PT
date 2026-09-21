@@ -66,7 +66,7 @@ class DispositivoEdge {
   final String id;
   final String nombre;
 
-  /// El backend lo calcula: menos de 15 minutos desde el último latido.
+  /// Lo calcula el backend, según cuán reciente sea el último latido.
   final bool enLinea;
   final DateTime? ultimoHeartbeat;
   final int? ultimoConteo;

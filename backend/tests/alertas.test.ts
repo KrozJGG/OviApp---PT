@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '../src/config/prisma';
 import { inicioDelDia } from '../src/shared/fechas';
+import { MINUTOS_EN_LINEA } from '../src/modules/alertas/alertas.servicio';
 import { api, crearEscenario, type Escenario } from './apoyo/fixtures';
 
 /**
@@ -228,6 +229,27 @@ describe('Vigilancia y deteccion (RF_17 a RF_19)', () => {
 
     it('exige API key', async () => {
       const r = await api(e.app).post('/edge/heartbeat').send({ timestamp: HORA_ALERTA });
+      expect(r.status).toBe(401);
+    });
+  });
+
+  describe('POST /edge/desconexion', () => {
+    it('borra el ultimo latido para que el dispositivo pase a fuera de linea de inmediato', async () => {
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 9, timestamp: HORA_ALERTA });
+
+      const r = await edge(e).post('/edge/desconexion').send({});
+      expect(r.status).toBe(204);
+
+      const dispositivo = await prisma.dispositivoEdge.findUniqueOrThrow({
+        where: { id: e.dispositivoEdge.id },
+      });
+      expect(dispositivo.ultimoHeartbeat).toBeNull();
+      // El ultimo conteo conocido no se borra: solo cambia la senal "en linea".
+      expect(dispositivo.ultimoConteo).toBe(9);
+    });
+
+    it('exige API key', async () => {
+      const r = await api(e.app).post('/edge/desconexion').send({});
       expect(r.status).toBe(401);
     });
   });
@@ -491,10 +513,10 @@ describe('Vigilancia y deteccion (RF_17 a RF_19)', () => {
       expect(r.body.dispositivos[0].ultimoConteo).toBe(9);
     });
 
-    it('marca el dispositivo fuera de linea si el latido tiene mas de 15 minutos', async () => {
+    it('marca el dispositivo fuera de linea si el latido supera MINUTOS_EN_LINEA', async () => {
       await prisma.dispositivoEdge.update({
         where: { id: e.dispositivoEdge.id },
-        data: { ultimoHeartbeat: new Date(Date.now() - 16 * 60 * 1000) },
+        data: { ultimoHeartbeat: new Date(Date.now() - (MINUTOS_EN_LINEA + 1) * 60 * 1000) },
       });
 
       const r = await api(e.app, e.productor.token).get('/vigilancia/estado');

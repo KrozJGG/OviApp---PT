@@ -38,15 +38,20 @@ services:
       timeout: 5s
       retries: 10
 
+  # Sin `ports:` a proposito. MediaMTX no tiene autenticacion propia, asi que
+  # publicar el 8888 (HLS) o el 8554 (RTSP) dejaria el video al alcance de
+  # cualquiera en la red del predio, sin pasar por el login. Los demas
+  # contenedores lo siguen alcanzando por la red interna como `mediamtx:8888`,
+  # y la app llega al video por el proxy autenticado /api/v1/streaming.
+  #
+  # Para depurar con VLC o ffplay, crear un docker-compose.override.yml local
+  # que vuelva a publicar esos puertos (ver streaming/README.md).
   mediamtx:
     image: bluenviron/mediamtx:latest
     container_name: oviapp-streamer
     restart: unless-stopped
     volumes:
       - ./streaming/mediamtx.yml:/mediamtx.yml
-    ports:
-      - "8554:8554"
-      - "8888:8888"
 
   camara_mock:
     image: linuxserver/ffmpeg:latest
@@ -81,6 +86,9 @@ services:
       JWT_REFRESH_TTL_DIAS: 30
       BCRYPT_ROUNDS: 12
       CORS_ORIGINS: "*"
+      # El backend es el unico que habla con MediaMTX: le hace de proxy al video
+      # para que el puerto del streamer no quede expuesto sin autenticacion.
+      MEDIAMTX_URL_INTERNO: "http://mediamtx:8888"
       LOG_LEVEL: info
       PUSH_HABILITADO: "false"
       FIREBASE_CREDENCIALES_JSON: ""
@@ -89,6 +97,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      mediamtx:
+        condition: service_started
     command: sh -c "npx prisma migrate deploy && node dist/server.js"
 
   # ───────────────────────────────────────────────────────────────────────────
@@ -115,14 +125,19 @@ services:
       RTSP_STREAMS: "rebano=rtsp://mediamtx:8554/rebano"
       # yolo26n.pt es el preentrenado de COCO que viene versionado. Cuando
       # exista un modelo propio entrenado con ovejas del predio, apuntar aqui.
-      MODEL_PATH: "/app/yolo26n.pt"
+      MODEL_PATH: "/app/models/yolo26n.pt"
       # Clases a contar. yolo26n detecta las 80 de COCO, asi que sin este
       # filtro el conteo sumaria personas, perros y vehiculos como si fueran
       # ovejas. Vacio = contar todas las detecciones (modelo de una sola clase).
       CLASES_OBJETIVO: "sheep"
       FPS_PROCESAMIENTO: 2
-      HEARTBEAT_INTERVALO_SEG: 300
-      CONFIANZA_MINIMA: 0.5
+      HEARTBEAT_INTERVALO_SEG: 60
+      # Bajado de 0.5: el diagnostico (ia-engine/scripts/diagnostico_conteo.py)
+      # mostro que 0.5 descarta casi la mitad de las ovejas reales del video
+      # de prueba (84 vs 146 detecciones sobre los mismos frames a 0.25). El
+      # filtro de clases "sheep" no influye (0 detecciones de otras clases en
+      # este video), asi que la ganancia real esta en el umbral, no en CLASES_OBJETIVO.
+      CONFIANZA_MINIMA: 0.35
       # El conteo esperado se lee de GET /edge/configuracion. Definir
       # CONTEO_ESPERADO aqui solo sirve como respaldo si el backend no responde.
     depends_on:

@@ -28,6 +28,10 @@ enrutadorEdge.post('/alertas', controlador.ingestar);
 // Latido de presencia; alimenta el indicador "en linea" de IF2-SAL.
 enrutadorEdge.post('/heartbeat', controlador.heartbeat);
 
+// Aviso de apagado limpio: pasa a "sin senal" de inmediato en vez de esperar
+// a que venza MINUTOS_EN_LINEA. Solo cubre SIGTERM/SIGINT, no un SIGKILL.
+enrutadorEdge.post('/desconexion', controlador.desconexion);
+
 // El dispositivo lee su propia linea base (conteo esperado del rebano). Sin
 // esto el modulo edge no puede decidir si faltan animales.
 enrutadorEdge.get('/configuracion', controlador.configuracion);

@@ -13,6 +13,7 @@ import { enrutadorAuth } from './modules/auth/auth.rutas';
 import { enrutadorBitacora } from './modules/bitacora/bitacora.rutas';
 import { enrutadorEventos } from './modules/eventos/eventos.rutas';
 import { enrutadorDispositivosPush } from './modules/notificaciones/dispositivos.rutas';
+import { enrutadorStreaming } from './modules/streaming/streaming.rutas';
 import { enrutadorTareas } from './modules/tareas/tareas.rutas';
 import { enrutadorUsuarios } from './modules/usuarios/usuarios.rutas';
 
@@ -71,6 +72,9 @@ export function crearApp(): Express {
   api.use('/edge', enrutadorEdge);
   api.use('/alertas', enrutadorAlertas);
   api.use('/vigilancia', enrutadorVigilancia);
+  // Video en vivo de la camara: unica via de acceso, el puerto de MediaMTX no
+  // se publica al host.
+  api.use('/streaming', enrutadorStreaming);
 
   app.use(PREFIJO_API, api);
 

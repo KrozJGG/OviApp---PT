@@ -4,6 +4,7 @@ import { esquemaParamId, validarCuerpo, validarParams, validarQuery } from '../.
 import { esquemaHeartbeat, esquemaIngestaAlerta, esquemaListadoAlertas } from './alertas.esquemas';
 import {
   configuracionEdge,
+  desconectarDispositivo,
   estadoVigilancia,
   ingestarAlerta,
   listarAlertas,
@@ -35,6 +36,15 @@ export async function heartbeat(req: Request, res: Response): Promise<void> {
   const datos = validarCuerpo(esquemaHeartbeat, req);
 
   await registrarHeartbeat(edge.idDispositivo, datos);
+
+  res.status(204).end();
+}
+
+/** POST /edge/desconexion - aviso de apagado limpio (SIGTERM/SIGINT) del dispositivo. */
+export async function desconexion(req: Request, res: Response): Promise<void> {
+  const edge = edgeDe(req);
+
+  await desconectarDispositivo(edge.idDispositivo);
 
   res.status(204).end();
 }

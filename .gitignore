@@ -19,6 +19,9 @@ __pycache__/
 # ia-engine/models/.gitkeep
 ia-engine/models/*.pt
 
+# Frames de inspección generados por ia-engine/scripts/diagnostico_conteo.py
+ia-engine/scripts/salida_diagnostico/
+
 # ─── Sistema operativo / editores ────────────────────────────────────────────
 .DS_Store
 Thumbs.db

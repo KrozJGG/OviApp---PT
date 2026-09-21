@@ -21,6 +21,7 @@ import '../../features/tareas/pantallas/formulario_tarea.dart';
 import '../../features/tareas/pantallas/tareas.dart';
 import '../../features/vigilancia/pantallas/detalle_alerta.dart';
 import '../../features/vigilancia/pantallas/vigilancia.dart';
+import '../../features/vigilancia/pantallas/vigilancia_en_vivo.dart';
 import 'shell_principal.dart';
 
 /// Rutas de la aplicacion.
@@ -50,6 +51,7 @@ abstract final class Rutas {
 
   static const vigilancia = 'vigilancia';
   static const alertaDetalle = 'alertaDetalle';
+  static const vigilanciaEnVivo = 'vigilanciaEnVivo';
 
   static const mas = 'mas';
   static const usuarios = 'usuarios';
@@ -217,6 +219,13 @@ final routerProvider = Provider<GoRouter>((ref) {
                     name: Rutas.alertaDetalle,
                     builder: (_, e) =>
                         PantallaDetalleAlerta(idAlerta: e.pathParameters['id']!),
+                  ),
+                  GoRoute(
+                    path: 'vivo/:idDispositivo',
+                    name: Rutas.vigilanciaEnVivo,
+                    builder: (_, e) => PantallaVigilanciaEnVivo(
+                      idDispositivo: e.pathParameters['idDispositivo']!,
+                    ),
                   ),
                 ],
               ),

@@ -351,7 +351,9 @@ async function main(): Promise<void> {
       apiKeyHash: await bcrypt.hash(secreto, 10),
       conteoEsperado: 47,
       ultimoConteo: 47,
-      ultimoHeartbeat: new Date(Date.now() - 5 * 60 * 1000),
+      // Dentro de MINUTOS_EN_LINEA, para que la demo arranque con la camara en
+      // linea y se pueda entrar a la vista en vivo.
+      ultimoHeartbeat: new Date(Date.now() - 60 * 1000),
     },
   });
 

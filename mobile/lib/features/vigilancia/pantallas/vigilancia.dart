@@ -150,6 +150,23 @@ class _TarjetaEstado extends StatelessWidget {
                 ),
             ],
           ),
+          const SizedBox(height: 14),
+          // Siempre disponible, incluso con el chip en "Sin señal": ese estado
+          // dice que el módulo de detección dejó de latir, no que no haya
+          // imagen — la cámara emite por otra vía. Justamente cuando la
+          // detección se cae es cuando se quiere mirar. Si no hubiera video, lo
+          // informa la propia pantalla al conectarse.
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => context.goNamed(
+                Rutas.vigilanciaEnVivo,
+                pathParameters: {'idDispositivo': d.id},
+              ),
+              icon: const Icon(Icons.play_circle_outline_rounded, size: 20),
+              label: const Text('Ver en vivo'),
+            ),
+          ),
           if (estado.alertasSinRevisar > 0) ...[
             const SizedBox(height: 14),
             Container(

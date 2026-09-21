@@ -16,8 +16,14 @@ import type { DatosHeartbeat, DatosIngestaAlerta, FiltrosAlertas } from './alert
  * historial (RF_19).
  */
 
-/** Minutos sin latido tras los cuales un dispositivo se considera fuera de linea. */
-export const MINUTOS_EN_LINEA = 15;
+/**
+ * Minutos sin latido tras los cuales un dispositivo se considera fuera de linea.
+ *
+ * El ia-engine late cada HEARTBEAT_INTERVALO_SEG (60s en docker-compose.yml);
+ * 3 minutos tolera 2-3 latidos perdidos por una falla de red transitoria sin
+ * marcar "Sin señal" de mas, sin arrastrar los 15 minutos que tenia antes.
+ */
+export const MINUTOS_EN_LINEA = 3;
 
 const MS_EN_LINEA = MINUTOS_EN_LINEA * 60 * 1000;
 
@@ -156,6 +162,21 @@ export async function registrarHeartbeat(
   datos: DatosHeartbeat,
 ): Promise<void> {
   await tocarDispositivo(idDispositivo, datos.conteoActual);
+}
+
+/**
+ * Aviso de apagado limpio del dispositivo edge (SIGTERM/SIGINT).
+ *
+ * Borra ultimoHeartbeat en vez de solo dejar de recibirlos: asi estaEnLinea()
+ * pasa a false de inmediato, sin esperar los MINUTOS_EN_LINEA del timeout.
+ * Solo cubre el apagado ordenado — un SIGKILL o corte de energia no llega a
+ * avisar, y para esos casos sigue siendo el timeout la unica red de seguridad.
+ */
+export async function desconectarDispositivo(idDispositivo: string): Promise<void> {
+  await prisma.dispositivoEdge.update({
+    where: { id: idDispositivo },
+    data: { ultimoHeartbeat: null },
+  });
 }
 
 /** Configuracion que el dispositivo edge necesita para evaluar sus reglas. */
@@ -407,7 +428,7 @@ export interface EstadoVigilancia {
   ultimaAlerta: ResumenAlerta | null;
 }
 
-/** Un dispositivo esta en linea si latio dentro de los ultimos 15 minutos. */
+/** Un dispositivo esta en linea si latio dentro de los ultimos MINUTOS_EN_LINEA. */
 export function estaEnLinea(ultimoHeartbeat: Date | null, ahora: Date = new Date()): boolean {
   if (!ultimoHeartbeat) return false;
   return ahora.getTime() - ultimoHeartbeat.getTime() <= MS_EN_LINEA;

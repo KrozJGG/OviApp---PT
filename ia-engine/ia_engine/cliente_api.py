@@ -127,6 +127,24 @@ class ClienteAPI:
             f"{self._base_url}/api/v1/edge/heartbeat", payload
         )
 
+    def enviar_desconexion(self) -> None:
+        """
+        Avisa al backend de un apagado limpio (SIGTERM/SIGINT).
+
+        A diferencia de enviar_heartbeat, no reintenta ni encola: es un
+        best-effort de un solo intento con timeout corto, para no demorar el
+        apagado del proceso si el backend no responde dentro del grace period
+        que da Docker antes del SIGKILL.
+        """
+        try:
+            self._session.post(
+                f"{self._base_url}/api/v1/edge/desconexion",
+                json={"timestamp": datetime.now(timezone.utc).isoformat()},
+                timeout=3,
+            )
+        except requests.RequestException as e:
+            logger.warning("No se pudo avisar la desconexión al backend: %s", e)
+
     # ── Internos ─────────────────────────────────────────────────────────
 
     def _post_con_reintento(self, url: str, payload: dict[str, Any]) -> bool:

@@ -32,8 +32,15 @@ class Config(BaseSettings):
     model_path: str = "yolo26n.pt"
     """Nombre o ruta del modelo YOLO. Por defecto usa YOLO26n preentrenado (se descarga automáticamente)."""
 
-    confianza_minima: float = 0.5
-    """Umbral de confianza mínimo para aceptar una detección."""
+    confianza_minima: float = 0.35
+    """
+    Umbral de confianza mínimo para aceptar una detección.
+
+    0.5 descartaba casi la mitad de las ovejas reales en pruebas con
+    rebano.mp4 (ver ia-engine/scripts/diagnostico_conteo.py). 0.35 es un
+    punto intermedio: rescata más detecciones válidas sin bajar directo a
+    los 0.25 por defecto de Ultralytics, que no se validaron contra ruido.
+    """
 
     clases_objetivo: str = "sheep"
     """

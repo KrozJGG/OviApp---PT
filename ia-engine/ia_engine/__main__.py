@@ -132,13 +132,14 @@ def main() -> None:
     logger.info("Módulo ia-engine iniciado. Esperando frames...")
 
     while not detenido.is_set():
-        # Obtener el último conteo de cualquier stream activo.
+        # Máximo detectado en cada stream desde el heartbeat anterior (no el
+        # último frame: un solo instante puede subestimar el rebaño).
         conteo_actual: int | None = None
         for lector in lectores:
             if lector.estado.ultimo_conteo is not None:
                 if conteo_actual is None:
                     conteo_actual = 0
-                conteo_actual += lector.estado.ultimo_conteo
+                conteo_actual += lector.estado.tomar_conteo_heartbeat()
 
         cliente.enviar_heartbeat(conteo_actual)
 
@@ -172,6 +173,14 @@ def main() -> None:
     # Dar 5 segundos para que los hilos terminen.
     for lector in lectores:
         lector._hilo.join(timeout=5)
+
+    # Avisar al backend para que "en línea" caiga de inmediato en vez de
+    # esperar el timeout por falta de heartbeat. Solo cubre este apagado
+    # ordenado (SIGTERM/SIGINT); un SIGKILL no llega a avisar.
+    try:
+        cliente.enviar_desconexion()
+    except Exception:
+        logger.exception("Error inesperado al avisar la desconexión.")
 
     logger.info("Módulo ia-engine detenido.")
 

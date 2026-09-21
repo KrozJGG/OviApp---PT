@@ -49,7 +49,8 @@ export type CodigoError =
   | 'RANGO_INVALIDO'
   // Vigilancia (RF_17)
   | 'ALERTA_DUPLICADA'
-  | 'ALERTA_YA_REVISADA';
+  | 'ALERTA_YA_REVISADA'
+  | 'STREAM_NO_DISPONIBLE';
 
 export class ErrorApp extends Error {
   readonly status: number;

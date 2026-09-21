@@ -33,6 +33,12 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <!--
+    hls.js reproduce la camara en vivo: ningun navegador basado en Chromium
+    soporta HLS por su cuenta (Safari si). Va servido desde la propia app y no
+    desde un CDN a proposito: en el predio no se puede contar con internet.
+  -->
+  <script src="hls.min.js"></script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

@@ -28,6 +28,11 @@ const esquemaEnv = z.object({
   // Origenes permitidos para CORS, separados por coma. '*' en desarrollo.
   CORS_ORIGINS: z.string().default('*'),
 
+  // Servidor de streaming (MediaMTX) dentro de la red interna de Docker. Su
+  // puerto no se publica al host a proposito: la unica via al video es el proxy
+  // autenticado de /api/v1/streaming, que corre en este mismo backend.
+  MEDIAMTX_URL_INTERNO: z.url('MEDIAMTX_URL_INTERNO debe ser una URL').default('http://mediamtx:8888'),
+
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 
   // Notificaciones push (RF_18). Si falta la credencial el envio queda inactivo

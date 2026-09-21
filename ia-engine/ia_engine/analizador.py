@@ -44,6 +44,12 @@ class EstadoStream:
     # Último conteo reportado en el heartbeat.
     ultimo_conteo: int | None = None
 
+    # Máximo detectado desde el último heartbeat. El heartbeat reporta este
+    # valor en vez de ultimo_conteo: un único frame (el que coincide con el
+    # instante exacto del heartbeat) puede subestimar el rebaño por oclusión
+    # o ángulo, mientras que el máximo de la ventana entera sí lo representa.
+    conteo_maximo_ventana: int = 0
+
     def puede_alertar(self, tipo: str) -> bool:
         """Verifica si pasó el cooldown para este tipo de alerta."""
         ultimo = self._ultimo_alerta.get(tipo, 0)
@@ -52,6 +58,12 @@ class EstadoStream:
     def registrar_alerta(self, tipo: str) -> None:
         """Registra que se emitió una alerta de este tipo."""
         self._ultimo_alerta[tipo] = time.time()
+
+    def tomar_conteo_heartbeat(self) -> int:
+        """Devuelve el máximo acumulado desde el último heartbeat y lo reinicia."""
+        maximo = self.conteo_maximo_ventana
+        self.conteo_maximo_ventana = 0
+        return maximo
 
 
 class Analizador:
@@ -82,6 +94,7 @@ class Analizador:
         """
         estado.historial_conteos.append(resultado.conteo)
         estado.ultimo_conteo = resultado.conteo
+        estado.conteo_maximo_ventana = max(estado.conteo_maximo_ventana, resultado.conteo)
 
         self._evaluar_conteo(resultado, estado)
         self._evaluar_dispersion(resultado, estado)
