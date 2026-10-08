@@ -88,4 +88,8 @@ class RebanoRepositorio {
     );
     return Animal.desdeJson(json);
   }
+
+  /// Eliminación definitiva. Solo Productor y solo sobre un animal ya inactivo:
+  /// el backend responde 403 al Trabajador y 409 si el animal sigue activo.
+  Future<void> eliminar(String id) => _dio.borrar('/animales/$id');
 }

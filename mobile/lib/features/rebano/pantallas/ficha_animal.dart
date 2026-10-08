@@ -130,9 +130,25 @@ class _Contenido extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'El historial se conserva de forma permanente para trazabilidad SAG.',
+                  esProductor
+                      ? 'El historial se conserva mientras el animal siga en el rebaño.'
+                      : 'El historial se conserva de forma permanente para trazabilidad SAG.',
                   style: texto.bodySmall,
                 ),
+                // Segunda oportunidad de eliminarlo: el Productor pudo elegir
+                // «dejar inactivo» al dar la baja y cambiar de opinión después.
+                if (esProductor) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: () => _confirmarEliminacion(context, ref, animal),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                    label: const Text('Eliminar del rebaño'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: OviColores.peligro,
+                      side: const BorderSide(color: OviColores.peligro),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -311,9 +327,92 @@ Future<void> _confirmarBaja(BuildContext context, WidgetRef ref, Animal animal) 
         );
     ref.invalidate(fichaAnimalProvider(animal.id));
     ref.read(rebanoProvider.notifier).recargar();
+    if (!context.mounted) return;
+    mostrarMensaje(context, 'Baja registrada para #${animal.numeroOreja}.');
+    await _ofrecerEliminacion(context, ref, animal);
+  } catch (e) {
     if (context.mounted) {
-      mostrarMensaje(context, 'Baja registrada para #${animal.numeroOreja}.');
+      mostrarMensaje(context, comoErrorApi(e).mensaje, esError: true);
     }
+  }
+}
+
+/// Recuadro que aparece justo despues de registrar la baja: el animal ya salio
+/// del conteo activo, y aqui el Productor decide si conserva su ficha o lo
+/// borra del rebano por completo.
+Future<void> _ofrecerEliminacion(
+  BuildContext context,
+  WidgetRef ref,
+  Animal animal,
+) async {
+  final eliminar = await showDialog<bool>(
+    context: context,
+    builder: (dialogo) => AlertDialog(
+      title: Text('#${animal.numeroOreja} dado de baja'),
+      content: const Text(
+        '¿Qué quieres hacer con su ficha?\n\n'
+        '• Dejarlo inactivo: la ficha y la bitácora siguen disponibles para '
+        'consulta y trazabilidad.\n'
+        '• Eliminarlo del rebaño: se borra de la base de datos junto con su '
+        'historial. No se puede deshacer.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogo).pop(false),
+          child: const Text('Dejar inactivo'),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(foregroundColor: OviColores.peligro),
+          onPressed: () => Navigator.of(dialogo).pop(true),
+          child: const Text('Eliminar del rebaño'),
+        ),
+      ],
+    ),
+  );
+
+  if (eliminar != true || !context.mounted) return;
+  await _confirmarEliminacion(context, ref, animal);
+}
+
+/// Eliminacion definitiva (DELETE). Se pide una confirmacion aparte porque
+/// borra la ficha y su bitacora sin vuelta atras.
+Future<void> _confirmarEliminacion(
+  BuildContext context,
+  WidgetRef ref,
+  Animal animal,
+) async {
+  final confirmado = await showDialog<bool>(
+    context: context,
+    builder: (dialogo) => AlertDialog(
+      title: const Text('Eliminar del rebaño'),
+      content: Text(
+        'Se borrará la ficha de #${animal.numeroOreja} y toda su bitácora. '
+        'Esta acción no se puede deshacer.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogo).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(foregroundColor: OviColores.peligro),
+          onPressed: () => Navigator.of(dialogo).pop(true),
+          child: const Text('Eliminar'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmado != true || !context.mounted) return;
+
+  try {
+    await ref.read(rebanoRepositorioProvider).eliminar(animal.id);
+    ref.invalidate(fichaAnimalProvider(animal.id));
+    ref.read(rebanoProvider.notifier).recargar();
+    if (!context.mounted) return;
+    // La ficha que se esta mirando ya no existe: se vuelve al listado.
+    context.goNamed(Rutas.rebano);
+    mostrarMensaje(context, '#${animal.numeroOreja} eliminado del rebaño.');
   } catch (e) {
     if (context.mounted) {
       mostrarMensaje(context, comoErrorApi(e).mensaje, esError: true);
