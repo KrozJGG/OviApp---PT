@@ -489,4 +489,68 @@ describe('Ficha Animal (RF_01 a RF_04)', () => {
       expect(r.status).toBe(401);
     });
   });
+
+  // ─── Eliminacion definitiva ────────────────────────────────────────────────
+
+  describe('DELETE /animales/:id', () => {
+    const baja = { motivo: 'VENTA', fecha: fechaRelativa(-1) };
+
+    const darDeBaja = () =>
+      api(e.app, e.productor.token).post(`/animales/${e.animal.id}/baja`).send(baja);
+
+    it('borra el animal y su bitacora una vez dado de baja', async () => {
+      await darDeBaja();
+
+      const r = await api(e.app, e.productor.token).delete(`/animales/${e.animal.id}`);
+
+      expect(r.status).toBe(204);
+      expect(await prisma.animal.count({ where: { id: e.animal.id } })).toBe(0);
+      expect(await entradas(e.animal.id)).toHaveLength(0);
+
+      const ficha = await api(e.app, e.productor.token).get(`/animales/${e.animal.id}`);
+      expect(ficha.status).toBe(404);
+    });
+
+    it('no borra un animal que sigue activo', async () => {
+      const r = await api(e.app, e.productor.token).delete(`/animales/${e.animal.id}`);
+
+      expect(r.status).toBe(409);
+      expect(r.body.error.codigo).toBe('ANIMAL_ACTIVO');
+      expect(await prisma.animal.count({ where: { id: e.animal.id } })).toBe(1);
+    });
+
+    it('solo lo permite al Productor', async () => {
+      await darDeBaja();
+
+      const r = await api(e.app, e.trabajador.token).delete(`/animales/${e.animal.id}`);
+
+      expect(r.status).toBe(403);
+      expect(r.body.error.codigo).toBe('ROL_INSUFICIENTE');
+      expect(await prisma.animal.count({ where: { id: e.animal.id } })).toBe(1);
+    });
+
+    it('responde 404 si el animal es de otro predio (RNF_08)', async () => {
+      await darDeBaja();
+
+      const r = await api(e.app, e.ajeno.token).delete(`/animales/${e.animal.id}`);
+
+      expect(r.status).toBe(404);
+      expect(await prisma.animal.count({ where: { id: e.animal.id } })).toBe(1);
+    });
+
+    it('responde 401 sin token', async () => {
+      const r = await api(e.app).delete(`/animales/${e.animal.id}`);
+      expect(r.status).toBe(401);
+    });
+
+    it('sigue prohibiendo borrar una entrada de bitacora suelta (RF_06)', async () => {
+      await darDeBaja();
+      const [entrada] = await entradas(e.animal.id, 'BAJA');
+
+      await expect(
+        prisma.bitacoraEntrada.delete({ where: { id: entrada!.id } }),
+      ).rejects.toThrow(/RF_06/);
+      expect(await entradas(e.animal.id, 'BAJA')).toHaveLength(1);
+    });
+  });
 });

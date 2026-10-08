@@ -33,6 +33,7 @@ export type CodigoError =
   | 'IDENTIFICADOR_INMUTABLE'
   | 'ANIMAL_INACTIVO'
   | 'ANIMAL_YA_INACTIVO'
+  | 'ANIMAL_ACTIVO'
   // Bitacora (RF_06)
   | 'BITACORA_INMUTABLE'
   // Eventos (RF_07 a RF_10)

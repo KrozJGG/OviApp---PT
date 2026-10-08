@@ -257,7 +257,7 @@ model BitacoraEntrada {
   fechaEvento DateTime     @default(now()) @map("fecha_evento") @db.Timestamptz(6)
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  animal  Animal   @relation(fields: [idAnimal], references: [id])
+  animal  Animal   @relation(fields: [idAnimal], references: [id], onDelete: Cascade)
   usuario Usuario? @relation(fields: [idUsuario], references: [id])
   evento  Evento?  @relation(fields: [idEvento], references: [id])
 
@@ -296,7 +296,7 @@ model EventoAnimal {
   idAnimal String @map("id_animal") @db.Uuid
 
   evento Evento @relation(fields: [idEvento], references: [id], onDelete: Cascade)
-  animal Animal @relation(fields: [idAnimal], references: [id])
+  animal Animal @relation(fields: [idAnimal], references: [id], onDelete: Cascade)
 
   @@unique([idEvento, idAnimal], map: "uq_evento_animal")
   @@index([idAnimal])
@@ -348,7 +348,7 @@ model TareaAnimal {
   idAnimal String @map("id_animal") @db.Uuid
 
   tarea  Tarea  @relation(fields: [idTarea], references: [id], onDelete: Cascade)
-  animal Animal @relation(fields: [idAnimal], references: [id])
+  animal Animal @relation(fields: [idAnimal], references: [id], onDelete: Cascade)
 
   @@unique([idTarea, idAnimal], map: "uq_tarea_animal")
   @@index([idAnimal])

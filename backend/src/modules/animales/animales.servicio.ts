@@ -333,6 +333,35 @@ export async function darDeBaja(
   });
 }
 
+// --- Eliminacion definitiva ---------------------------------------------------
+
+/**
+ * Borra el animal de la base, con todo lo que cuelga de el.
+ *
+ * Es la alternativa que se le ofrece al Productor despues de registrar la baja
+ * (RF_04): dejarlo inactivo -el camino por defecto, que conserva la
+ * trazabilidad- o sacarlo del rebano por completo. Por eso solo se admite sobre
+ * un animal ya INACTIVO: primero se registra por que salio, y despues se decide
+ * si se conserva su historial.
+ *
+ * La bitacora y los vinculos con eventos y tareas se van en cascada desde la
+ * propia base: sin el animal no describen nada. Es la unica excepcion al
+ * caracter append-only de la bitacora (RF_06), y el trigger la reconoce por
+ * eso mismo -- solo la admite cuando el animal ya no esta.
+ */
+export async function eliminar(ctx: ContextoUsuario, id: string): Promise<void> {
+  const animal = await buscarDelPredio(id, ctx.idPredio);
+
+  if (animal.estado !== 'INACTIVO') {
+    throw new ErrorConflicto(
+      'ANIMAL_ACTIVO',
+      'Primero hay que registrar la baja del animal para poder eliminarlo del rebaño.',
+    );
+  }
+
+  await prisma.animal.delete({ where: { id: animal.id } });
+}
+
 // --- Apoyo -------------------------------------------------------------------
 
 /**

@@ -56,3 +56,12 @@ export async function darDeBaja(req: Request, res: Response): Promise<void> {
 
   res.json(await servicio.darDeBaja(ctx, id, datos));
 }
+
+/** DELETE /animales/:id - eliminacion definitiva (solo Productor) */
+export async function eliminar(req: Request, res: Response): Promise<void> {
+  const ctx = ctxDe(req);
+  const { id } = validarParams(esquemaParamId, req);
+
+  await servicio.eliminar(ctx, id);
+  res.status(204).end();
+}
