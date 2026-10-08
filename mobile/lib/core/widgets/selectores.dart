@@ -369,7 +369,13 @@ class _HojaSeleccionState<T> extends ConsumerState<_HojaSeleccion<T>> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
+                  // El tema da a los botones ancho infinito (ocupan toda la
+                  // fila en los formularios); dentro de un Row eso rompe el
+                  // layout y la hoja no llega a pintarse.
                   FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(140, OviTema.alturaMinimaControl),
+                    ),
                     onPressed: () =>
                         Navigator.of(context).pop(_elegidos.toList(growable: false)),
                     child: const Text('Confirmar'),
