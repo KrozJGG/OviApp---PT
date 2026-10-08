@@ -232,7 +232,6 @@ class _PantallaFormularioAnimalState extends ConsumerState<PantallaFormularioAni
                 initialDate: _nacimiento ?? DateTime.now(),
                 firstDate: DateTime(2010),
                 lastDate: DateTime.now(),
-                locale: const Locale('es'),
               );
               if (elegida != null) setState(() => _nacimiento = elegida);
             },

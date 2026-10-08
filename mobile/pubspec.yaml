@@ -31,6 +31,12 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Traducciones de los widgets de Material (date picker, tooltips, semantica).
+  # Sin esto, cualquier pantalla que abra un DatePicker en español revienta por
+  # falta de MaterialLocalizations.
+  flutter_localizations:
+    sdk: flutter
+
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8

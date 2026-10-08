@@ -170,7 +170,6 @@ class _PantallaFormularioTareaState extends ConsumerState<PantallaFormularioTare
                 initialDate: _fechaLimite,
                 firstDate: DateTime(2020),
                 lastDate: DateTime(2035, 12, 31),
-                locale: const Locale('es'),
               );
               if (elegida != null) setState(() => _fechaLimite = elegida);
             },

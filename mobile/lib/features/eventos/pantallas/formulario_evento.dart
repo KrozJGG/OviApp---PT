@@ -204,7 +204,6 @@ class _PantallaFormularioEventoState extends ConsumerState<PantallaFormularioEve
                       initialDate: _fecha,
                       firstDate: DateTime(2020),
                       lastDate: DateTime(2035, 12, 31),
-                      locale: const Locale('es'),
                     );
                     if (elegida == null) return;
                     setState(() => _fecha = DateTime(

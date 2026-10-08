@@ -280,7 +280,6 @@ Future<void> _confirmarBaja(BuildContext context, WidgetRef ref, Animal animal) 
                   initialDate: fecha,
                   firstDate: DateTime(2015),
                   lastDate: DateTime.now(),
-                  locale: const Locale('es'),
                 );
                 if (elegida != null) refrescar(() => fecha = elegida);
               },
