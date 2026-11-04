@@ -104,9 +104,8 @@ services:
   # ───────────────────────────────────────────────────────────────────────────
   # Modulo de vision por computadora.
   #
-  # Va en el perfil "ia" y NO arranca con un `docker compose up` normal, por
-  # dos razones: la imagen base de CUDA pesa varios GB, y el contenedor no
-  # levanta si falta ia-engine/models/sheep_detection.pt, que no se versiona.
+  # Va en el perfil "ia" y NO arranca con un `docker compose up` normal porque
+  # la imagen base de CUDA pesa varios GB y reserva una GPU NVIDIA.
   #
   # Para levantarlo:  docker compose --profile ia up -d ia-engine
   # ───────────────────────────────────────────────────────────────────────────
