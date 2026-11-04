@@ -35,15 +35,14 @@ class Tarea {
   bool get estaVencida {
     if (estaCompletada) return false;
     final hoy = DateTime.now();
-    final limite = fechaLimite.toLocal();
-    return DateTime(limite.year, limite.month, limite.day)
+    return DateTime(fechaLimite.year, fechaLimite.month, fechaLimite.day)
         .isBefore(DateTime(hoy.year, hoy.month, hoy.day));
   }
 
   factory Tarea.desdeJson(Map<String, dynamic> j) => Tarea(
         id: j['id'] as String,
         titulo: (j['titulo'] as String?) ?? '',
-        fechaLimite: fechaDe(j['fechaLimite']),
+        fechaLimite: fechaSoloDe(j['fechaLimite']),
         estado: (j['estado'] as String?) ?? 'ACTIVA',
         responsables: Referencia.lista(j['responsables']),
         animales: (j['animales'] as List<dynamic>? ?? const [])

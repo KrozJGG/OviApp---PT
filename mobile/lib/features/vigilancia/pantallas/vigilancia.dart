@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/formato.dart';
+import '../../../core/red/cliente_api.dart';
 import '../../../core/red/paginado.dart';
 import '../../../core/router/rutas.dart';
 import '../../../core/tema/ovi_colores.dart';
@@ -52,9 +53,27 @@ class PantallaVigilancia extends ConsumerWidget {
 
             OviEncabezadoSeccion(
               titulo: 'Historial de alertas',
-              accion: _MenuFiltro(
-                seleccionado: filtro,
-                alElegir: (t) => ref.read(filtroAlertasProvider.notifier).filtrar(t),
+              accion: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // El contador del estado cuenta el predio entero, que es
+                  // justo lo que marca el boton: no depende del filtro activo.
+                  if ((estado.valueOrNull?.alertasSinRevisar ?? 0) > 0)
+                    IconButton(
+                      tooltip: 'Marcar todas como leídas',
+                      icon: const Icon(Icons.done_all_rounded),
+                      color: OviColores.primary,
+                      onPressed: () => _marcarTodasLeidas(
+                        context,
+                        ref,
+                        estado.valueOrNull!.alertasSinRevisar,
+                      ),
+                    ),
+                  _MenuFiltro(
+                    seleccionado: filtro,
+                    alElegir: (t) => ref.read(filtroAlertasProvider.notifier).filtrar(t),
+                  ),
+                ],
               ),
             ),
 
@@ -85,6 +104,60 @@ class PantallaVigilancia extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+/// Vacía la bandeja de alertas pendientes.
+///
+/// Se confirma antes porque no hay vuelta atrás: no existe forma de volver a
+/// dejar una alerta como no leída.
+Future<void> _marcarTodasLeidas(
+  BuildContext context,
+  WidgetRef ref,
+  int pendientes,
+) async {
+  final confirmado = await showDialog<bool>(
+    context: context,
+    builder: (dialogo) => AlertDialog(
+      title: const Text('Marcar todas como leídas'),
+      content: Text(
+        pendientes == 1
+            ? 'Se marcará como revisada la alerta pendiente. No se puede deshacer.'
+            : 'Se marcarán como revisadas las $pendientes alertas pendientes. '
+                'No se puede deshacer.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogo).pop(false),
+          child: const Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogo).pop(true),
+          child: const Text('Marcar todas'),
+        ),
+      ],
+    ),
+  );
+
+  if (confirmado != true || !context.mounted) return;
+
+  try {
+    final revisadas = await ref.read(vigilanciaRepositorioProvider).revisarTodas();
+    ref.invalidate(estadoVigilanciaProvider);
+    ref.invalidate(alertasProvider);
+    if (!context.mounted) return;
+    mostrarMensaje(
+      context,
+      revisadas == 0
+          ? 'No quedaban alertas pendientes.'
+          : revisadas == 1
+              ? '1 alerta marcada como leída.'
+              : '$revisadas alertas marcadas como leídas.',
+    );
+  } catch (e) {
+    if (context.mounted) {
+      mostrarMensaje(context, comoErrorApi(e).mensaje, esError: true);
+    }
   }
 }
 

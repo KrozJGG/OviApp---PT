@@ -45,6 +45,11 @@ enrutadorAlertas.use(autenticar);
 
 // RF_19 - Productor y Trabajador; siempre acotado al predio de la sesion.
 enrutadorAlertas.get('/', controlador.listar);
+
+// Vacia la bandeja de una vez: el modulo edge emite una alerta por ventana de
+// conteo y revisarlas de a una no aporta nada.
+enrutadorAlertas.post('/revisar-todas', controlador.revisarTodas);
+
 enrutadorAlertas.get('/:id', controlador.detalle);
 enrutadorAlertas.post('/:id/revisar', controlador.revisar);
 

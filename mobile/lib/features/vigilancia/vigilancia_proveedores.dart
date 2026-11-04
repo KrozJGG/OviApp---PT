@@ -57,6 +57,13 @@ class VigilanciaRepositorio {
     return Alerta.desdeJson(json);
   }
 
+  /// Marca de una vez todas las alertas pendientes del predio y devuelve
+  /// cuantas eran. Sin nada pendiente devuelve cero, no un error.
+  Future<int> revisarTodas() async {
+    final json = await _ref.read(dioProvider).enviar('/alertas/revisar-todas');
+    return (json['revisadas'] as num?)?.toInt() ?? 0;
+  }
+
   /// Pide permiso para ver la cámara en vivo y deja lista la URL del manifiesto.
   ///
   /// Antes de devolverla comprueba que el manifiesto responda: el permiso se

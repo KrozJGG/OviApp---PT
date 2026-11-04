@@ -23,6 +23,11 @@ ia-engine/models/*.pt
 # Frames de inspección generados por ia-engine/scripts/diagnostico_conteo.py
 ia-engine/scripts/salida_diagnostico/
 
+# ─── Informes en PDF ─────────────────────────────────────────────────────────
+# Versiones compiladas del informe y de otros equipos: pesan varios MB, cambian
+# en cada compilación y no son código.
+docs/*.pdf
+
 # ─── Sistema operativo / editores ────────────────────────────────────────────
 .DS_Store
 Thumbs.db

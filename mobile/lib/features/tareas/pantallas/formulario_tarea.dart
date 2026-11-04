@@ -58,7 +58,7 @@ class _PantallaFormularioTareaState extends ConsumerState<PantallaFormularioTare
     _precargado = true;
     _titulo.text = t.titulo;
     _descripcion.text = t.descripcion ?? '';
-    _fechaLimite = t.fechaLimite.toLocal();
+    _fechaLimite = t.fechaLimite;
     _responsables = t.responsables.map((r) => r.id).toSet();
     _animales = t.animales.map((a) => a.id).toSet();
   }

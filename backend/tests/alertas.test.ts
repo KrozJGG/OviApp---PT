@@ -483,6 +483,69 @@ describe('Vigilancia y deteccion (RF_17 a RF_19)', () => {
     });
   });
 
+  describe('POST /alertas/revisar-todas', () => {
+    it('marca las pendientes del predio y deja las ya revisadas en paz', async () => {
+      await sembrarAlerta(e, { fechaHora: mediodiaDe('2026-03-10') });
+      await sembrarAlerta(e, { fechaHora: mediodiaDe('2026-03-11'), tipoAlerta: 'AMENAZA' });
+      const yaRevisada = await sembrarAlerta(e, {
+        fechaHora: mediodiaDe('2026-03-09'),
+        tipoAlerta: 'DISPERSION',
+        estado: 'REVISADA',
+      });
+
+      const r = await api(e.app, e.productor.token).post('/alertas/revisar-todas');
+
+      expect(r.status).toBe(200);
+      expect(r.body).toEqual({ revisadas: 2 });
+
+      const pendientes = await prisma.alerta.count({
+        where: { idPredio: e.predioA.id, estado: 'NUEVA' },
+      });
+      expect(pendientes).toBe(0);
+
+      // La que ya estaba revisada conserva su revisor y su fecha originales.
+      const intacta = await prisma.alerta.findUniqueOrThrow({ where: { id: yaRevisada.id } });
+      expect(intacta.idRevisadoPor).toBe(yaRevisada.idRevisadoPor);
+      expect(intacta.fechaRevision).toEqual(yaRevisada.fechaRevision);
+    });
+
+    it('deja constancia de quien vacio la bandeja', async () => {
+      const alerta = await sembrarAlerta(e, { fechaHora: mediodiaDe('2026-03-10') });
+
+      await api(e.app, e.trabajador.token).post('/alertas/revisar-todas');
+
+      const guardada = await prisma.alerta.findUniqueOrThrow({ where: { id: alerta.id } });
+      expect(guardada.idRevisadoPor).toBe(e.trabajador.id);
+      expect(guardada.fechaRevision).not.toBeNull();
+    });
+
+    it('sin nada pendiente responde cero, no un conflicto', async () => {
+      const r = await api(e.app, e.productor.token).post('/alertas/revisar-todas');
+
+      expect(r.status).toBe(200);
+      expect(r.body).toEqual({ revisadas: 0 });
+    });
+
+    it('no toca las alertas de otro predio (RNF_08)', async () => {
+      const ajena = await sembrarAlerta(e, {
+        idPredio: e.predioB.id,
+        idDispositivoEdge: null,
+        fechaHora: mediodiaDe('2026-03-10'),
+      });
+
+      const r = await api(e.app, e.productor.token).post('/alertas/revisar-todas');
+
+      expect(r.body).toEqual({ revisadas: 0 });
+      const intacta = await prisma.alerta.findUniqueOrThrow({ where: { id: ajena.id } });
+      expect(intacta.estado).toBe('NUEVA');
+    });
+
+    it('responde 401 sin token', async () => {
+      const r = await api(e.app).post('/alertas/revisar-todas');
+      expect(r.status).toBe(401);
+    });
+  });
+
   // ───────────────────────────────────────────────────────────────────────────
   // Estado de vigilancia (IF2-SAL)
   // ───────────────────────────────────────────────────────────────────────────

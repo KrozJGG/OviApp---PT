@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:oviapp/core/tema/ovi_tema.dart';
 import 'package:oviapp/core/widgets/ovi_widgets.dart';
+import 'package:oviapp/features/calendario/datos/agenda.dart';
 import 'package:oviapp/features/rebano/datos/animal.dart';
 import 'package:oviapp/features/tareas/datos/tarea.dart';
 
@@ -104,6 +105,63 @@ void main() {
 
       expect(tarea.estaVencida, isFalse);
       expect(tarea.responsables.single.nombre, 'Pedro Huenchual');
+    });
+  });
+
+  // La API manda los campos `@db.Date` como medianoche UTC. Convertirlos a hora
+  // local en un huso negativo (Chile es UTC-3) los corre al dia anterior, y la
+  // app mostraba la tarea del 5 vencida el 4. Estas pruebas solo muerden
+  // corriendo en un huso al oeste de Greenwich, que es donde se usa la app.
+  group('Fechas sin hora', () {
+    test('el plazo de una tarea conserva el dia que mando la API', () {
+      final tarea = Tarea.desdeJson(const {
+        'id': 't3',
+        'titulo': 'Revisión veterinaria',
+        'fechaLimite': '2026-11-05T00:00:00.000Z',
+        'estado': 'ACTIVA',
+        'responsables': [],
+        'animales': [],
+      });
+
+      expect(
+        (tarea.fechaLimite.year, tarea.fechaLimite.month, tarea.fechaLimite.day),
+        (2026, 11, 5),
+      );
+    });
+
+    test('la fecha de nacimiento y la de baja conservan su dia', () {
+      final animal = Animal.desdeJson(const {
+        'id': 'a4',
+        'numeroOreja': '0118',
+        'sexo': 'HEMBRA',
+        'estado': 'INACTIVO',
+        'motivoBaja': 'VENTA',
+        'fechaNacimiento': '2024-03-01T00:00:00.000Z',
+        'fechaBaja': '2026-11-05T00:00:00.000Z',
+      });
+
+      expect(animal.fechaNacimiento!.day, 1);
+      expect(animal.fechaNacimiento!.month, 3);
+      expect(animal.fechaBaja!.day, 5);
+    });
+
+    test('la tarea de la agenda cae en el dia que le toca', () {
+      final agenda = AgendaDelRango.desdeJson(const {
+        'items': [
+          {
+            'id': 't4',
+            'clase': 'TAREA',
+            'tipo': 'TAREA',
+            'titulo': 'Revisión veterinaria #0118',
+            'fecha': '2026-11-05T00:00:00.000Z',
+            'estado': 'ACTIVA',
+          },
+        ],
+        'porDia': {},
+      });
+
+      expect(agenda.deDia(DateTime(2026, 11, 5)), hasLength(1));
+      expect(agenda.deDia(DateTime(2026, 11, 4)), isEmpty);
     });
   });
 

@@ -400,6 +400,33 @@ export async function revisarAlerta(
   return aDto(fila);
 }
 
+export interface ResultadoRevisarTodas {
+  revisadas: number;
+}
+
+/**
+ * Marca de una vez todas las alertas pendientes del predio.
+ *
+ * El modulo edge emite una alerta por ventana de conteo, asi que tras unas
+ * horas sin mirar la app el historial acumula decenas de avisos nuevos sobre el
+ * mismo hecho. Revisarlos uno a uno no aporta nada, y mientras tanto el punto
+ * de "sin revisar" deja de significar algo.
+ *
+ * No es un error no tener nada pendiente: devuelve `revisadas: 0` en vez de un
+ * conflicto, porque quien pulsa el boton quiere la bandeja limpia, y lo esta.
+ */
+export async function revisarTodasLasAlertas(
+  idPredio: string,
+  idUsuario: string,
+): Promise<ResultadoRevisarTodas> {
+  const { count } = await prisma.alerta.updateMany({
+    where: { idPredio, estado: 'NUEVA' },
+    data: { estado: 'REVISADA', idRevisadoPor: idUsuario, fechaRevision: new Date() },
+  });
+
+  return { revisadas: count };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Estado de vigilancia (IF2-SAL)
 // ─────────────────────────────────────────────────────────────────────────────

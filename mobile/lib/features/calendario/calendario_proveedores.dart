@@ -27,9 +27,16 @@ final diaSeleccionadoProvider = NotifierProvider<DiaSeleccionadoNotifier, DateTi
 
 class DiaSeleccionadoNotifier extends Notifier<DateTime> {
   @override
-  DateTime build() => DateTime.now();
+  DateTime build() {
+    final hoy = DateTime.now();
+    return DateTime(hoy.year, hoy.month, hoy.day);
+  }
 
-  void elegir(DateTime dia) => state = dia;
+  /// `table_calendar` entrega los dias normalizados a medianoche UTC. Aqui se
+  /// guardan siempre como fecha local: formatear un dia UTC con `toLocal()` lo
+  /// corre al anterior, que es lo que hacia que al tocar el jueves 5 el
+  /// encabezado dijera "miercoles 4".
+  void elegir(DateTime dia) => state = DateTime(dia.year, dia.month, dia.day);
 }
 
 /// Agenda del mes visible. Se pide el mes completo de una vez: son pocos

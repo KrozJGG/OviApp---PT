@@ -89,35 +89,52 @@ class OviEstadoVacio extends StatelessWidget {
   Widget build(BuildContext context) {
     final texto = Theme.of(context).textTheme;
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: const BoxDecoration(
-                color: OviColores.superficieSecundaria,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icono, size: 30, color: OviColores.primary),
+    final contenido = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(
+              color: OviColores.superficieSecundaria,
+              shape: BoxShape.circle,
             ),
-            const SizedBox(height: 20),
-            Text(
-              mensaje,
-              textAlign: TextAlign.center,
-              style: texto.titleSmall?.copyWith(color: OviColores.textoPrimario),
-            ),
-            if (detalle != null) ...[
-              const SizedBox(height: 8),
-              Text(detalle!, textAlign: TextAlign.center, style: texto.bodySmall),
-            ],
-            if (accion != null) ...[const SizedBox(height: 20), accion!],
+            child: Icon(icono, size: 30, color: OviColores.primary),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            mensaje,
+            textAlign: TextAlign.center,
+            style: texto.titleSmall?.copyWith(color: OviColores.textoPrimario),
+          ),
+          if (detalle != null) ...[
+            const SizedBox(height: 8),
+            Text(detalle!, textAlign: TextAlign.center, style: texto.bodySmall),
           ],
-        ),
+          if (accion != null) ...[const SizedBox(height: 20), accion!],
+        ],
       ),
+    );
+
+    // El hueco disponible no siempre da para los ~230 px que ocupa el bloque:
+    // en el calendario, con la vista mensual arriba, quedan poco mas de cien, y
+    // con el texto del sistema en 1.3x todavia menos. Se centra cuando hay
+    // espacio y se deja desplazar cuando no, en vez de desbordar.
+    return LayoutBuilder(
+      builder: (context, limites) {
+        // Dentro de una lista que ya hace scroll (inicio, vigilancia) la altura
+        // llega sin acotar: ahi no hay nada que desbordar ni que centrar.
+        if (!limites.hasBoundedHeight) return Center(child: contenido);
+
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: limites.maxHeight),
+            child: Center(child: contenido),
+          ),
+        );
+      },
     );
   }
 }

@@ -11,6 +11,7 @@ import {
   obtenerAlerta,
   registrarHeartbeat,
   revisarAlerta,
+  revisarTodasLasAlertas,
 } from './alertas.servicio';
 
 /**
@@ -78,6 +79,13 @@ export async function revisar(req: Request, res: Response): Promise<void> {
   const { id } = validarParams(esquemaParamId, req);
 
   res.json(await revisarAlerta(ctx.idPredio, ctx.idUsuario, id));
+}
+
+/** POST /alertas/revisar-todas */
+export async function revisarTodas(req: Request, res: Response): Promise<void> {
+  const ctx = ctxDe(req);
+
+  res.json(await revisarTodasLasAlertas(ctx.idPredio, ctx.idUsuario));
 }
 
 /** GET /vigilancia/estado - IF2-SAL */

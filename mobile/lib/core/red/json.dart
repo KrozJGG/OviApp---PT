@@ -18,6 +18,29 @@ DateTime? fechaNulaDe(Object? valor) {
 DateTime fechaDe(Object? valor) =>
     fechaNulaDe(valor) ?? DateTime.fromMillisecondsSinceEpoch(0);
 
+/// Fecha sin hora: los campos `@db.Date` de la API ("2026-11-05T00:00:00.000Z").
+///
+/// Se arma como medianoche LOCAL y nunca se convierte. Un vencimiento o una
+/// fecha de nacimiento son un día del calendario, no un instante: pasarlos por
+/// `toLocal()` en Chile (UTC-3) los corre al día anterior, y la tarea del 5
+/// aparece vencida el 4.
+DateTime? fechaSoloNulaDe(Object? valor) {
+  if (valor is! String || valor.length < 10) return null;
+  final partes = valor.substring(0, 10).split('-');
+  if (partes.length != 3) return null;
+
+  final anio = int.tryParse(partes[0]);
+  final mes = int.tryParse(partes[1]);
+  final dia = int.tryParse(partes[2]);
+  if (anio == null || mes == null || dia == null) return null;
+
+  return DateTime(anio, mes, dia);
+}
+
+/// Fecha sin hora obligatoria. Igual que [fechaDe], prefiere el epoch a reventar.
+DateTime fechaSoloDe(Object? valor) =>
+    fechaSoloNulaDe(valor) ?? DateTime.fromMillisecondsSinceEpoch(0);
+
 /// Número que puede venir nulo, como `int` o como `double`.
 double? decimalNulo(Object? valor) => (valor as num?)?.toDouble();
 

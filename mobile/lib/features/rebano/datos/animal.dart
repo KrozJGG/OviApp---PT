@@ -43,10 +43,10 @@ class Animal {
         raza: j['raza'] as String?,
         color: j['color'] as String?,
         pesoKg: decimalNulo(j['pesoKg']),
-        fechaNacimiento: fechaNulaDe(j['fechaNacimiento']),
+        fechaNacimiento: fechaSoloNulaDe(j['fechaNacimiento']),
         descripcion: j['descripcion'] as String?,
         motivoBaja: j['motivoBaja'] as String?,
-        fechaBaja: fechaNulaDe(j['fechaBaja']),
+        fechaBaja: fechaSoloNulaDe(j['fechaBaja']),
       );
 }
 
