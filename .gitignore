@@ -15,9 +15,10 @@ ia-engine/venv/
 __pycache__/
 *.py[cod]
 
-# Modelo YOLO entrenado: pesa demasiado para git. Se copia a mano segun
-# ia-engine/models/.gitkeep
+# Modelos YOLO: se ignoran salvo el que usa el compose (sheep_detection.pt,
+# ~5 MB). El de respaldo (yolo26n.pt) se copia a mano.
 ia-engine/models/*.pt
+!ia-engine/models/sheep_detection.pt
 
 # Frames de inspección generados por ia-engine/scripts/diagnostico_conteo.py
 ia-engine/scripts/salida_diagnostico/

@@ -77,5 +77,5 @@ Para depurar con VLC/ffplay hay que reabrir 8554/8888 con un `docker-compose.ove
 
 - Prisma 7: el cliente generado está en `backend/src/generated/`; la URL de conexión vive en `prisma.config.ts` y en el adapter (`src/config/prisma.ts`), no en `schema.prisma`.
 - `RF_06`: las entradas de bitácora se escriben en la misma transacción que la mutación del animal (tipo `TX` en `shared/db.ts`); tablas con triggers append-only. `TRUNCATE` en los tests no los dispara.
-- Los modelos viven en `ia-engine/models/` (`sheep_detection.pt` en uso, `yolo26n.pt` de respaldo) y `.gitignore` ignora `ia-engine/models/*.pt`: no están en git, hay que copiarlos a mano en cada máquina. El compose usa `MODEL_PATH=/app/models/sheep_detection.pt`.
+- Los modelos viven en `ia-engine/models/` (`sheep_detection.pt` en uso, `yolo26n.pt` de respaldo) y `.gitignore` ignora `ia-engine/models/*.pt` salvo `sheep_detection.pt`, que sí está en git; `yolo26n.pt` hay que copiarlo a mano. El compose usa `MODEL_PATH=/app/models/sheep_detection.pt`.
 - Documentación de fondo: `mobile/PROJECT_SPEC.md`, `backend/PROJECT_SPEC.md`, `ia-engine/PROJECT_SPEC.md`, `streaming/README.md`. Los códigos RF_xx/RNF_xx/IFx en los comentarios remiten a los requerimientos del informe en `docs/`.
