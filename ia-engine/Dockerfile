@@ -30,11 +30,10 @@ RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
 # Copiar código fuente y modelos
 COPY ia_engine/ ./ia_engine/
+# Los .pt viven en models/ (sheep_detection.pt y yolo26n.pt de respaldo).
+# Si falta el de MODEL_PATH, ultralytics intenta descargarlo y en un predio
+# sin internet el contenedor no arranca.
 COPY models/ ./models/
-# El .pt versionado vive en la raiz de ia-engine/, no en models/, asi que hay
-# que copiarlo aparte: sin esta linea el contenedor arranca sin modelo y
-# ultralytics intenta descargarlo, lo que falla en un predio sin internet.
-COPY *.pt ./
 
 # El módulo se ejecuta como paquete Python
 CMD ["python3", "-m", "ia_engine"]

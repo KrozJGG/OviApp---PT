@@ -106,7 +106,7 @@ services:
   #
   # Va en el perfil "ia" y NO arranca con un `docker compose up` normal, por
   # dos razones: la imagen base de CUDA pesa varios GB, y el contenedor no
-  # levanta si falta ia-engine/models/ovejas.pt, que no se versiona.
+  # levanta si falta ia-engine/models/sheep_detection.pt, que no se versiona.
   #
   # Para levantarlo:  docker compose --profile ia up -d ia-engine
   # ───────────────────────────────────────────────────────────────────────────
@@ -123,12 +123,13 @@ services:
       # La que genera el seed es edge_hatonorte.7f3a91c4e08b45d2a6f1
       EDGE_API_KEY: "${EDGE_API_KEY:-edge_hatonorte.7f3a91c4e08b45d2a6f1}"
       RTSP_STREAMS: "rebano=rtsp://mediamtx:8554/rebano"
-      # yolo26n.pt es el preentrenado de COCO que viene versionado. Cuando
-      # exista un modelo propio entrenado con ovejas del predio, apuntar aqui.
-      MODEL_PATH: "/app/models/yolo26n.pt"
-      # Clases a contar. yolo26n detecta las 80 de COCO, asi que sin este
-      # filtro el conteo sumaria personas, perros y vehiculos como si fueran
-      # ovejas. Vacio = contar todas las detecciones (modelo de una sola clase).
+      # sheep_detection.pt es un detector de una sola clase ("sheep"). Sobre
+      # rebano.mp4 a 0.35 cuenta 17-22 ovejas por frame, contra 7-13 del
+      # preentrenado COCO yolo26n.pt, que queda en models/ como respaldo.
+      MODEL_PATH: "/app/models/sheep_detection.pt"
+      # Clases a contar. Con el modelo de una sola clase el filtro no cambia
+      # nada, pero se deja para que volver a yolo26n (80 clases COCO) no sume
+      # personas, perros y vehiculos. Vacio = contar todas las detecciones.
       CLASES_OBJETIVO: "sheep"
       FPS_PROCESAMIENTO: 2
       HEARTBEAT_INTERVALO_SEG: 60

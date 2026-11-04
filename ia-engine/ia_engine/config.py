@@ -29,8 +29,8 @@ class Config(BaseSettings):
     """
 
     # ── Modelo YOLO ──────────────────────────────────────────────────────
-    model_path: str = "yolo26n.pt"
-    """Nombre o ruta del modelo YOLO. Por defecto usa YOLO26n preentrenado (se descarga automáticamente)."""
+    model_path: str = "models/sheep_detection.pt"
+    """Ruta del modelo YOLO. Por defecto el detector de ovejas de una sola clase de models/."""
 
     confianza_minima: float = 0.35
     """
@@ -46,8 +46,9 @@ class Config(BaseSettings):
     """
     Nombres de clase que cuentan como oveja, separados por coma.
 
-    yolo26n es el preentrenado de COCO y detecta 80 clases: sin filtrar, el
-    conteo sumaría personas, perros y vehículos. Los nombres se comparan contra
+    sheep_detection.pt tiene una sola clase ("sheep"), así que el filtro no
+    cambia nada; importa si se vuelve a un preentrenado de COCO como yolo26n,
+    que detecta 80 clases y sin filtrar sumaría personas, perros y vehículos. Los nombres se comparan contra
     los del propio modelo (`model.names`), sin distinguir mayúsculas.
 
     Dejarlo vacío desactiva el filtro, que es lo correcto para un modelo
