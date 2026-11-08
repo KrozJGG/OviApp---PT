@@ -131,6 +131,9 @@ services:
       # personas, perros y vehiculos. Vacio = contar todas las detecciones.
       CLASES_OBJETIVO: "sheep"
       FPS_PROCESAMIENTO: 2
+      # Ventanas de 640 px por frame, para no perder las ovejas lejanas al
+      # reducir el video. 0 = analizar el frame completo (menos carga).
+      TILE_INFERENCIA: 640
       HEARTBEAT_INTERVALO_SEG: 60
       # Bajado de 0.5: el diagnostico (ia-engine/scripts/diagnostico_conteo.py)
       # mostro que 0.5 descarta casi la mitad de las ovejas reales del video

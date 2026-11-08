@@ -20,8 +20,9 @@ __pycache__/
 ia-engine/models/*.pt
 !ia-engine/models/sheep_detection.pt
 
-# Frames de inspección generados por ia-engine/scripts/diagnostico_conteo.py
+# Frames de inspección generados por los scripts de ia-engine/scripts/
 ia-engine/scripts/salida_diagnostico/
+ia-engine/scripts/salida_frames_video/
 
 # ─── Informes en PDF ─────────────────────────────────────────────────────────
 # Versiones compiladas del informe y de otros equipos: pesan varios MB, cambian

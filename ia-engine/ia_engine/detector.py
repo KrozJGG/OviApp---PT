@@ -20,6 +20,9 @@ from .config import config, parsear_clases
 
 logger = logging.getLogger(__name__)
 
+# Ventanas de un mismo frame que van juntas a la GPU cuando hay tiling.
+VENTANAS_POR_LOTE = 8
+
 
 @dataclass
 class ResultadoDeteccion:
@@ -72,6 +75,9 @@ class Detector:
         self._dispositivo = dispositivo
         self._confianza = confianza
         self._clases = self._resolver_clases()
+        # Ultralytics espera False, no 0, para desactivar el tiling.
+        self._tile: int | bool = config.tile_inferencia or False
+        logger.info("Tiling de inferencia: %s", self._tile or "desactivado")
 
     def _resolver_clases(self) -> list[int] | None:
         """
@@ -138,6 +144,8 @@ class Detector:
             device=self._dispositivo,
             conf=self._confianza,
             classes=self._clases,
+            tile=self._tile,
+            batch=VENTANAS_POR_LOTE,
             verbose=False,
         )
 

@@ -7,6 +7,7 @@ pydantic-settings valida tipos y valores por defecto.
 
 from __future__ import annotations
 
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
@@ -58,6 +59,16 @@ class Config(BaseSettings):
     # ── Procesamiento ────────────────────────────────────────────────────
     fps_procesamiento: int = 2
     """Fotogramas por segundo a enviar al modelo (el resto se descarta)."""
+
+    tile_inferencia: int = Field(default=640, ge=0)
+    """
+    Tamaño en píxeles de las ventanas en que se divide cada frame (0 = frame completo).
+
+    Con frame completo, un video 720p se reduce a 640 y las ovejas lejanas
+    quedan en unos 16x7 px: rebano_LQ.mp4 daba 0 detecciones. Las ventanas de
+    640 mantienen la resolución original. Bajar de 640 parte y duplica ovejas
+    (ver ia-engine/scripts/detectar_frames_video.py).
+    """
 
     # ── Heartbeat ────────────────────────────────────────────────────────
     heartbeat_intervalo_seg: int = 300
