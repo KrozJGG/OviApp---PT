@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../almacenamiento/almacen_sesion.dart';
+import '../cache/cache_respuestas.dart';
 import 'error_api.dart';
 
 /// URL base de la API.
@@ -26,8 +27,13 @@ String get urlBaseApi {
 /// traduce cualquier fallo a [ErrorApi] para que las pantallas nunca vean un
 /// DioException.
 class ClienteApi {
-  ClienteApi({required AlmacenSesion almacen, String? urlBase, Dio? dio})
-      : _almacen = almacen,
+  ClienteApi({
+    required AlmacenSesion almacen,
+    CacheRespuestas? cache,
+    String? urlBase,
+    Dio? dio,
+  })  : _almacen = almacen,
+        _cache = cache,
         dio = dio ??
             Dio(
               BaseOptions(
@@ -47,6 +53,7 @@ class ClienteApi {
     this.dio.interceptors.add(
       QueuedInterceptorsWrapper(
         onRequest: _alEnviar,
+        onResponse: _alResponder,
         onError: _alFallar,
       ),
     );
@@ -54,6 +61,11 @@ class ClienteApi {
 
   final Dio dio;
   final AlmacenSesion _almacen;
+  final CacheRespuestas? _cache;
+
+  /// Momento en que se obtuvo lo que la app muestra, cuando viene del caché
+  /// porque no hubo conexión; `null` si los datos son recién traídos.
+  final datosDeCache = ValueNotifier<DateTime?>(null);
 
   /// Se dispara cuando la sesion ya no puede renovarse: la app vuelve al login.
   final _sesionCaducada = StreamController<void>.broadcast();
@@ -72,9 +84,61 @@ class ClienteApi {
     handler.next(opciones);
   }
 
+  /// Solo se cachean lecturas de datos del predio. Las escrituras no (el caché
+  /// es de solo lectura), ni la sesion, ni el streaming: un permiso de video
+  /// guardado seria un token vencido.
+  bool _cacheable(RequestOptions o) =>
+      _cache != null &&
+      o.method == 'GET' &&
+      !o.path.startsWith('/auth/') &&
+      !o.path.contains('/streaming/');
+
+  /// Clave estable: ruta + consulta ordenada, para que dos peticiones iguales
+  /// con los parametros en distinto orden compartan entrada.
+  static String _claveDe(RequestOptions o) {
+    final consulta = o.queryParameters.entries
+        .map((e) => '${e.key}=${e.value}')
+        .toList()
+      ..sort();
+    return '${o.path}?${consulta.join('&')}';
+  }
+
+  Future<void> _alResponder(
+    Response<dynamic> r,
+    ResponseInterceptorHandler handler,
+  ) async {
+    final opciones = r.requestOptions;
+    if (_cacheable(opciones)) {
+      final datos = r.data;
+      if (datos is Map<String, dynamic>) {
+        await _cache!.guardar(_claveDe(opciones), datos);
+      }
+      datosDeCache.value = null;
+    }
+    handler.next(r);
+  }
+
   Future<void> _alFallar(DioException e, ErrorInterceptorHandler handler) async {
     final error = ErrorApi.desdeDio(e);
     final esRutaDeSesion = e.requestOptions.path.startsWith('/auth/');
+
+    // Sin conexion (o tiempo agotado) se responde con la ultima lectura buena.
+    // Un 4xx/5xx NO entra aqui: el servidor si respondio y hay que decirlo.
+    if (error.esDeRed && _cacheable(e.requestOptions)) {
+      final entrada = await _cache!.leer(_claveDe(e.requestOptions));
+      if (entrada != null) {
+        datosDeCache.value = entrada.guardadoEn;
+        handler.resolve(
+          Response<dynamic>(
+            requestOptions: e.requestOptions,
+            data: entrada.datos,
+            statusCode: 200,
+            extra: {'desdeCache': true},
+          ),
+        );
+        return;
+      }
+    }
 
     // Un access token vencido se renueva una vez y se reintenta la peticion.
     // El QueuedInterceptor serializa las peticiones, asi que dos llamadas
@@ -92,6 +156,8 @@ class ClienteApi {
         }
       }
       await _almacen.limpiar();
+      await _cache?.limpiar();
+      datosDeCache.value = null;
       _accessToken = null;
       if (!_sesionCaducada.isClosed) _sesionCaducada.add(null);
     }
@@ -143,6 +209,7 @@ class ClienteApi {
 
   void cerrar() {
     _sesionCaducada.close();
+    datosDeCache.dispose();
     dio.close(force: true);
   }
 }

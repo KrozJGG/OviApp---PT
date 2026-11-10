@@ -28,6 +28,7 @@ ia-engine/scripts/salida_frames_video/
 # Versiones compiladas del informe y de otros equipos: pesan varios MB, cambian
 # en cada compilación y no son código.
 docs/*.pdf
+docs/InformeFinal-SW
 
 # ─── Sistema operativo / editores ────────────────────────────────────────────
 .DS_Store

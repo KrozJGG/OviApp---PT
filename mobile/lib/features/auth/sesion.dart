@@ -50,6 +50,8 @@ class SesionNotifier extends AsyncNotifier<SesionGuardada?> {
       );
 
       await _almacen.guardar(sesion);
+      // Lo cacheado pertenece al usuario anterior: nunca debe verlo otro.
+      await ref.read(cacheRespuestasProvider).limpiar();
       _cliente.usarToken(sesion.accessToken);
       state = AsyncValue.data(sesion);
     } catch (e, s) {
@@ -76,6 +78,8 @@ class SesionNotifier extends AsyncNotifier<SesionGuardada?> {
     }
 
     await _almacen.limpiar();
+    await ref.read(cacheRespuestasProvider).limpiar();
+    _cliente.datosDeCache.value = null;
     _cliente.usarToken(null);
     state = const AsyncValue.data(null);
   }

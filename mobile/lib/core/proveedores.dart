@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'almacenamiento/almacen_sesion.dart';
+import 'cache/cache_respuestas.dart';
 import 'red/cliente_api.dart';
 
 /// Proveedores raiz de la aplicacion.
@@ -12,8 +13,13 @@ import 'red/cliente_api.dart';
 
 final almacenSesionProvider = Provider<AlmacenSesion>((ref) => AlmacenSesion());
 
+final cacheRespuestasProvider = Provider<CacheRespuestas>((ref) => CacheRespuestas());
+
 final clienteApiProvider = Provider<ClienteApi>((ref) {
-  final cliente = ClienteApi(almacen: ref.watch(almacenSesionProvider));
+  final cliente = ClienteApi(
+    almacen: ref.watch(almacenSesionProvider),
+    cache: ref.watch(cacheRespuestasProvider),
+  );
   ref.onDispose(cliente.cerrar);
   return cliente;
 });
