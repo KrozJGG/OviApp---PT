@@ -20,15 +20,11 @@ __pycache__/
 ia-engine/models/*.pt
 !ia-engine/models/sheep_detection.pt
 
-# Frames de inspección generados por los scripts de ia-engine/scripts/
-ia-engine/scripts/salida_diagnostico/
-ia-engine/scripts/salida_frames_video/
+# Scripts y salidas de pruebas locales del motor de IA.
+ia-engine/scripts/
 
-# ─── Informes en PDF ─────────────────────────────────────────────────────────
-# Versiones compiladas del informe y de otros equipos: pesan varios MB, cambian
-# en cada compilación y no son código.
-docs/*.pdf
-docs/InformeFinal-SW
+# ─── Documentación privada de desarrollo ─────────────────────────────────────
+docs/
 
 # ─── Sistema operativo / editores ────────────────────────────────────────────
 .DS_Store
