@@ -824,9 +824,13 @@ export type $DispositivoEdgePayload<ExtArgs extends runtime.Types.Extensions.Int
      */
     apiKeyPrefijo: string
     ultimoHeartbeat: Date | null
+    /**
+     * Mediana del conteo de ovejas que el ia-engine envia en cada heartbeat.
+     */
     ultimoConteo: number | null
     /**
-     * Conteo esperado del rebano, usado como linea base de las alertas.
+     * Ya no se usa como linea base: la app compara ultimoConteo contra las
+     * ovejas ACTIVAS del predio. Se conserva para las alertas historicas.
      */
     conteoEsperado: number | null
     createdAt: Date

@@ -1,26 +1,24 @@
 """
-Detector de ovejas con YOLO + ByteTrack.
+Detector de ovejas con YOLO.
 
-Encapsula la carga del modelo, la inferencia sobre cada fotograma,
-y el tracking entre frames para obtener conteos estables sin contar
-la misma oveja dos veces.
+Carga el modelo una sola vez y, por cada fotograma, devuelve cuántas
+ovejas detectó. YOLO ya elimina detecciones duplicadas dentro de un mismo
+frame (NMS), así que el conteo es directamente el número de cajas.
 """
 
 from __future__ import annotations
 
 import logging
-import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
-import supervision as sv
 from ultralytics import YOLO
 
 from .config import config, parsear_clases
 
 logger = logging.getLogger(__name__)
 
-# Ventanas de un mismo frame que van juntas a la GPU cuando hay tiling.
+# Ventanas de un mismo frame que se procesan juntas cuando hay tiling.
 VENTANAS_POR_LOTE = 8
 
 
@@ -29,33 +27,14 @@ class ResultadoDeteccion:
     """Resultado del procesamiento de un frame."""
 
     conteo: int
-    """Cantidad de ovejas únicas detectadas en la zona de interés."""
-
-    centroides: list[tuple[float, float]] = field(default_factory=list)
-    """Coordenadas (x, y) del centroide de cada detección."""
+    """Cantidad de ovejas detectadas en el fotograma."""
 
     confianza_promedio: float = 0.0
     """Confianza promedio de las detecciones."""
 
-    diagonal_frame: float = 0.0
-    """
-    Diagonal en píxeles del fotograma analizado.
-
-    Es la referencia fija contra la que el Analizador normaliza la dispersión.
-    Tiene que ser el frame y no el área que ocupan las propias detecciones:
-    si se normaliza contra sí mismas, la medida se vuelve invariante a la
-    escala y deja de detectar que el rebaño se abrió.
-    """
-
 
 class Detector:
-    """
-    Detector YOLO con tracking.
-
-    Carga el modelo una sola vez y se reutiliza para todos los streams.
-    ByteTrack mantiene IDs estables entre frames consecutivos dentro
-    de un mismo stream (cada stream tiene su propio tracker).
-    """
+    """Detector YOLO compartido por todos los streams."""
 
     def __init__(self, model_path: str, confianza: float) -> None:
         logger.info("Cargando modelo YOLO desde %s ...", model_path)
@@ -84,8 +63,7 @@ class Detector:
         Traduce los nombres de CLASES_OBJETIVO a los ids del modelo cargado.
 
         Devuelve None cuando no hay que filtrar: o porque la configuración está
-        vacía, o porque el modelo tiene una sola clase y ya es un detector de
-        ovejas por construcción.
+        vacía, o porque el modelo tiene una sola clase (que es el caso (sheep)).
         """
         objetivo = parsear_clases(config.clases_objetivo)
         nombres: dict[int, str] = dict(self._modelo.names or {})
@@ -113,32 +91,10 @@ class Detector:
         )
         return ids
 
-    def crear_tracker(self) -> sv.ByteTrack:
-        """Crea un tracker independiente para un stream."""
-        return sv.ByteTrack(
-            track_activation_threshold=self._confianza,
-            minimum_matching_threshold=0.8,
-            frame_rate=config.fps_procesamiento,
-        )
-
-    def detectar(
-        self,
-        frame: np.ndarray,
-        tracker: sv.ByteTrack,
-    ) -> ResultadoDeteccion:
+    def detectar(self, frame: np.ndarray) -> ResultadoDeteccion:
         """
-        Ejecuta YOLO sobre un frame y actualiza el tracker.
-
-        Args:
-            frame: Imagen BGR (numpy array) del fotograma.
-            tracker: Instancia de ByteTrack propia del stream.
-
-        Returns:
-            ResultadoDeteccion con conteo, centroides y confianza.
+        Ejecuta YOLO sobre un frame y devuelve la cantidad de ovejas.
         """
-        alto, ancho = frame.shape[:2]
-        diagonal_frame = math.sqrt(ancho * ancho + alto * alto)
-
         resultados = self._modelo.predict(
             frame,
             device=self._dispositivo,
@@ -150,31 +106,9 @@ class Detector:
         )
 
         if not resultados or len(resultados[0].boxes) == 0:
-            return ResultadoDeteccion(conteo=0, diagonal_frame=diagonal_frame)
+            return ResultadoDeteccion(conteo=0)
 
-        # Convertir resultados YOLO al formato de supervision.
-        detecciones = sv.Detections.from_ultralytics(resultados[0])
+        cajas = resultados[0].boxes
+        confianza_promedio = float(cajas.conf.mean().item()) if len(cajas.conf) else 0.0
 
-        # Actualizar tracking para IDs estables entre frames.
-        detecciones = tracker.update_with_detections(detecciones)
-
-        conteo = len(detecciones)
-
-        # Calcular centroides (centro de cada bounding box).
-        centroides: list[tuple[float, float]] = []
-        if detecciones.xyxy is not None and len(detecciones.xyxy) > 0:
-            for box in detecciones.xyxy:
-                cx = float((box[0] + box[2]) / 2)
-                cy = float((box[1] + box[3]) / 2)
-                centroides.append((cx, cy))
-
-        confianza_promedio = 0.0
-        if detecciones.confidence is not None and len(detecciones.confidence) > 0:
-            confianza_promedio = float(np.mean(detecciones.confidence))
-
-        return ResultadoDeteccion(
-            conteo=conteo,
-            centroides=centroides,
-            confianza_promedio=confianza_promedio,
-            diagonal_frame=diagonal_frame,
-        )
+        return ResultadoDeteccion(conteo=len(cajas), confianza_promedio=confianza_promedio)

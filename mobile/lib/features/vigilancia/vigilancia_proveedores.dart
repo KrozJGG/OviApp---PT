@@ -4,45 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/proveedores.dart';
 import '../../core/red/api.dart';
 import '../../core/red/cliente_api.dart';
-import '../../core/red/paginado.dart';
 import 'datos/acceso_stream.dart';
 import 'datos/alerta.dart';
 
-/// Filtro por tipo del historial de alertas (RF_19). `null` = todas.
-final filtroAlertasProvider = NotifierProvider<FiltroAlertasNotifier, String?>(
-  FiltroAlertasNotifier.new,
-);
-
-class FiltroAlertasNotifier extends Notifier<String?> {
-  @override
-  String? build() => null;
-
-  void filtrar(String? tipo) => state = tipo;
-}
-
-/// IF2-SAL — estado del dispositivo edge y última detección.
+/// IF2-SAL — estado del dispositivo edge y último conteo detectado.
 final estadoVigilanciaProvider = FutureProvider.autoDispose<EstadoVigilancia>((ref) async {
   final json = await ref.watch(dioProvider).traerMapa('/vigilancia/estado');
   return EstadoVigilancia.desdeJson(json);
 });
 
-/// RF_19 — historial de alertas del predio, filtrable por tipo.
-final alertasProvider = FutureProvider.autoDispose<Paginado<Alerta>>((ref) {
-  final tipo = ref.watch(filtroAlertasProvider);
-  return ref.watch(dioProvider).traerPaginado(
-        '/alertas',
-        Alerta.desdeJson,
-        consulta: {'tipo': tipo, 'tamano': 100},
-      );
-});
-
-/// Detalle de una alerta; es también el destino del deep-link de la push.
+/// Detalle de una alerta; es el destino del deep-link de la push.
 final alertaProvider = FutureProvider.autoDispose.family<Alerta, String>((ref, id) async {
   final json = await ref.watch(dioProvider).traerMapa('/alertas/$id');
   return Alerta.desdeJson(json);
 });
 
-/// Marca una alerta como revisada.
 final vigilanciaRepositorioProvider = Provider<VigilanciaRepositorio>(
   VigilanciaRepositorio.new,
 );
@@ -52,16 +28,10 @@ class VigilanciaRepositorio {
 
   final Ref _ref;
 
+  /// Marca una alerta como revisada.
   Future<Alerta> revisar(String id) async {
     final json = await _ref.read(dioProvider).enviar('/alertas/$id/revisar');
     return Alerta.desdeJson(json);
-  }
-
-  /// Marca de una vez todas las alertas pendientes del predio y devuelve
-  /// cuantas eran. Sin nada pendiente devuelve cero, no un error.
-  Future<int> revisarTodas() async {
-    final json = await _ref.read(dioProvider).enviar('/alertas/revisar-todas');
-    return (json['revisadas'] as num?)?.toInt() ?? 0;
   }
 
   /// Pide permiso para ver la cámara en vivo y deja lista la URL del manifiesto.

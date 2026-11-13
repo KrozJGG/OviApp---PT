@@ -99,7 +99,6 @@ enum TipoBitacora {
 
 enum TipoAlerta {
   CONTEO
-  DISPERSION
   AMENAZA
 
   @@map("tipo_alerta")
@@ -365,8 +364,10 @@ model DispositivoEdge {
   /// Prefijo publico de la key, para localizar el dispositivo sin exponer el secreto.
   apiKeyPrefijo   String    @unique @map("api_key_prefijo")
   ultimoHeartbeat DateTime? @map("ultimo_heartbeat") @db.Timestamptz(6)
+  /// Mediana del conteo de ovejas que el ia-engine envia en cada heartbeat.
   ultimoConteo    Int?      @map("ultimo_conteo")
-  /// Conteo esperado del rebano, usado como linea base de las alertas.
+  /// Ya no se usa como linea base: la app compara ultimoConteo contra las
+  /// ovejas ACTIVAS del predio. Se conserva para las alertas historicas.
   conteoEsperado  Int?      @map("conteo_esperado")
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 

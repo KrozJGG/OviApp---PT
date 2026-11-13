@@ -161,7 +161,6 @@ Future<void> _marcarRevisada(
   try {
     await ref.read(vigilanciaRepositorioProvider).revisar(idAlerta);
     ref.invalidate(alertaProvider(idAlerta));
-    ref.invalidate(alertasProvider);
     ref.invalidate(estadoVigilanciaProvider);
     ref.invalidate(resumenInicioProvider);
     if (context.mounted) mostrarMensaje(context, 'Alerta marcada como revisada.');

@@ -42,8 +42,8 @@ abstract final class OviColores {
   static const borde = Color(0xFFE2E8FA);
 
   // ── Colores de estado usados por chips y alertas ────────────────────────────
-  // Estos NO son la marca: codifican significado. El ambar existe porque las
-  // alertas de dispersion del mockup 10 no son criticas pero tampoco normales.
+  // Estos NO son la marca: codifican significado. El ambar marca estados que no
+  // son criticos pero tampoco normales.
 
   static const advertencia = Color(0xFFF59E0B);
   static const exitoFondo = Color(0xFFE4F7EC);

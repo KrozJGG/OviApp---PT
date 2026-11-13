@@ -98,7 +98,6 @@ export type TipoBitacora = (typeof TipoBitacora)[keyof typeof TipoBitacora]
 
 export const TipoAlerta = {
   CONTEO: 'CONTEO',
-  DISPERSION: 'DISPERSION',
   AMENAZA: 'AMENAZA'
 } as const
 

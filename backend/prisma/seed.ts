@@ -365,13 +365,6 @@ async function main(): Promise<void> {
     fecha: Date;
   }> = [
     {
-      tipo: 'DISPERSION',
-      descripcion: 'Dispersión anormal del rebaño en el sector norte',
-      nivel: 'ADVERTENCIA',
-      conteo: 38,
-      fecha: aHoraLocal(hoy, 3, 42),
-    },
-    {
       tipo: 'AMENAZA',
       descripcion: 'Movimiento no identificado en el perímetro',
       nivel: 'CRITICA',

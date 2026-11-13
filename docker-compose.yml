@@ -130,19 +130,20 @@ services:
       # nada, pero se deja para que volver a yolo26n (80 clases COCO) no sume
       # personas, perros y vehiculos. Vacio = contar todas las detecciones.
       CLASES_OBJETIVO: "sheep"
-      FPS_PROCESAMIENTO: 2
+      # Un frame analizado cada 5 s (~3 muestras por heartbeat). Las ovejas se
+      # mueven despacio, y asi el modulo tambien es viable en CPU.
+      INTERVALO_INFERENCIA_SEG: 5
       # Ventanas de 640 px por frame, para no perder las ovejas lejanas al
       # reducir el video. 0 = analizar el frame completo (menos carga).
       TILE_INFERENCIA: 640
-      HEARTBEAT_INTERVALO_SEG: 60
+      # Cada 15 s se envia al backend la MEDIANA de las muestras de la ventana.
+      HEARTBEAT_INTERVALO_SEG: 15
       # Bajado de 0.5: el diagnostico (ia-engine/scripts/diagnostico_conteo.py)
       # mostro que 0.5 descarta casi la mitad de las ovejas reales del video
       # de prueba (84 vs 146 detecciones sobre los mismos frames a 0.25). El
       # filtro de clases "sheep" no influye (0 detecciones de otras clases en
       # este video), asi que la ganancia real esta en el umbral, no en CLASES_OBJETIVO.
       CONFIANZA_MINIMA: 0.35
-      # El conteo esperado se lee de GET /edge/configuracion. Definir
-      # CONTEO_ESPERADO aqui solo sirve como respaldo si el backend no responde.
     depends_on:
       mediamtx:
         condition: service_started

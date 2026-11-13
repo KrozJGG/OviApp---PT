@@ -85,56 +85,18 @@ class AgendaDelRango {
       );
 }
 
-/// `GET /inicio/resumen` — las tres métricas y la última alerta del mockup 02.
+/// `GET /inicio/resumen` — métricas del rebaño del mockup 02.
 class ResumenInicio {
   const ResumenInicio({
     required this.animalesActivos,
     required this.tareasHoy,
-    required this.alertasSinLeer,
-    this.ultimaAlerta,
   });
 
   final int animalesActivos;
   final int tareasHoy;
-  final int alertasSinLeer;
-  final AlertaResumida? ultimaAlerta;
 
   factory ResumenInicio.desdeJson(Map<String, dynamic> j) => ResumenInicio(
         animalesActivos: enteroNulo(j['animalesActivos']) ?? 0,
         tareasHoy: enteroNulo(j['tareasHoy']) ?? 0,
-        alertasSinLeer: enteroNulo(j['alertasSinLeer']) ?? 0,
-        ultimaAlerta: j['ultimaAlerta'] is Map
-            ? AlertaResumida.desdeJson(
-                Map<String, dynamic>.from(j['ultimaAlerta'] as Map),
-              )
-            : null,
-      );
-}
-
-/// Alerta reducida que aparece en el resumen de inicio y en vigilancia.
-class AlertaResumida {
-  const AlertaResumida({
-    required this.id,
-    required this.tipoAlerta,
-    required this.fechaHora,
-    this.descripcion,
-    this.nivel,
-    this.conteoAnimales,
-  });
-
-  final String id;
-  final String tipoAlerta;
-  final DateTime fechaHora;
-  final String? descripcion;
-  final String? nivel;
-  final int? conteoAnimales;
-
-  factory AlertaResumida.desdeJson(Map<String, dynamic> j) => AlertaResumida(
-        id: j['id'] as String,
-        tipoAlerta: (j['tipoAlerta'] as String?) ?? 'CONTEO',
-        fechaHora: fechaDe(j['fechaHora']),
-        descripcion: j['descripcion'] as String?,
-        nivel: j['nivel'] as String?,
-        conteoAnimales: enteroNulo(j['conteoAnimales']),
       );
 }

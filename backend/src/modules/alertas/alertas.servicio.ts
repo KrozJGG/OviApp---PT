@@ -259,7 +259,6 @@ interface AvisoAlerta {
 
 const TITULO_POR_TIPO: Record<TipoAlerta, string> = {
   CONTEO: 'Alerta de conteo',
-  DISPERSION: 'Alerta de dispersión',
   AMENAZA: 'Alerta de amenaza',
 };
 
@@ -435,8 +434,10 @@ export interface DispositivoEstado {
   id: string;
   nombre: string;
   ultimoHeartbeat: Date | null;
+  /// Mediana del conteo que envio el ia-engine en el ultimo heartbeat.
   ultimoConteo: number | null;
-  conteoEsperado: number | null;
+  /// Ovejas ACTIVAS registradas en el predio: contra esto se compara lo detectado.
+  conteoEsperado: number;
   enLinea: boolean;
 }
 
@@ -461,9 +462,15 @@ export function estaEnLinea(ultimoHeartbeat: Date | null, ahora: Date = new Date
   return ahora.getTime() - ultimoHeartbeat.getTime() <= MS_EN_LINEA;
 }
 
-/** IF2-SAL - encabezado de la pantalla de vigilancia. */
+/**
+ * IF2-SAL - encabezado de la pantalla de vigilancia.
+ *
+ * El conteo esperado no es un valor fijo del dispositivo: son las ovejas que el
+ * usuario tiene registradas como ACTIVAS. Asi, al dar de alta o de baja un
+ * animal, la comparacion con lo que detecta la camara se ajusta sola.
+ */
 export async function estadoVigilancia(idPredio: string): Promise<EstadoVigilancia> {
-  const [dispositivos, alertasSinRevisar, ultima] = await Promise.all([
+  const [dispositivos, animalesActivos, alertasSinRevisar, ultima] = await Promise.all([
     prisma.dispositivoEdge.findMany({
       where: { idPredio },
       select: {
@@ -471,10 +478,10 @@ export async function estadoVigilancia(idPredio: string): Promise<EstadoVigilanc
         nombre: true,
         ultimoHeartbeat: true,
         ultimoConteo: true,
-        conteoEsperado: true,
       },
       orderBy: { nombre: 'asc' },
     }),
+    prisma.animal.count({ where: { idPredio, estado: 'ACTIVO' } }),
     prisma.alerta.count({ where: { idPredio, estado: 'NUEVA' } }),
     prisma.alerta.findFirst({
       where: { idPredio },
@@ -493,7 +500,11 @@ export async function estadoVigilancia(idPredio: string): Promise<EstadoVigilanc
   const ahora = new Date();
 
   return {
-    dispositivos: dispositivos.map((d) => ({ ...d, enLinea: estaEnLinea(d.ultimoHeartbeat, ahora) })),
+    dispositivos: dispositivos.map((d) => ({
+      ...d,
+      conteoEsperado: animalesActivos,
+      enLinea: estaEnLinea(d.ultimoHeartbeat, ahora),
+    })),
     alertasSinRevisar,
     ultimaAlerta: ultima,
   };

@@ -22,7 +22,7 @@ const marcaDeTiempo = z.iso.datetime({
 
 /** POST /edge/alertas - IF5-ENT */
 export const esquemaIngestaAlerta = z.object({
-  tipoAlerta: z.enum(['CONTEO', 'DISPERSION', 'AMENAZA'], 'El tipo de alerta no es valido.'),
+  tipoAlerta: z.enum(['CONTEO', 'AMENAZA'], 'El tipo de alerta no es valido.'),
   conteoAnimales: conteo.optional(),
   conteoEsperado: conteo.optional(),
   nivel: z.enum(['INFO', 'ADVERTENCIA', 'CRITICA'], 'El nivel de la alerta no es valido.').optional(),
@@ -44,7 +44,7 @@ export type DatosHeartbeat = z.infer<typeof esquemaHeartbeat>;
 export const esquemaListadoAlertas = esquemaPaginacion.extend({
   desde: z.iso.date('La fecha "desde" debe tener el formato AAAA-MM-DD.').optional(),
   hasta: z.iso.date('La fecha "hasta" debe tener el formato AAAA-MM-DD.').optional(),
-  tipo: z.enum(['CONTEO', 'DISPERSION', 'AMENAZA'], 'El tipo de alerta no es valido.').optional(),
+  tipo: z.enum(['CONTEO', 'AMENAZA'], 'El tipo de alerta no es valido.').optional(),
   estado: z.enum(['NUEVA', 'REVISADA'], 'El estado de la alerta no es valido.').optional(),
 });
 

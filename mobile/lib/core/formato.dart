@@ -131,7 +131,6 @@ abstract final class Etiquetas {
 
   static String tipoAlerta(String tipo) => switch (tipo) {
         'CONTEO' => 'Conteo',
-        'DISPERSION' => 'Dispersión anormal',
         'AMENAZA' => 'Intruso detectado',
         _ => tipo,
       };

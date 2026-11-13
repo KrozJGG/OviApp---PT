@@ -74,7 +74,7 @@ async function crearTarea(args: {
 async function crearAlerta(args: {
   idPredio: string;
   fechaHora: Date;
-  tipoAlerta?: 'CONTEO' | 'DISPERSION' | 'AMENAZA';
+  tipoAlerta?: 'CONTEO' | 'AMENAZA';
   estado?: 'NUEVA' | 'REVISADA';
   descripcion?: string;
 }) {
@@ -139,7 +139,7 @@ describe('Modulo 5 - Pantalla de inicio y calendario (RF_15, RF_16)', () => {
       const ultima = await crearAlerta({
         idPredio: e.predioA.id,
         fechaHora: hoyALas(11),
-        tipoAlerta: 'DISPERSION',
+        tipoAlerta: 'AMENAZA',
         descripcion: 'Animales fuera del sector norte.',
       });
       await crearAlerta({ idPredio: e.predioA.id, fechaHora: hoyALas(9), estado: 'REVISADA' });
@@ -152,7 +152,7 @@ describe('Modulo 5 - Pantalla de inicio y calendario (RF_15, RF_16)', () => {
       expect(r.body.alertasSinLeer).toBe(2);
       expect(r.body.ultimaAlerta).toMatchObject({
         id: ultima.id,
-        tipoAlerta: 'DISPERSION',
+        tipoAlerta: 'AMENAZA',
         descripcion: 'Animales fuera del sector norte.',
       });
     });

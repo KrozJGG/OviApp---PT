@@ -1,23 +1,24 @@
 """
-Lector de streams RTSP — captura de video y descarte de fotogramas.
+Lector de streams RTSP — captura de video y muestreo del conteo.
 
 Cada instancia de LectorStream corre en su propio hilo y se encarga de:
 1. Abrir un stream RTSP con OpenCV.
-2. Descartar frames para procesar solo los necesarios según FPS_PROCESAMIENTO.
-3. Enviar cada frame útil al Detector y luego al Analizador.
-4. Reconectar automáticamente si el stream se corta (backoff exponencial).
+2. Leer el stream continuamente (para no acumular retraso) y, cada
+   INTERVALO_INFERENCIA_SEG, pasar el frame actual al Detector.
+3. Guardar el conteo de cada inferencia como muestra de la ventana actual.
+4. Entregar la mediana de la ventana cuando el loop principal envía el heartbeat.
+5. Reconectar automáticamente si el stream se corta (backoff exponencial).
 """
 
 from __future__ import annotations
 
 import logging
+import statistics
 import threading
 import time
 
 import cv2
-import numpy as np
 
-from .analizador import Analizador, EstadoStream
 from .config import config
 from .detector import Detector
 
@@ -29,26 +30,21 @@ _BACKOFF_INICIAL_SEG = 2
 
 
 class LectorStream:
-    """
-    Hilo que consume un stream RTSP y procesa frames con el Detector.
+    """Hilo que consume un stream RTSP y cuenta ovejas con el Detector."""
 
-    Cada stream tiene su propio tracker (ByteTrack) y estado de análisis,
-    pero comparte la instancia del Detector (modelo YOLO) y del Analizador.
-    """
-
-    def __init__(
-        self,
-        nombre: str,
-        url_rtsp: str,
-        detector: Detector,
-        analizador: Analizador,
-    ) -> None:
+    def __init__(self, nombre: str, url_rtsp: str, detector: Detector) -> None:
         self.nombre = nombre
         self._url = url_rtsp
         self._detector = detector
-        self._analizador = analizador
-        self._tracker = detector.crear_tracker()
-        self._estado = analizador.crear_estado(nombre)
+
+        # Conteos tomados desde el último heartbeat. Los escribe el hilo del
+        # stream y los consume el loop principal, por eso van con lock.
+        self._muestras: list[int] = []
+        self._lock = threading.Lock()
+
+        # Último conteo reportado; se reutiliza si una ventana queda sin muestras.
+        self.ultimo_conteo: int | None = None
+
         self._detenido = threading.Event()
         self._hilo = threading.Thread(
             target=self._loop,
@@ -56,23 +52,44 @@ class LectorStream:
             name=f"stream-{nombre}",
         )
 
-    @property
-    def estado(self) -> EstadoStream:
-        """Estado de análisis de este stream (para heartbeats)."""
-        return self._estado
+    # ── API pública ──────────────────────────────────────────────────────
 
     def iniciar(self) -> None:
         """Inicia el hilo de captura."""
         logger.info("Iniciando stream '%s' → %s", self.nombre, self._url)
         self._hilo.start()
 
-    def detener(self) -> None:
-        """Señala al hilo que se detenga."""
+    def detener(self, timeout: float = 5) -> None:
+        """Señala al hilo que se detenga y espera a que termine."""
         self._detenido.set()
+        self._hilo.join(timeout=timeout)
 
     def esta_vivo(self) -> bool:
         """Retorna True si el hilo sigue corriendo."""
         return self._hilo.is_alive()
+
+    def tomar_conteo_heartbeat(self) -> int | None:
+        """
+        Devuelve la mediana de los conteos de la ventana y la reinicia.
+
+        La mediana descarta lecturas atípicas (una pérdida puntual de precisión
+        del modelo o un falso positivo aislado). Si la ventana no tuvo muestras,
+        devuelve el último conteo conocido, o None si aún no hay ninguno.
+        """
+        with self._lock:
+            muestras = self._muestras
+            self._muestras = []
+
+        if muestras:
+            self.ultimo_conteo = int(round(statistics.median(muestras)))
+            logger.info(
+                "[%s] Muestras de la ventana: %s → mediana %d",
+                self.nombre,
+                muestras,
+                self.ultimo_conteo,
+            )
+
+        return self.ultimo_conteo
 
     # ── Loop principal ───────────────────────────────────────────────────
 
@@ -115,13 +132,10 @@ class LectorStream:
         """Intenta abrir el stream RTSP."""
         try:
             cap = cv2.VideoCapture(self._url, cv2.CAP_FFMPEG)
-
-            # Configurar buffer mínimo para reducir latencia.
+            # Buffer mínimo para reducir latencia.
             cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-
             if not cap.isOpened():
                 return None
-
             return cap
         except Exception:
             logger.exception("[%s] Excepción al abrir el stream.", self.nombre)
@@ -129,49 +143,41 @@ class LectorStream:
 
     def _procesar_stream(self, cap: cv2.VideoCapture) -> None:
         """
-        Lee frames del stream y procesa solo los necesarios.
+        Lee el stream sin pausa y ejecuta el modelo cada INTERVALO_INFERENCIA_SEG.
 
-        Si el stream corre a 30fps y FPS_PROCESAMIENTO=2, solo 2 de cada
-        30 frames se envían al modelo YOLO. Los demás se descartan
-        con cap.grab() (más rápido que cap.read() porque no decodifica).
+        Los frames intermedios se descartan con cap.grab(), que no los
+        convierte a imagen; solo el frame que toca analizar se decodifica con
+        cap.retrieve(). Leer de forma continua evita que el video se atrase
+        respecto del tiempo real.
         """
-        fps_stream = cap.get(cv2.CAP_PROP_FPS)
-        if fps_stream <= 0:
-            fps_stream = 30.0  # Asumir 30fps si no se puede determinar.
+        intervalo = config.intervalo_inferencia_seg
+        # Analizar el primer frame apenas se conecta.
+        proxima_inferencia = time.monotonic()
 
-        # Cada cuántos frames procesar uno.
-        intervalo = max(1, int(fps_stream / config.fps_procesamiento))
-        contador_frames = 0
-
-        logger.info(
-            "[%s] Stream a %.0f fps — procesando 1 de cada %d frames (%d fps efectivos).",
-            self.nombre,
-            fps_stream,
-            intervalo,
-            config.fps_procesamiento,
-        )
+        logger.info("[%s] Analizando 1 frame cada %.1f s.", self.nombre, intervalo)
 
         while not self._detenido.is_set():
-            # grab() lee el frame sin decodificarlo (rápido).
-            ok = cap.grab()
-            if not ok:
+            if not cap.grab():
                 logger.warning("[%s] No se pudo leer el frame — stream caído.", self.nombre)
                 break
 
-            contador_frames += 1
-
-            # Solo decodificar y procesar cada N frames.
-            if contador_frames % intervalo != 0:
+            ahora = time.monotonic()
+            if ahora < proxima_inferencia:
                 continue
 
-            # retrieve() decodifica el frame ya capturado.
             ok, frame = cap.retrieve()
             if not ok or frame is None:
                 continue
 
-            self._procesar_frame(frame)
+            proxima_inferencia = ahora + intervalo
+            resultado = self._detector.detectar(frame)
 
-    def _procesar_frame(self, frame: np.ndarray) -> None:
-        """Envía un frame al Detector y luego al Analizador."""
-        resultado = self._detector.detectar(frame, self._tracker)
-        self._analizador.evaluar(resultado, self._estado)
+            with self._lock:
+                self._muestras.append(resultado.conteo)
+
+            logger.debug(
+                "[%s] %d ovejas detectadas (confianza media %.2f).",
+                self.nombre,
+                resultado.conteo,
+                resultado.confianza_promedio,
+            )

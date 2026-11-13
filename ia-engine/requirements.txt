@@ -1,10 +1,8 @@
 # Dependencias del módulo ia-engine
 # ──────────────────────────────────
 # ultralytics incluye PyTorch, OpenCV (headless) y todas las utilidades YOLO.
-# supervision provee ByteTrack (tracking) y PolygonZone (zona de interés).
 
 # 8.4.208 es la versión probada con el argumento tile que usa el detector.
 ultralytics>=8.4.208,<9
-supervision>=0.25,<1
 requests>=2.32,<3
 pydantic-settings>=2.7,<3

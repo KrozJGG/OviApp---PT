@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '../src/config/prisma';
 import { inicioDelDia } from '../src/shared/fechas';
 import { MINUTOS_EN_LINEA } from '../src/modules/alertas/alertas.servicio';
-import { api, crearEscenario, type Escenario } from './apoyo/fixtures';
+import { api, crearAnimal, crearEscenario, type Escenario } from './apoyo/fixtures';
 
 /**
  * Modulo 6 - Vigilancia y deteccion (RF_17, RF_18, RF_19).
@@ -32,7 +32,7 @@ async function sembrarAlerta(
   args: {
     idPredio?: string;
     idDispositivoEdge?: string | null;
-    tipoAlerta?: 'CONTEO' | 'DISPERSION' | 'AMENAZA';
+    tipoAlerta?: 'CONTEO' | 'AMENAZA';
     estado?: 'NUEVA' | 'REVISADA';
     fechaHora: Date;
     conteoAnimales?: number;
@@ -489,7 +489,7 @@ describe('Vigilancia y deteccion (RF_17 a RF_19)', () => {
       await sembrarAlerta(e, { fechaHora: mediodiaDe('2026-03-11'), tipoAlerta: 'AMENAZA' });
       const yaRevisada = await sembrarAlerta(e, {
         fechaHora: mediodiaDe('2026-03-09'),
-        tipoAlerta: 'DISPERSION',
+        tipoAlerta: 'CONTEO',
         estado: 'REVISADA',
       });
 
@@ -560,11 +560,28 @@ describe('Vigilancia y deteccion (RF_17 a RF_19)', () => {
         nombre: 'Camara de prueba',
         ultimoHeartbeat: null,
         ultimoConteo: null,
-        conteoEsperado: 10,
+        // El escenario tiene un solo animal activo en el predio A.
+        conteoEsperado: 1,
         enLinea: false,
       });
       expect(r.body.alertasSinRevisar).toBe(0);
       expect(r.body.ultimaAlerta).toBeNull();
+    });
+
+    it('compara contra las ovejas activas del predio, no contra un valor fijo', async () => {
+      await crearAnimal({ idPredio: e.predioA.id, idRegistrador: e.productor.id, numeroOreja: '0002' });
+      await crearAnimal({ idPredio: e.predioA.id, idRegistrador: e.productor.id, numeroOreja: '0003' });
+      // Los dados de baja y los de otro predio no cuentan.
+      await crearAnimal({
+        idPredio: e.predioA.id,
+        idRegistrador: e.productor.id,
+        numeroOreja: '0004',
+        estado: 'INACTIVO',
+      });
+
+      const r = await api(e.app, e.productor.token).get('/vigilancia/estado');
+
+      expect(r.body.dispositivos[0].conteoEsperado).toBe(3);
     });
 
     it('marca el dispositivo en linea tras un latido reciente', async () => {
@@ -591,7 +608,7 @@ describe('Vigilancia y deteccion (RF_17 a RF_19)', () => {
       await sembrarAlerta(e, { fechaHora: mediodiaDe('2026-03-12'), tipoAlerta: 'AMENAZA' });
       await sembrarAlerta(e, {
         fechaHora: mediodiaDe('2026-03-11'),
-        tipoAlerta: 'DISPERSION',
+        tipoAlerta: 'CONTEO',
         estado: 'REVISADA',
       });
 

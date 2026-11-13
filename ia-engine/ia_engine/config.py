@@ -38,9 +38,8 @@ class Config(BaseSettings):
     Umbral de confianza mínimo para aceptar una detección.
 
     0.5 descartaba casi la mitad de las ovejas reales en pruebas con
-    rebano.mp4 (ver ia-engine/scripts/diagnostico_conteo.py). 0.35 es un
-    punto intermedio: rescata más detecciones válidas sin bajar directo a
-    los 0.25 por defecto de Ultralytics, que no se validaron contra ruido.
+    rebano.mp4. 0.35 es un punto intermedio: rescata más detecciones válidas
+    sin bajar directo a los 0.25 por defecto de Ultralytics.
     """
 
     clases_objetivo: str = "sheep"
@@ -49,70 +48,37 @@ class Config(BaseSettings):
 
     sheep_detection.pt tiene una sola clase ("sheep"), así que el filtro no
     cambia nada; importa si se vuelve a un preentrenado de COCO como yolo26n,
-    que detecta 80 clases y sin filtrar sumaría personas, perros y vehículos. Los nombres se comparan contra
-    los del propio modelo (`model.names`), sin distinguir mayúsculas.
-
-    Dejarlo vacío desactiva el filtro, que es lo correcto para un modelo
-    entrenado con una sola clase.
+    que detecta 80 clases y sin filtrar sumaría personas, perros y vehículos.
+    Los nombres se comparan contra los del propio modelo (`model.names`), sin
+    distinguir mayúsculas. Vacío = sin filtro.
     """
 
     # ── Procesamiento ────────────────────────────────────────────────────
-    fps_procesamiento: int = 2
-    """Fotogramas por segundo a enviar al modelo (el resto se descarta)."""
+    intervalo_inferencia_seg: float = Field(default=5.0, gt=0)
+    """
+    Segundos entre cada inferencia del modelo.
+
+    Las ovejas se mueven despacio, así que no hace falta analizar varios
+    frames por segundo. Con 5 s y un heartbeat de 15 s se toman ~3 muestras
+    por ventana, lo que mantiene bajo el uso de CPU.
+    """
 
     tile_inferencia: int = Field(default=640, ge=0)
     """
     Tamaño en píxeles de las ventanas en que se divide cada frame (0 = frame completo).
 
     Con frame completo, un video 720p se reduce a 640 y las ovejas lejanas
-    quedan en unos 16x7 px: rebano_LQ.mp4 daba 0 detecciones. Las ventanas de
-    640 mantienen la resolución original. Bajar de 640 parte y duplica ovejas
-    (ver ia-engine/scripts/detectar_frames_video.py).
+    quedan en unos 16x7 px. Las ventanas de 640 mantienen la resolución
+    original. Bajar de 640 parte y duplica ovejas.
     """
 
     # ── Heartbeat ────────────────────────────────────────────────────────
-    heartbeat_intervalo_seg: int = 300
-    """Segundos entre cada heartbeat al backend (por defecto 5 min)."""
-
-    # ── Alertas ──────────────────────────────────────────────────────────
-    alerta_cooldown_seg: int = 300
-    """Segundos mínimos entre dos alertas del mismo tipo (evita spam)."""
-
-    conteo_umbral_diferencia: int = 2
+    heartbeat_intervalo_seg: int = Field(default=15, gt=0)
     """
-    Diferencia mínima entre conteo detectado y conteo esperado para
-    emitir una alerta de CONTEO. Evita falsas alarmas por ruido.
-    """
+    Segundos entre cada envío del conteo al backend.
 
-    conteo_frames_confirmacion: int = 5
-    """
-    Cantidad de frames consecutivos donde el conteo debe mantenerse
-    anormal antes de emitir la alerta. Evita picos transitorios.
-    """
-
-    conteo_esperado: int | None = None
-    """
-    Línea base del rebaño, como respaldo si el backend no responde.
-
-    Normalmente NO se define: el valor autoritativo vive en la tabla
-    dispositivo_edge y se lee al arrancar desde GET /api/v1/edge/configuracion.
-    Definir esta variable solo tiene sentido para pruebas sin backend.
-    """
-
-    # ── Dispersión ───────────────────────────────────────────────────────
-    dispersion_umbral: float = 0.35
-    """
-    Umbral del índice de dispersión del rebaño.
-
-    El índice es la distancia promedio entre centroides dividida por la
-    diagonal del fotograma. Referencias de la escala:
-
-      ~0.05 – 0.15  rebaño apiñado, comportamiento normal
-      ~0.20 – 0.30  repartido por buena parte del cuadro
-      ~0.37         máximo práctico: ovejas distribuidas por todo el fotograma
-
-    Como el máximo alcanzable ronda 0.37, cualquier umbral sobre ~0.4 hace que
-    la alerta nunca se dispare. Conviene ajustarlo con vídeo real del predio.
+    En cada envío se reporta la MEDIANA de las muestras tomadas en la
+    ventana, que descarta lecturas atípicas del modelo.
     """
 
     model_config = {"env_prefix": "", "case_sensitive": False}
