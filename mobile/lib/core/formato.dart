@@ -34,17 +34,6 @@ abstract final class Fmt {
   /// "09:00"
   static String hora(DateTime f) => _hora.format(f.toLocal());
 
-  /// "Hoy 03:42", "Ayer 23:15", "27 jul 14:30" — historial de alertas (mockup 10).
-  static String fechaHoraRelativa(DateTime f) {
-    final local = f.toLocal();
-    final dias = _diasDesdeHoy(local);
-    return switch (dias) {
-      0 => 'Hoy ${hora(local)}',
-      1 => 'Ayer ${hora(local)}',
-      _ => '${diaMes(local)} ${hora(local)}',
-    };
-  }
-
   /// "Hoy", "Ayer", "Mañana", "28 ago" — vencimiento de una tarea.
   static String fechaRelativa(DateTime f) {
     final local = f.toLocal();
@@ -129,18 +118,6 @@ abstract final class Etiquetas {
 
   static String estadoTarea(String estado) => estado == 'COMPLETADA' ? 'Completada' : 'Activa';
 
-  static String tipoAlerta(String tipo) => switch (tipo) {
-        'CONTEO' => 'Conteo',
-        'AMENAZA' => 'Intruso detectado',
-        _ => tipo,
-      };
-
-  static String nivelAlerta(String nivel) => switch (nivel) {
-        'INFO' => 'Informativa',
-        'ADVERTENCIA' => 'Advertencia',
-        'CRITICA' => 'Crítica',
-        _ => nivel,
-      };
 
   static String tipoBitacora(String tipo) => switch (tipo) {
         'ALTA' => 'Alta',

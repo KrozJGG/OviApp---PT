@@ -408,8 +408,7 @@ export const ModelName = {
   Tarea: 'Tarea',
   TareaUsuario: 'TareaUsuario',
   TareaAnimal: 'TareaAnimal',
-  DispositivoEdge: 'DispositivoEdge',
-  Alerta: 'Alerta'
+  DispositivoEdge: 'DispositivoEdge'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -425,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "predio" | "usuario" | "dispositivoUsuario" | "refreshToken" | "animal" | "bitacoraEntrada" | "evento" | "eventoAnimal" | "tarea" | "tareaUsuario" | "tareaAnimal" | "dispositivoEdge" | "alerta"
+    modelProps: "predio" | "usuario" | "dispositivoUsuario" | "refreshToken" | "animal" | "bitacoraEntrada" | "evento" | "eventoAnimal" | "tarea" | "tareaUsuario" | "tareaAnimal" | "dispositivoEdge"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1317,80 +1316,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    Alerta: {
-      payload: Prisma.$AlertaPayload<ExtArgs>
-      fields: Prisma.AlertaFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.AlertaFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.AlertaFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>
-        }
-        findFirst: {
-          args: Prisma.AlertaFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.AlertaFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>
-        }
-        findMany: {
-          args: Prisma.AlertaFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>[]
-        }
-        create: {
-          args: Prisma.AlertaCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>
-        }
-        createMany: {
-          args: Prisma.AlertaCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.AlertaCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>[]
-        }
-        delete: {
-          args: Prisma.AlertaDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>
-        }
-        update: {
-          args: Prisma.AlertaUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>
-        }
-        deleteMany: {
-          args: Prisma.AlertaDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.AlertaUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.AlertaUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>[]
-        }
-        upsert: {
-          args: Prisma.AlertaUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$AlertaPayload>
-        }
-        aggregate: {
-          args: Prisma.AlertaAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateAlerta>
-        }
-        groupBy: {
-          args: Prisma.AlertaGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AlertaGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.AlertaCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AlertaCountAggregateOutputType> | number
-        }
-      }
-    }
   }
 } & {
   other: {
@@ -1589,30 +1514,10 @@ export const DispositivoEdgeScalarFieldEnum = {
   apiKeyPrefijo: 'apiKeyPrefijo',
   ultimoHeartbeat: 'ultimoHeartbeat',
   ultimoConteo: 'ultimoConteo',
-  conteoEsperado: 'conteoEsperado',
   createdAt: 'createdAt'
 } as const
 
 export type DispositivoEdgeScalarFieldEnum = (typeof DispositivoEdgeScalarFieldEnum)[keyof typeof DispositivoEdgeScalarFieldEnum]
-
-
-export const AlertaScalarFieldEnum = {
-  id: 'id',
-  idPredio: 'idPredio',
-  idDispositivoEdge: 'idDispositivoEdge',
-  tipoAlerta: 'tipoAlerta',
-  descripcion: 'descripcion',
-  nivel: 'nivel',
-  conteoAnimales: 'conteoAnimales',
-  conteoEsperado: 'conteoEsperado',
-  fechaHora: 'fechaHora',
-  estado: 'estado',
-  idRevisadoPor: 'idRevisadoPor',
-  fechaRevision: 'fechaRevision',
-  createdAt: 'createdAt'
-} as const
-
-export type AlertaScalarFieldEnum = (typeof AlertaScalarFieldEnum)[keyof typeof AlertaScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1880,48 +1785,6 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
- * Reference to a field of type 'TipoAlerta'
- */
-export type EnumTipoAlertaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoAlerta'>
-    
-
-
-/**
- * Reference to a field of type 'TipoAlerta[]'
- */
-export type ListEnumTipoAlertaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoAlerta[]'>
-    
-
-
-/**
- * Reference to a field of type 'NivelAlerta'
- */
-export type EnumNivelAlertaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NivelAlerta'>
-    
-
-
-/**
- * Reference to a field of type 'NivelAlerta[]'
- */
-export type ListEnumNivelAlertaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'NivelAlerta[]'>
-    
-
-
-/**
- * Reference to a field of type 'EstadoAlerta'
- */
-export type EnumEstadoAlertaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EstadoAlerta'>
-    
-
-
-/**
- * Reference to a field of type 'EstadoAlerta[]'
- */
-export type ListEnumEstadoAlertaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EstadoAlerta[]'>
-    
-
-
-/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2097,7 +1960,6 @@ export type GlobalOmitConfig = {
   tareaUsuario?: Prisma.TareaUsuarioOmit
   tareaAnimal?: Prisma.TareaAnimalOmit
   dispositivoEdge?: Prisma.DispositivoEdgeOmit
-  alerta?: Prisma.AlertaOmit
 }
 
 /* Types for Logging */

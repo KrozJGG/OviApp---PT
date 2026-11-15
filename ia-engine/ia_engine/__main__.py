@@ -3,12 +3,13 @@ Punto de entrada del módulo ia-engine.
 
 Ejecutado con: python -m ia_engine
 
-Flujo:
-1. Carga el Detector (modelo YOLO, una sola vez).
-2. Arranca un LectorStream por cada stream RTSP: cada uno lee su video y
-   cada INTERVALO_INFERENCIA_SEG le pasa un frame al Detector.
-3. Cada HEARTBEAT_INTERVALO_SEG toma la mediana del conteo de cada stream
-   y la envía al backend en el heartbeat.
+Flujo lineal en CPU:
+1. Carga el modelo YOLO en formato ONNX (`task="detect"`).
+2. Consume el stream RTSP con el generador nativo de Ultralytics
+   (`stream=True`, `stream_buffer=False`, `vid_stride=...`).
+3. Acumula los conteos de ovejas recientes en una ventana (`deque`) y calcula
+   la mediana estadística para evitar saltos por oclusiones breves.
+4. Envía periódicamente ese conteo estabilizado al backend vía heartbeat.
 
 Se detiene limpiamente con Ctrl+C (SIGINT) o SIGTERM (Docker stop).
 """
@@ -17,13 +18,16 @@ from __future__ import annotations
 
 import logging
 import signal
+import statistics
 import sys
 import threading
+import time
+from collections import deque
+
+from ultralytics import YOLO
 
 from .cliente_api import ClienteAPI
 from .config import config, parsear_streams
-from .detector import Detector
-from .lector_stream import LectorStream
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,23 +35,25 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
     stream=sys.stdout,
 )
+
+
+class _FiltroWaitingStream(logging.Filter):
+    """Filtra avisos de polling de Ultralytics cuando vid_stride > 1 espera el siguiente frame."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        return "Waiting for stream" not in record.getMessage()
+
+
+logging.getLogger("ultralytics").addFilter(_FiltroWaitingStream())
 logger = logging.getLogger("ia_engine")
 
-
-def _conteo_total(lectores: list[LectorStream]) -> int | None:
-    """Suma la mediana de cada stream. None si ningún stream tiene conteo aún."""
-    conteos = [
-        conteo
-        for conteo in (lector.tomar_conteo_heartbeat() for lector in lectores)
-        if conteo is not None
-    ]
-    return sum(conteos) if conteos else None
+_REINTENTO_STREAM_SEG = 3
 
 
 def main() -> None:
     """Punto de entrada principal."""
     logger.info("═══════════════════════════════════════════════════")
-    logger.info("  OviApp — Módulo de IA (detección de ovejas)")
+    logger.info("  OviApp — Módulo de IA (conteo ovino CPU + ONNX)")
     logger.info("═══════════════════════════════════════════════════")
 
     streams = parsear_streams(config.rtsp_streams)
@@ -55,19 +61,21 @@ def main() -> None:
         logger.error("No se configuraron streams RTSP. Revisa RTSP_STREAMS.")
         sys.exit(1)
 
-    logger.info("Streams configurados: %s", list(streams.keys()))
-    logger.info("Inferencia cada %.1f s", config.intervalo_inferencia_seg)
-    logger.info("Heartbeat cada %d s", config.heartbeat_intervalo_seg)
+    nombre_stream, url_rtsp = next(iter(streams.items()))
+    if len(streams) > 1:
+        logger.warning(
+            "Se configuraron %d streams; este modo lineal monitoreará '%s'.",
+            len(streams),
+            nombre_stream,
+        )
 
-    # ── Inicializar componentes ──────────────────────────────────────
-    detector = Detector(model_path=config.model_path, confianza=config.confianza_minima)
+    logger.info("Stream '%s' → %s", nombre_stream, url_rtsp)
+    logger.info("Modelo ONNX: %s (confianza=%.2f, vid_stride=%d)", config.model_path, config.confianza_minima, config.vid_stride)
+    logger.info("Mediana sobre %d muestras | Heartbeat cada %d s", config.ventana_mediana, config.heartbeat_intervalo_seg)
+
+    modelo = YOLO(config.model_path, task="detect")
     cliente = ClienteAPI(backend_url=config.backend_url, api_key=config.edge_api_key)
 
-    lectores = [LectorStream(nombre, url, detector) for nombre, url in streams.items()]
-    for lector in lectores:
-        lector.iniciar()
-
-    # ── Manejo de señales para cierre limpio ─────────────────────────
     detenido = threading.Event()
 
     def _manejar_senal(signum: int, _frame: object) -> None:
@@ -77,30 +85,59 @@ def main() -> None:
     signal.signal(signal.SIGINT, _manejar_senal)
     signal.signal(signal.SIGTERM, _manejar_senal)
 
+    ventana: deque[int] = deque(maxlen=config.ventana_mediana)
+    proximo_heartbeat = time.monotonic() + config.heartbeat_intervalo_seg
+
     logger.info("Módulo ia-engine iniciado.")
 
-    # ── Loop de heartbeat ────────────────────────────────────────────
-    # Se espera primero para que la ventana inicial ya tenga muestras.
-    while not detenido.wait(config.heartbeat_intervalo_seg):
-        conteo = _conteo_total(lectores)
-
-        if cliente.enviar_heartbeat(conteo):
-            logger.info(
-                "Heartbeat enviado — %s",
-                f"{conteo} ovejas detectadas" if conteo is not None else "sin conteo aún",
+    while not detenido.is_set():
+        resultados = None
+        try:
+            resultados = modelo.predict(
+                source=url_rtsp,
+                stream=True,
+                stream_buffer=False,
+                vid_stride=config.vid_stride,
+                conf=config.confianza_minima,
+                device="cpu",
+                verbose=False,
             )
 
-        for lector in lectores:
-            if not lector.esta_vivo():
-                logger.error("Stream '%s' se detuvo inesperadamente.", lector.nombre)
+            for resultado in resultados:
+                if detenido.is_set():
+                    break
 
-    # ── Cierre limpio ────────────────────────────────────────────────
-    logger.info("Deteniendo streams...")
-    for lector in lectores:
-        lector.detener()
+                conteo_frame = len(resultado.boxes) if resultado.boxes is not None else 0
+                ventana.append(conteo_frame)
 
-    # Avisar al backend para que "en línea" caiga de inmediato en vez de
-    # esperar el timeout por falta de heartbeat.
+                ahora = time.monotonic()
+                if ahora >= proximo_heartbeat:
+                    mediana = int(round(statistics.median(ventana)))
+                    if cliente.enviar_heartbeat(mediana):
+                        logger.info(
+                            "[%s] Heartbeat enviado — %d ovejas detectadas (muestras=%s)",
+                            nombre_stream,
+                            mediana,
+                            list(ventana),
+                        )
+                    proximo_heartbeat = ahora + config.heartbeat_intervalo_seg
+        except Exception as e:
+            if not detenido.is_set():
+                logger.warning("[%s] Error leyendo el stream RTSP: %s", nombre_stream, e)
+        finally:
+            if resultados is not None:
+                cerrar = getattr(resultados, "close", None)
+                if callable(cerrar):
+                    cerrar()
+
+        if not detenido.is_set():
+            logger.info(
+                "[%s] Stream finalizado o desconectado. Reintentando en %d s...",
+                nombre_stream,
+                _REINTENTO_STREAM_SEG,
+            )
+            detenido.wait(_REINTENTO_STREAM_SEG)
+
     cliente.enviar_desconexion()
     logger.info("Módulo ia-engine detenido.")
 

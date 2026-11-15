@@ -7,7 +7,7 @@ import { logger } from './config/logger';
 import { manejadorErrores, noEncontrado } from './middleware/manejadorErrores';
 
 import { enrutadorAgenda, enrutadorInicio } from './modules/agenda/agenda.rutas';
-import { enrutadorAlertas, enrutadorEdge, enrutadorVigilancia } from './modules/alertas/alertas.rutas';
+import { enrutadorEdge, enrutadorVigilancia } from './modules/alertas/alertas.rutas';
 import { enrutadorAnimales } from './modules/animales/animales.rutas';
 import { enrutadorAuth } from './modules/auth/auth.rutas';
 import { enrutadorBitacora } from './modules/bitacora/bitacora.rutas';
@@ -70,7 +70,6 @@ export function crearApp(): Express {
 
   // Modulo 6 - Vigilancia y deteccion (RF_17 a RF_19)
   api.use('/edge', enrutadorEdge);
-  api.use('/alertas', enrutadorAlertas);
   api.use('/vigilancia', enrutadorVigilancia);
   // Video en vivo de la camara: unica via de acceso, el puerto de MediaMTX no
   // se publica al host.

@@ -2,15 +2,15 @@ import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
-import type { MotivoBaja, SexoAnimal, TipoAlerta } from '../src/generated/prisma/enums';
+import type { MotivoBaja, SexoAnimal } from '../src/generated/prisma/enums';
 
 /**
  * Datos semilla de OviApp.
  *
  * Reproduce el estado que muestran los mockups de la tesis (Figuras 6.5 y 6.6)
  * para poder comparar la app contra el diseno durante el desarrollo:
- * 47 animales activos, la esquila del Hato Norte, la tarea de los cercos y las
- * tres alertas de vigilancia.
+ * 47 animales activos, la esquila del Hato Norte, la tarea de los cercos y el
+ * dispositivo edge de vigilancia.
  *
  * Es idempotente: se puede correr las veces que haga falta.
  */
@@ -61,7 +61,7 @@ async function main(): Promise<void> {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
-      "alerta", "evento", "tarea", "animal", "dispositivo_edge",
+      "evento", "tarea", "animal", "dispositivo_edge",
       "dispositivo_usuario", "refresh_token", "usuario", "predio"
     RESTART IDENTITY CASCADE
   `);
@@ -343,61 +343,18 @@ async function main(): Promise<void> {
 
   // ── Vigilancia ────────────────────────────────────────────────────────────
   const [prefijo, secreto] = API_KEY_EDGE.split('.') as [string, string];
-  const dispositivo = await prisma.dispositivoEdge.create({
+  await prisma.dispositivoEdge.create({
     data: {
       idPredio: predio.id,
       nombre: 'Cámara Hato Norte',
       apiKeyPrefijo: prefijo,
       apiKeyHash: await bcrypt.hash(secreto, 10),
-      conteoEsperado: 47,
-      ultimoConteo: 47,
+      ultimoConteo: null,
       // Dentro de MINUTOS_EN_LINEA, para que la demo arranque con la camara en
       // linea y se pueda entrar a la vista en vivo.
       ultimoHeartbeat: new Date(Date.now() - 60 * 1000),
     },
   });
-
-  const alertas: Array<{
-    tipo: TipoAlerta;
-    descripcion: string;
-    nivel: 'INFO' | 'ADVERTENCIA' | 'CRITICA';
-    conteo: number;
-    fecha: Date;
-  }> = [
-    {
-      tipo: 'AMENAZA',
-      descripcion: 'Movimiento no identificado en el perímetro',
-      nivel: 'CRITICA',
-      conteo: 47,
-      fecha: aHoraLocal(ayer, 23, 15),
-    },
-    {
-      tipo: 'CONTEO',
-      descripcion: 'Conteo normal del rebaño',
-      nivel: 'INFO',
-      conteo: 47,
-      fecha: aHoraLocal(ayer, 18, 0),
-    },
-  ];
-
-  for (const a of alertas) {
-    await prisma.alerta.create({
-      data: {
-        idPredio: predio.id,
-        idDispositivoEdge: dispositivo.id,
-        tipoAlerta: a.tipo,
-        descripcion: a.descripcion,
-        nivel: a.nivel,
-        conteoAnimales: a.conteo,
-        conteoEsperado: 47,
-        fechaHora: a.fecha,
-        estado: a.tipo === 'CONTEO' ? 'REVISADA' : 'NUEVA',
-        ...(a.tipo === 'CONTEO'
-          ? { idRevisadoPor: manuel.id, fechaRevision: aHoraLocal(ayer, 19, 0) }
-          : {}),
-      },
-    });
-  }
 
   console.log(`
 Datos semilla listos.

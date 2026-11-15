@@ -15,13 +15,16 @@ ia-engine/venv/
 __pycache__/
 *.py[cod]
 
-# Modelos YOLO: se ignoran salvo el que usa el compose (sheep_detection.pt,
-# ~5 MB). El de respaldo (yolo26n.pt) se copia a mano.
+# Modelos YOLO: se ignoran salvo el que usa el compose (sheep_detection.onnx / .pt).
+# El de respaldo (yolo26n.pt) se copia a mano.
 ia-engine/models/*.pt
 !ia-engine/models/sheep_detection.pt
+ia-engine/models/*.onnx
+!ia-engine/models/sheep_detection.onnx
 
 # Scripts y salidas de pruebas locales del motor de IA.
 ia-engine/scripts/
+ia-engine/resultados_inferencia/
 
 # ─── Documentación privada de desarrollo ─────────────────────────────────────
 docs/

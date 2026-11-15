@@ -33,6 +33,7 @@ class OviAsync<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return valor.when(
+      skipLoadingOnReload: true,
       loading: () => const OviCargando(),
       error: (e, _) => OviEstadoError(error: comoErrorApi(e), alReintentar: alReintentar),
       data: (datos) {

@@ -100,17 +100,10 @@ class _TarjetaEstado extends StatelessWidget {
               ),
               Expanded(
                 child: _Dato(
-                  etiqueta: 'Detectadas / activas',
-                  valor: d.ultimoConteo == null
-                      ? '—'
-                      : '${d.ultimoConteo}${d.conteoEsperado == null ? '' : ' / ${d.conteoEsperado}'}',
+                  etiqueta: 'Ovejas detectadas',
+                  valor: d.ultimoConteo == null ? '—' : '${d.ultimoConteo}',
                 ),
               ),
-              if (d.ultimoConteo != null && d.conteoEsperado != null)
-                OviChip(
-                  texto: d.conteoNormal ? 'Normal' : 'Faltan',
-                  tono: d.conteoNormal ? TonoChip.exito : TonoChip.peligro,
-                ),
             ],
           ),
           const SizedBox(height: 14),
@@ -154,13 +147,3 @@ class _Dato extends StatelessWidget {
     );
   }
 }
-
-/// Color, fondo e icono por tipo de alerta. Lo usa el detalle de alerta.
-(Color, Color, IconData) aspectoDeAlerta(String tipo) => switch (tipo) {
-      'AMENAZA' => (
-          OviColores.peligro,
-          OviColores.peligroFondo,
-          Icons.gpp_maybe_rounded,
-        ),
-      _ => (OviColores.exito, OviColores.exitoFondo, Icons.check_circle_outline_rounded),
-    };

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,15 +10,12 @@ import 'datos/acceso_stream.dart';
 import 'datos/alerta.dart';
 
 /// IF2-SAL — estado del dispositivo edge y último conteo detectado.
+/// Se refresca cada 5 s para reflejar los heartbeats del ia-engine (< 10 s).
 final estadoVigilanciaProvider = FutureProvider.autoDispose<EstadoVigilancia>((ref) async {
+  final timer = Timer(const Duration(seconds: 5), ref.invalidateSelf);
+  ref.onDispose(timer.cancel);
   final json = await ref.watch(dioProvider).traerMapa('/vigilancia/estado');
   return EstadoVigilancia.desdeJson(json);
-});
-
-/// Detalle de una alerta; es el destino del deep-link de la push.
-final alertaProvider = FutureProvider.autoDispose.family<Alerta, String>((ref, id) async {
-  final json = await ref.watch(dioProvider).traerMapa('/alertas/$id');
-  return Alerta.desdeJson(json);
 });
 
 final vigilanciaRepositorioProvider = Provider<VigilanciaRepositorio>(
@@ -27,12 +26,6 @@ class VigilanciaRepositorio {
   const VigilanciaRepositorio(this._ref);
 
   final Ref _ref;
-
-  /// Marca una alerta como revisada.
-  Future<Alerta> revisar(String id) async {
-    final json = await _ref.read(dioProvider).enviar('/alertas/$id/revisar');
-    return Alerta.desdeJson(json);
-  }
 
   /// Pide permiso para ver la cámara en vivo y deja lista la URL del manifiesto.
   ///

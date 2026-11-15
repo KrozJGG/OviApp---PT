@@ -19,7 +19,6 @@ import '../../features/rebano/pantallas/rebano.dart';
 import '../../features/tareas/pantallas/detalle_tarea.dart';
 import '../../features/tareas/pantallas/formulario_tarea.dart';
 import '../../features/tareas/pantallas/tareas.dart';
-import '../../features/vigilancia/pantallas/detalle_alerta.dart';
 import '../../features/vigilancia/pantallas/vigilancia.dart';
 import '../../features/vigilancia/pantallas/vigilancia_en_vivo.dart';
 import 'shell_principal.dart';
@@ -50,7 +49,6 @@ abstract final class Rutas {
   static const tareaEditar = 'tareaEditar';
 
   static const vigilancia = 'vigilancia';
-  static const alertaDetalle = 'alertaDetalle';
   static const vigilanciaEnVivo = 'vigilanciaEnVivo';
 
   static const mas = 'mas';
@@ -214,12 +212,6 @@ final routerProvider = Provider<GoRouter>((ref) {
                 name: Rutas.vigilancia,
                 builder: (_, _) => const PantallaVigilancia(),
                 routes: [
-                  GoRoute(
-                    path: 'alerta/:id',
-                    name: Rutas.alertaDetalle,
-                    builder: (_, e) =>
-                        PantallaDetalleAlerta(idAlerta: e.pathParameters['id']!),
-                  ),
                   GoRoute(
                     path: 'vivo/:idDispositivo',
                     name: Rutas.vigilanciaEnVivo,

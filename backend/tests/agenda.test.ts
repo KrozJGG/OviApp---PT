@@ -71,24 +71,6 @@ async function crearTarea(args: {
   });
 }
 
-async function crearAlerta(args: {
-  idPredio: string;
-  fechaHora: Date;
-  tipoAlerta?: 'CONTEO' | 'AMENAZA';
-  estado?: 'NUEVA' | 'REVISADA';
-  descripcion?: string;
-}) {
-  return prisma.alerta.create({
-    data: {
-      idPredio: args.idPredio,
-      tipoAlerta: args.tipoAlerta ?? 'CONTEO',
-      estado: args.estado ?? 'NUEVA',
-      descripcion: args.descripcion ?? null,
-      fechaHora: args.fechaHora,
-    },
-  });
-}
-
 describe('Modulo 5 - Pantalla de inicio y calendario (RF_15, RF_16)', () => {
   let e: Escenario;
 
@@ -99,7 +81,7 @@ describe('Modulo 5 - Pantalla de inicio y calendario (RF_15, RF_16)', () => {
   // ─── RF_15 - resumen de la pantalla de inicio ──────────────────────────────
 
   describe('GET /inicio/resumen (RF_15)', () => {
-    it('devuelve las cuatro tarjetas del mockup', async () => {
+    it('devuelve las tarjetas de resumen del predio', async () => {
       await prisma.animal.createMany({
         data: [
           { idPredio: e.predioA.id, idRegistrador: e.productor.id, numeroOreja: '0002', sexo: 'MACHO' },
@@ -135,34 +117,11 @@ describe('Modulo 5 - Pantalla de inicio y calendario (RF_15, RF_16)', () => {
         fechaLimite: sumarDias(HOY, 1),
       });
 
-      await crearAlerta({ idPredio: e.predioA.id, fechaHora: hoyALas(8) });
-      const ultima = await crearAlerta({
-        idPredio: e.predioA.id,
-        fechaHora: hoyALas(11),
-        tipoAlerta: 'AMENAZA',
-        descripcion: 'Animales fuera del sector norte.',
-      });
-      await crearAlerta({ idPredio: e.predioA.id, fechaHora: hoyALas(9), estado: 'REVISADA' });
-
       const r = await api(e.app, e.productor.token).get('/inicio/resumen');
 
       expect(r.status).toBe(200);
       expect(r.body.animalesActivos).toBe(3);
       expect(r.body.tareasHoy).toBe(3);
-      expect(r.body.alertasSinLeer).toBe(2);
-      expect(r.body.ultimaAlerta).toMatchObject({
-        id: ultima.id,
-        tipoAlerta: 'AMENAZA',
-        descripcion: 'Animales fuera del sector norte.',
-      });
-    });
-
-    it('devuelve ultimaAlerta null cuando el predio nunca recibio alertas', async () => {
-      const r = await api(e.app, e.productor.token).get('/inicio/resumen');
-
-      expect(r.status).toBe(200);
-      expect(r.body.ultimaAlerta).toBeNull();
-      expect(r.body.alertasSinLeer).toBe(0);
     });
 
     it('el Trabajador tambien puede consultarlo', async () => {
@@ -172,7 +131,6 @@ describe('Modulo 5 - Pantalla de inicio y calendario (RF_15, RF_16)', () => {
 
     it('aisla los conteos por predio (RNF_08)', async () => {
       await crearTarea({ idPredio: e.predioA.id, idCreador: e.productor.id, fechaLimite: HOY });
-      await crearAlerta({ idPredio: e.predioA.id, fechaHora: hoyALas(10) });
 
       const r = await api(e.app, e.ajeno.token).get('/inicio/resumen');
 
@@ -180,8 +138,6 @@ describe('Modulo 5 - Pantalla de inicio y calendario (RF_15, RF_16)', () => {
       // El predio B solo tiene su propio animal y ningun dato del predio A.
       expect(r.body.animalesActivos).toBe(1);
       expect(r.body.tareasHoy).toBe(0);
-      expect(r.body.alertasSinLeer).toBe(0);
-      expect(r.body.ultimaAlerta).toBeNull();
     });
 
     it('responde 401 sin token', async () => {

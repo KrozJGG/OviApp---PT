@@ -4,15 +4,11 @@ import { autenticarEdge } from '../../middleware/autenticarEdge';
 import * as controlador from './alertas.controlador';
 
 /**
- * Modulo 6 - Vigilancia y deteccion (RF_17 a RF_19).
+ * Modulo 6 - Vigilancia y monitoreo de conteo (IF2-SAL).
  *
- * Son tres enrutadores porque conviven dos identidades distintas: el modulo
- * edge se autentica con su API key (IF5-ENT) y los usuarios con su JWT. Separar
- * los montajes evita que una ruta de consulta quede accesible con una API key
- * de dispositivo, o al reves.
- *
- * El modelo de vision por computadora corre en el dispositivo: aqui solo se
- * recibe la senal, se almacena, se notifica y se expone.
+ * El modelo de vision por computadora corre en el dispositivo edge: aqui solo se
+ * recibe el latido con el conteo actual de ovejas (IF5-ENT) y se expone el
+ * estado operativo del dispositivo a la app.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -22,36 +18,12 @@ export const enrutadorEdge = Router();
 
 enrutadorEdge.use(autenticarEdge);
 
-// RF_17 + RF_18 - almacena la alerta y notifica al predio. Idempotente.
-enrutadorEdge.post('/alertas', controlador.ingestar);
-
-// Latido de presencia; alimenta el indicador "en linea" de IF2-SAL.
+// Latido de presencia; alimenta el indicador "en linea" y ultimo conteo de IF2-SAL.
 enrutadorEdge.post('/heartbeat', controlador.heartbeat);
 
 // Aviso de apagado limpio: pasa a "sin senal" de inmediato en vez de esperar
 // a que venza MINUTOS_EN_LINEA. Solo cubre SIGTERM/SIGINT, no un SIGKILL.
 enrutadorEdge.post('/desconexion', controlador.desconexion);
-
-// El dispositivo lee su propia linea base (conteo esperado del rebano). Sin
-// esto el modulo edge no puede decidir si faltan animales.
-enrutadorEdge.get('/configuracion', controlador.configuracion);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// /api/v1/alertas - historial para la app (JWT)
-// ─────────────────────────────────────────────────────────────────────────────
-export const enrutadorAlertas = Router();
-
-enrutadorAlertas.use(autenticar);
-
-// RF_19 - Productor y Trabajador; siempre acotado al predio de la sesion.
-enrutadorAlertas.get('/', controlador.listar);
-
-// Vacia la bandeja de una vez: el modulo edge emite una alerta por ventana de
-// conteo y revisarlas de a una no aporta nada.
-enrutadorAlertas.post('/revisar-todas', controlador.revisarTodas);
-
-enrutadorAlertas.get('/:id', controlador.detalle);
-enrutadorAlertas.post('/:id/revisar', controlador.revisar);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // /api/v1/vigilancia - estado del monitoreo (JWT)

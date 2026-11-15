@@ -247,7 +247,6 @@ export type UsuarioWhereInput = {
   tareasCreadas?: Prisma.TareaListRelationFilter
   tareasCompletadas?: Prisma.TareaListRelationFilter
   tareasAsignadas?: Prisma.TareaUsuarioListRelationFilter
-  alertasRevisadas?: Prisma.AlertaListRelationFilter
 }
 
 export type UsuarioOrderByWithRelationInput = {
@@ -272,7 +271,6 @@ export type UsuarioOrderByWithRelationInput = {
   tareasCreadas?: Prisma.TareaOrderByRelationAggregateInput
   tareasCompletadas?: Prisma.TareaOrderByRelationAggregateInput
   tareasAsignadas?: Prisma.TareaUsuarioOrderByRelationAggregateInput
-  alertasRevisadas?: Prisma.AlertaOrderByRelationAggregateInput
 }
 
 export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
@@ -300,7 +298,6 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   tareasCreadas?: Prisma.TareaListRelationFilter
   tareasCompletadas?: Prisma.TareaListRelationFilter
   tareasAsignadas?: Prisma.TareaUsuarioListRelationFilter
-  alertasRevisadas?: Prisma.AlertaListRelationFilter
 }, "id" | "email">
 
 export type UsuarioOrderByWithAggregationInput = {
@@ -360,7 +357,6 @@ export type UsuarioCreateInput = {
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateInput = {
@@ -384,7 +380,6 @@ export type UsuarioUncheckedCreateInput = {
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUpdateInput = {
@@ -408,7 +403,6 @@ export type UsuarioUpdateInput = {
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateInput = {
@@ -432,7 +426,6 @@ export type UsuarioUncheckedUpdateInput = {
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioCreateManyInput = {
@@ -710,22 +703,6 @@ export type UsuarioUpdateOneRequiredWithoutTareasAsignadasNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutTareasAsignadasInput, Prisma.UsuarioUpdateWithoutTareasAsignadasInput>, Prisma.UsuarioUncheckedUpdateWithoutTareasAsignadasInput>
 }
 
-export type UsuarioCreateNestedOneWithoutAlertasRevisadasInput = {
-  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutAlertasRevisadasInput, Prisma.UsuarioUncheckedCreateWithoutAlertasRevisadasInput>
-  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutAlertasRevisadasInput
-  connect?: Prisma.UsuarioWhereUniqueInput
-}
-
-export type UsuarioUpdateOneWithoutAlertasRevisadasNestedInput = {
-  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutAlertasRevisadasInput, Prisma.UsuarioUncheckedCreateWithoutAlertasRevisadasInput>
-  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutAlertasRevisadasInput
-  upsert?: Prisma.UsuarioUpsertWithoutAlertasRevisadasInput
-  disconnect?: Prisma.UsuarioWhereInput | boolean
-  delete?: Prisma.UsuarioWhereInput | boolean
-  connect?: Prisma.UsuarioWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutAlertasRevisadasInput, Prisma.UsuarioUpdateWithoutAlertasRevisadasInput>, Prisma.UsuarioUncheckedUpdateWithoutAlertasRevisadasInput>
-}
-
 export type UsuarioCreateWithoutPredioInput = {
   id?: string
   nombre: string
@@ -746,7 +723,6 @@ export type UsuarioCreateWithoutPredioInput = {
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutPredioInput = {
@@ -769,7 +745,6 @@ export type UsuarioUncheckedCreateWithoutPredioInput = {
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutPredioInput = {
@@ -836,7 +811,6 @@ export type UsuarioCreateWithoutDispositivosInput = {
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutDispositivosInput = {
@@ -859,7 +833,6 @@ export type UsuarioUncheckedCreateWithoutDispositivosInput = {
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutDispositivosInput = {
@@ -898,7 +871,6 @@ export type UsuarioUpdateWithoutDispositivosInput = {
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutDispositivosInput = {
@@ -921,7 +893,6 @@ export type UsuarioUncheckedUpdateWithoutDispositivosInput = {
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioCreateWithoutRefreshTokensInput = {
@@ -944,7 +915,6 @@ export type UsuarioCreateWithoutRefreshTokensInput = {
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutRefreshTokensInput = {
@@ -967,7 +937,6 @@ export type UsuarioUncheckedCreateWithoutRefreshTokensInput = {
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutRefreshTokensInput = {
@@ -1006,7 +975,6 @@ export type UsuarioUpdateWithoutRefreshTokensInput = {
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutRefreshTokensInput = {
@@ -1029,7 +997,6 @@ export type UsuarioUncheckedUpdateWithoutRefreshTokensInput = {
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioCreateWithoutAnimalesRegistradosInput = {
@@ -1052,7 +1019,6 @@ export type UsuarioCreateWithoutAnimalesRegistradosInput = {
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutAnimalesRegistradosInput = {
@@ -1075,7 +1041,6 @@ export type UsuarioUncheckedCreateWithoutAnimalesRegistradosInput = {
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutAnimalesRegistradosInput = {
@@ -1114,7 +1079,6 @@ export type UsuarioUpdateWithoutAnimalesRegistradosInput = {
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutAnimalesRegistradosInput = {
@@ -1137,7 +1101,6 @@ export type UsuarioUncheckedUpdateWithoutAnimalesRegistradosInput = {
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioCreateWithoutEntradasBitacoraInput = {
@@ -1160,7 +1123,6 @@ export type UsuarioCreateWithoutEntradasBitacoraInput = {
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutEntradasBitacoraInput = {
@@ -1183,7 +1145,6 @@ export type UsuarioUncheckedCreateWithoutEntradasBitacoraInput = {
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutEntradasBitacoraInput = {
@@ -1222,7 +1183,6 @@ export type UsuarioUpdateWithoutEntradasBitacoraInput = {
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutEntradasBitacoraInput = {
@@ -1245,7 +1205,6 @@ export type UsuarioUncheckedUpdateWithoutEntradasBitacoraInput = {
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioCreateWithoutEventosCreadosInput = {
@@ -1268,7 +1227,6 @@ export type UsuarioCreateWithoutEventosCreadosInput = {
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutEventosCreadosInput = {
@@ -1291,7 +1249,6 @@ export type UsuarioUncheckedCreateWithoutEventosCreadosInput = {
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutEventosCreadosInput = {
@@ -1330,7 +1287,6 @@ export type UsuarioUpdateWithoutEventosCreadosInput = {
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutEventosCreadosInput = {
@@ -1353,7 +1309,6 @@ export type UsuarioUncheckedUpdateWithoutEventosCreadosInput = {
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioCreateWithoutTareasCreadasInput = {
@@ -1376,7 +1331,6 @@ export type UsuarioCreateWithoutTareasCreadasInput = {
   eventosCreados?: Prisma.EventoCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutTareasCreadasInput = {
@@ -1399,7 +1353,6 @@ export type UsuarioUncheckedCreateWithoutTareasCreadasInput = {
   eventosCreados?: Prisma.EventoUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutTareasCreadasInput = {
@@ -1427,7 +1380,6 @@ export type UsuarioCreateWithoutTareasCompletadasInput = {
   eventosCreados?: Prisma.EventoCreateNestedManyWithoutCreadorInput
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutTareasCompletadasInput = {
@@ -1450,7 +1402,6 @@ export type UsuarioUncheckedCreateWithoutTareasCompletadasInput = {
   eventosCreados?: Prisma.EventoUncheckedCreateNestedManyWithoutCreadorInput
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutTareasCompletadasInput = {
@@ -1489,7 +1440,6 @@ export type UsuarioUpdateWithoutTareasCreadasInput = {
   eventosCreados?: Prisma.EventoUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutTareasCreadasInput = {
@@ -1512,7 +1462,6 @@ export type UsuarioUncheckedUpdateWithoutTareasCreadasInput = {
   eventosCreados?: Prisma.EventoUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUpsertWithoutTareasCompletadasInput = {
@@ -1546,7 +1495,6 @@ export type UsuarioUpdateWithoutTareasCompletadasInput = {
   eventosCreados?: Prisma.EventoUpdateManyWithoutCreadorNestedInput
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutTareasCompletadasInput = {
@@ -1569,7 +1517,6 @@ export type UsuarioUncheckedUpdateWithoutTareasCompletadasInput = {
   eventosCreados?: Prisma.EventoUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioCreateWithoutTareasAsignadasInput = {
@@ -1592,7 +1539,6 @@ export type UsuarioCreateWithoutTareasAsignadasInput = {
   eventosCreados?: Prisma.EventoCreateNestedManyWithoutCreadorInput
   tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
-  alertasRevisadas?: Prisma.AlertaCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutTareasAsignadasInput = {
@@ -1615,7 +1561,6 @@ export type UsuarioUncheckedCreateWithoutTareasAsignadasInput = {
   eventosCreados?: Prisma.EventoUncheckedCreateNestedManyWithoutCreadorInput
   tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
   tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
-  alertasRevisadas?: Prisma.AlertaUncheckedCreateNestedManyWithoutRevisadoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutTareasAsignadasInput = {
@@ -1654,7 +1599,6 @@ export type UsuarioUpdateWithoutTareasAsignadasInput = {
   eventosCreados?: Prisma.EventoUpdateManyWithoutCreadorNestedInput
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutTareasAsignadasInput = {
@@ -1677,115 +1621,6 @@ export type UsuarioUncheckedUpdateWithoutTareasAsignadasInput = {
   eventosCreados?: Prisma.EventoUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
-}
-
-export type UsuarioCreateWithoutAlertasRevisadasInput = {
-  id?: string
-  nombre: string
-  rut?: string | null
-  telefono?: string | null
-  email: string
-  fotoUrl?: string | null
-  passwordHash: string
-  rol?: $Enums.RolUsuario
-  estado?: $Enums.EstadoUsuario
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  predio: Prisma.PredioCreateNestedOneWithoutUsuariosInput
-  dispositivos?: Prisma.DispositivoUsuarioCreateNestedManyWithoutUsuarioInput
-  refreshTokens?: Prisma.RefreshTokenCreateNestedManyWithoutUsuarioInput
-  animalesRegistrados?: Prisma.AnimalCreateNestedManyWithoutRegistradorInput
-  entradasBitacora?: Prisma.BitacoraEntradaCreateNestedManyWithoutUsuarioInput
-  eventosCreados?: Prisma.EventoCreateNestedManyWithoutCreadorInput
-  tareasCreadas?: Prisma.TareaCreateNestedManyWithoutCreadorInput
-  tareasCompletadas?: Prisma.TareaCreateNestedManyWithoutCompletadaPorInput
-  tareasAsignadas?: Prisma.TareaUsuarioCreateNestedManyWithoutUsuarioInput
-}
-
-export type UsuarioUncheckedCreateWithoutAlertasRevisadasInput = {
-  id?: string
-  idPredio: string
-  nombre: string
-  rut?: string | null
-  telefono?: string | null
-  email: string
-  fotoUrl?: string | null
-  passwordHash: string
-  rol?: $Enums.RolUsuario
-  estado?: $Enums.EstadoUsuario
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  dispositivos?: Prisma.DispositivoUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedCreateNestedManyWithoutUsuarioInput
-  animalesRegistrados?: Prisma.AnimalUncheckedCreateNestedManyWithoutRegistradorInput
-  entradasBitacora?: Prisma.BitacoraEntradaUncheckedCreateNestedManyWithoutUsuarioInput
-  eventosCreados?: Prisma.EventoUncheckedCreateNestedManyWithoutCreadorInput
-  tareasCreadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCreadorInput
-  tareasCompletadas?: Prisma.TareaUncheckedCreateNestedManyWithoutCompletadaPorInput
-  tareasAsignadas?: Prisma.TareaUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
-}
-
-export type UsuarioCreateOrConnectWithoutAlertasRevisadasInput = {
-  where: Prisma.UsuarioWhereUniqueInput
-  create: Prisma.XOR<Prisma.UsuarioCreateWithoutAlertasRevisadasInput, Prisma.UsuarioUncheckedCreateWithoutAlertasRevisadasInput>
-}
-
-export type UsuarioUpsertWithoutAlertasRevisadasInput = {
-  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutAlertasRevisadasInput, Prisma.UsuarioUncheckedUpdateWithoutAlertasRevisadasInput>
-  create: Prisma.XOR<Prisma.UsuarioCreateWithoutAlertasRevisadasInput, Prisma.UsuarioUncheckedCreateWithoutAlertasRevisadasInput>
-  where?: Prisma.UsuarioWhereInput
-}
-
-export type UsuarioUpdateToOneWithWhereWithoutAlertasRevisadasInput = {
-  where?: Prisma.UsuarioWhereInput
-  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutAlertasRevisadasInput, Prisma.UsuarioUncheckedUpdateWithoutAlertasRevisadasInput>
-}
-
-export type UsuarioUpdateWithoutAlertasRevisadasInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
-  rol?: Prisma.EnumRolUsuarioFieldUpdateOperationsInput | $Enums.RolUsuario
-  estado?: Prisma.EnumEstadoUsuarioFieldUpdateOperationsInput | $Enums.EstadoUsuario
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  predio?: Prisma.PredioUpdateOneRequiredWithoutUsuariosNestedInput
-  dispositivos?: Prisma.DispositivoUsuarioUpdateManyWithoutUsuarioNestedInput
-  refreshTokens?: Prisma.RefreshTokenUpdateManyWithoutUsuarioNestedInput
-  animalesRegistrados?: Prisma.AnimalUpdateManyWithoutRegistradorNestedInput
-  entradasBitacora?: Prisma.BitacoraEntradaUpdateManyWithoutUsuarioNestedInput
-  eventosCreados?: Prisma.EventoUpdateManyWithoutCreadorNestedInput
-  tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
-  tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
-  tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-}
-
-export type UsuarioUncheckedUpdateWithoutAlertasRevisadasInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  idPredio?: Prisma.StringFieldUpdateOperationsInput | string
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  fotoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
-  rol?: Prisma.EnumRolUsuarioFieldUpdateOperationsInput | $Enums.RolUsuario
-  estado?: Prisma.EnumEstadoUsuarioFieldUpdateOperationsInput | $Enums.EstadoUsuario
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  dispositivos?: Prisma.DispositivoUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  refreshTokens?: Prisma.RefreshTokenUncheckedUpdateManyWithoutUsuarioNestedInput
-  animalesRegistrados?: Prisma.AnimalUncheckedUpdateManyWithoutRegistradorNestedInput
-  entradasBitacora?: Prisma.BitacoraEntradaUncheckedUpdateManyWithoutUsuarioNestedInput
-  eventosCreados?: Prisma.EventoUncheckedUpdateManyWithoutCreadorNestedInput
-  tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
-  tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
-  tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateManyPredioInput = {
@@ -1822,7 +1657,6 @@ export type UsuarioUpdateWithoutPredioInput = {
   tareasCreadas?: Prisma.TareaUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutPredioInput = {
@@ -1845,7 +1679,6 @@ export type UsuarioUncheckedUpdateWithoutPredioInput = {
   tareasCreadas?: Prisma.TareaUncheckedUpdateManyWithoutCreadorNestedInput
   tareasCompletadas?: Prisma.TareaUncheckedUpdateManyWithoutCompletadaPorNestedInput
   tareasAsignadas?: Prisma.TareaUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
-  alertasRevisadas?: Prisma.AlertaUncheckedUpdateManyWithoutRevisadoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateManyWithoutPredioInput = {
@@ -1876,7 +1709,6 @@ export type UsuarioCountOutputType = {
   tareasCreadas: number
   tareasCompletadas: number
   tareasAsignadas: number
-  alertasRevisadas: number
 }
 
 export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1888,7 +1720,6 @@ export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   tareasCreadas?: boolean | UsuarioCountOutputTypeCountTareasCreadasArgs
   tareasCompletadas?: boolean | UsuarioCountOutputTypeCountTareasCompletadasArgs
   tareasAsignadas?: boolean | UsuarioCountOutputTypeCountTareasAsignadasArgs
-  alertasRevisadas?: boolean | UsuarioCountOutputTypeCountAlertasRevisadasArgs
 }
 
 /**
@@ -1957,13 +1788,6 @@ export type UsuarioCountOutputTypeCountTareasAsignadasArgs<ExtArgs extends runti
   where?: Prisma.TareaUsuarioWhereInput
 }
 
-/**
- * UsuarioCountOutputType without action
- */
-export type UsuarioCountOutputTypeCountAlertasRevisadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.AlertaWhereInput
-}
-
 
 export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1987,7 +1811,6 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   tareasCreadas?: boolean | Prisma.Usuario$tareasCreadasArgs<ExtArgs>
   tareasCompletadas?: boolean | Prisma.Usuario$tareasCompletadasArgs<ExtArgs>
   tareasAsignadas?: boolean | Prisma.Usuario$tareasAsignadasArgs<ExtArgs>
-  alertasRevisadas?: boolean | Prisma.Usuario$alertasRevisadasArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usuario"]>
 
@@ -2049,7 +1872,6 @@ export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   tareasCreadas?: boolean | Prisma.Usuario$tareasCreadasArgs<ExtArgs>
   tareasCompletadas?: boolean | Prisma.Usuario$tareasCompletadasArgs<ExtArgs>
   tareasAsignadas?: boolean | Prisma.Usuario$tareasAsignadasArgs<ExtArgs>
-  alertasRevisadas?: boolean | Prisma.Usuario$alertasRevisadasArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsuarioIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2071,7 +1893,6 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     tareasCreadas: Prisma.$TareaPayload<ExtArgs>[]
     tareasCompletadas: Prisma.$TareaPayload<ExtArgs>[]
     tareasAsignadas: Prisma.$TareaUsuarioPayload<ExtArgs>[]
-    alertasRevisadas: Prisma.$AlertaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2495,7 +2316,6 @@ export interface Prisma__UsuarioClient<T, Null = never, ExtArgs extends runtime.
   tareasCreadas<T extends Prisma.Usuario$tareasCreadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$tareasCreadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TareaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tareasCompletadas<T extends Prisma.Usuario$tareasCompletadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$tareasCompletadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TareaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tareasAsignadas<T extends Prisma.Usuario$tareasAsignadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$tareasAsignadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TareaUsuarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  alertasRevisadas<T extends Prisma.Usuario$alertasRevisadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$alertasRevisadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AlertaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3127,30 +2947,6 @@ export type Usuario$tareasAsignadasArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.TareaUsuarioScalarFieldEnum | Prisma.TareaUsuarioScalarFieldEnum[]
-}
-
-/**
- * Usuario.alertasRevisadas
- */
-export type Usuario$alertasRevisadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Alerta
-   */
-  select?: Prisma.AlertaSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Alerta
-   */
-  omit?: Prisma.AlertaOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.AlertaInclude<ExtArgs> | null
-  where?: Prisma.AlertaWhereInput
-  orderBy?: Prisma.AlertaOrderByWithRelationInput | Prisma.AlertaOrderByWithRelationInput[]
-  cursor?: Prisma.AlertaWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.AlertaScalarFieldEnum | Prisma.AlertaScalarFieldEnum[]
 }
 
 /**

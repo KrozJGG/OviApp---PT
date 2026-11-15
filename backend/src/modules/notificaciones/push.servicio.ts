@@ -3,12 +3,11 @@ import { logger } from '../../config/logger';
 import { prisma } from '../../shared/db';
 
 /**
- * Notificaciones push - RF_18, IF3-SAL, IF4-SAL.
+ * Notificaciones push - IF3-SAL, IF4-SAL.
  *
  * Firebase se carga de forma perezosa y solo si PUSH_HABILITADO es true. Si no
- * hay credencial configurada el envio se registra en el log y el flujo sigue:
- * una alerta debe quedar almacenada y consultable (RF_17, RF_19) aunque el
- * canal push no este disponible.
+ * hay credencial configurada el envio se registra en el log y el flujo sigue
+ * aunque el canal push no este disponible.
  */
 
 export interface MensajePush {

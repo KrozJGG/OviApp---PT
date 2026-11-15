@@ -94,28 +94,3 @@ export const TipoBitacora = {
 } as const
 
 export type TipoBitacora = (typeof TipoBitacora)[keyof typeof TipoBitacora]
-
-
-export const TipoAlerta = {
-  CONTEO: 'CONTEO',
-  AMENAZA: 'AMENAZA'
-} as const
-
-export type TipoAlerta = (typeof TipoAlerta)[keyof typeof TipoAlerta]
-
-
-export const NivelAlerta = {
-  INFO: 'INFO',
-  ADVERTENCIA: 'ADVERTENCIA',
-  CRITICA: 'CRITICA'
-} as const
-
-export type NivelAlerta = (typeof NivelAlerta)[keyof typeof NivelAlerta]
-
-
-export const EstadoAlerta = {
-  NUEVA: 'NUEVA',
-  REVISADA: 'REVISADA'
-} as const
-
-export type EstadoAlerta = (typeof EstadoAlerta)[keyof typeof EstadoAlerta]

@@ -7,6 +7,7 @@ import '../../../core/red/cliente_api.dart';
 import '../../../core/red/error_api.dart';
 import '../../../core/tema/ovi_colores.dart';
 import '../../../core/widgets/ovi_estados.dart';
+import '../../../core/widgets/ovi_widgets.dart';
 import '../datos/acceso_stream.dart';
 import '../vigilancia_proveedores.dart';
 import '../widgets/reproductor_vivo.dart';
@@ -102,6 +103,16 @@ class _PantallaVigilanciaEnVivoState extends ConsumerState<PantallaVigilanciaEnV
 
   @override
   Widget build(BuildContext context) {
+    final dispositivos =
+        ref.watch(estadoVigilanciaProvider).valueOrNull?.dispositivos ?? const [];
+    int? conteo;
+    for (final d in dispositivos) {
+      if (d.id == widget.idDispositivo) {
+        conteo = d.ultimoConteo;
+        break;
+      }
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -111,6 +122,17 @@ class _PantallaVigilanciaEnVivoState extends ConsumerState<PantallaVigilanciaEnV
             Text('Cámara en vivo'),
           ],
         ),
+        actions: [
+          if (conteo != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: OviChip(
+                texto: conteo == 1 ? '1 oveja' : '$conteo ovejas',
+                icono: Icons.visibility_outlined,
+                tono: TonoChip.info,
+              ),
+            ),
+        ],
         titleSpacing: 20,
       ),
       backgroundColor: Colors.black,

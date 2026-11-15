@@ -1,7 +1,9 @@
 # mediamtx.yml
 hls: yes
+hlsVariant: fmp4
+hlsSegmentCount: 7
+hlsSegmentDuration: 1s
 webrtc: no
-webrtcICEHostNAT1To1IPs: []
 
 paths:
   rebano:

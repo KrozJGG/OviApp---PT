@@ -1,4 +1,3 @@
-import type { TipoAlerta } from '../../generated/prisma/enums';
 import { prisma } from '../../shared/db';
 import { ErrorReglaNegocio } from '../../shared/errores';
 import { aFechaSolo, diferenciaDias, fechaLocalISO, finDelDia, inicioDelDia } from '../../shared/fechas';
@@ -37,13 +36,6 @@ export type ConteosPorDia = Record<string, { eventos: number; tareas: number }>;
 export interface ResumenInicio {
   animalesActivos: number;
   tareasHoy: number;
-  alertasSinLeer: number;
-  ultimaAlerta: {
-    id: string;
-    tipoAlerta: TipoAlerta;
-    descripcion: string | null;
-    fechaHora: Date;
-  } | null;
 }
 
 export interface AgendaDelDia {
@@ -64,26 +56,17 @@ export const DIAS_MAXIMOS_RANGO = 366;
 // ─── RF_15 - tarjetas de la pantalla de inicio ───────────────────────────────
 
 /**
- * Resumen del mockup 02: rebano activo, tareas de hoy, alertas sin leer y la
- * ultima alerta recibida. Los cuatro conteos son independientes entre si, asi
- * que se resuelven en paralelo: la pantalla de inicio es la primera que ve el
- * usuario al abrir la app y encadenar cuatro round-trips a la base se nota.
+ * Resumen de la pantalla de inicio: rebano activo y tareas de hoy.
  */
 export async function obtenerResumenInicio(idPredio: string): Promise<ResumenInicio> {
   const hoy = fechaLocalISO();
 
-  const [animalesActivos, tareasHoy, alertasSinLeer, ultimaAlerta] = await Promise.all([
+  const [animalesActivos, tareasHoy] = await Promise.all([
     prisma.animal.count({ where: { idPredio, estado: 'ACTIVO' } }),
     prisma.tarea.count({ where: { idPredio, estado: 'ACTIVA', fechaLimite: aFechaSolo(hoy) } }),
-    prisma.alerta.count({ where: { idPredio, estado: 'NUEVA' } }),
-    prisma.alerta.findFirst({
-      where: { idPredio },
-      orderBy: { fechaHora: 'desc' },
-      select: { id: true, tipoAlerta: true, descripcion: true, fechaHora: true },
-    }),
   ]);
 
-  return { animalesActivos, tareasHoy, alertasSinLeer, ultimaAlerta };
+  return { animalesActivos, tareasHoy };
 }
 
 // ─── RF_15 - actividades del dia ─────────────────────────────────────────────

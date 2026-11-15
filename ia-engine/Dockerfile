@@ -1,39 +1,41 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# Dockerfile del módulo ia-engine (GPU NVIDIA)
+# Dockerfile del módulo ia-engine (CPU + ONNX Runtime)
 #
-# Imagen base CUDA para aprovechar la GPU del host.
-# En Windows con Docker Desktop + WSL2 el soporte GPU viene integrado;
-# en Linux nativo se necesita nvidia-container-toolkit.
+# Instala PyTorch/Torchvision en su variante CPU antes de requirements.txt
+# para evitar descargar los binarios CUDA (~2.5 GB), y usa ONNX Runtime para
+# ejecutar la detección ovina en CPU.
 # ──────────────────────────────────────────────────────────────────────────────
 
-FROM nvidia/cuda:12.6.3-runtime-ubuntu24.04
+FROM python:3.12-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
-# Paquetes de sistema necesarios para OpenCV y Python
+# Paquetes de sistema mínimos para OpenCV y decodificación RTSP
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.12 \
-    python3.12-venv \
-    python3-pip \
+    ffmpeg \
     libgl1 \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Instalar dependencias Python primero (cache de capas Docker)
+# Instalar PyTorch y Torchvision versión CPU explícitamente antes de requirements.txt
+RUN pip install --no-cache-dir \
+    torch torchvision \
+    --index-url https://download.pytorch.org/whl/cpu
+
+# Instalar dependencias Python (cache de capas Docker)
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copiar código fuente y modelos
 COPY ia_engine/ ./ia_engine/
-# Los .pt viven en models/ (sheep_detection.pt y yolo26n.pt de respaldo).
-# Si falta el de MODEL_PATH, ultralytics intenta descargarlo y en un predio
-# sin internet el contenedor no arranca.
 COPY models/ ./models/
 
+# Garantizar que el modelo ONNX exista si solo se copió el .pt
+RUN if [ ! -f models/sheep_detection.onnx ] && [ -f models/sheep_detection.pt ]; then \
+        python -c "from ultralytics import YOLO; YOLO('models/sheep_detection.pt').export(format='onnx', imgsz=640, simplify=True, dynamic=False, opset=12)"; \
+    fi
+
 # El módulo se ejecuta como paquete Python
-CMD ["python3", "-m", "ia_engine"]
+CMD ["python", "-m", "ia_engine"]

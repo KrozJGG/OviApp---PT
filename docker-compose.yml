@@ -63,7 +63,7 @@ services:
       mediamtx:
         condition: service_started
     entrypoint: >
-      ffmpeg -re -stream_loop -1 -i /videos/rebano.mp4 -c copy -f rtsp rtsp://mediamtx:8554/rebano
+      ffmpeg -re -stream_loop -1 -i /videos/rebano.mp4 -an -c:v copy -f rtsp -rtsp_transport tcp rtsp://mediamtx:8554/rebano
 
   backend:
     build:
@@ -102,15 +102,9 @@ services:
     command: sh -c "npx prisma migrate deploy && node dist/server.js"
 
   # ───────────────────────────────────────────────────────────────────────────
-  # Modulo de vision por computadora.
-  #
-  # Va en el perfil "ia" y NO arranca con un `docker compose up` normal porque
-  # la imagen base de CUDA pesa varios GB y reserva una GPU NVIDIA.
-  #
-  # Para levantarlo:  docker compose --profile ia up -d ia-engine
+  # Modulo de vision por computadora (CPU + ONNX Runtime).
   # ───────────────────────────────────────────────────────────────────────────
   ia-engine:
-    profiles: ["ia"]
     build:
       context: ./ia-engine
       dockerfile: Dockerfile
@@ -122,43 +116,19 @@ services:
       # La que genera el seed es edge_hatonorte.7f3a91c4e08b45d2a6f1
       EDGE_API_KEY: "${EDGE_API_KEY:-edge_hatonorte.7f3a91c4e08b45d2a6f1}"
       RTSP_STREAMS: "rebano=rtsp://mediamtx:8554/rebano"
-      # sheep_detection.pt es un detector de una sola clase ("sheep"). Sobre
-      # rebano.mp4 a 0.35 cuenta 17-22 ovejas por frame, contra 7-13 del
-      # preentrenado COCO yolo26n.pt, que queda en models/ como respaldo.
-      MODEL_PATH: "/app/models/sheep_detection.pt"
-      # Clases a contar. Con el modelo de una sola clase el filtro no cambia
-      # nada, pero se deja para que volver a yolo26n (80 clases COCO) no sume
-      # personas, perros y vehiculos. Vacio = contar todas las detecciones.
-      CLASES_OBJETIVO: "sheep"
-      # Un frame analizado cada 5 s (~3 muestras por heartbeat). Las ovejas se
-      # mueven despacio, y asi el modulo tambien es viable en CPU.
-      INTERVALO_INFERENCIA_SEG: 5
-      # Ventanas de 640 px por frame, para no perder las ovejas lejanas al
-      # reducir el video. 0 = analizar el frame completo (menos carga).
-      TILE_INFERENCIA: 640
-      # Cada 15 s se envia al backend la MEDIANA de las muestras de la ventana.
-      HEARTBEAT_INTERVALO_SEG: 15
-      # Bajado de 0.5: el diagnostico (ia-engine/scripts/diagnostico_conteo.py)
-      # mostro que 0.5 descarta casi la mitad de las ovejas reales del video
-      # de prueba (84 vs 146 detecciones sobre los mismos frames a 0.25). El
-      # filtro de clases "sheep" no influye (0 detecciones de otras clases en
-      # este video), asi que la ganancia real esta en el umbral, no en CLASES_OBJETIVO.
+      MODEL_PATH: "/app/models/sheep_detection.onnx"
       CONFIANZA_MINIMA: 0.35
+      # Salto de frames nativo en Ultralytics (~3 FPS sobre un video de 30 FPS).
+      VID_STRIDE: 10
+      # Cantidad de muestras recientes para estabilizar el conteo por mediana.
+      VENTANA_MEDIANA: 5
+      # Cada 5 s se envia al backend la MEDIANA del conteo para mantener latencia < 10 s.
+      HEARTBEAT_INTERVALO_SEG: 5
     depends_on:
       mediamtx:
         condition: service_started
       backend:
         condition: service_started
-    # Reserva de GPU NVIDIA. El Detector cae a CPU por su cuenta si CUDA no
-    # esta disponible, pero esta reserva impide que el contenedor arranque en
-    # una maquina sin GPU: comentar este bloque para correr en CPU.
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
 
 
 volumes:

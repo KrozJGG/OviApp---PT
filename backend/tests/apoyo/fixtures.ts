@@ -62,7 +62,7 @@ export async function limpiarBd(): Promise<void> {
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
       "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
-      "alerta", "evento", "tarea", "animal", "dispositivo_edge",
+      "evento", "tarea", "animal", "dispositivo_edge",
       "dispositivo_usuario", "refresh_token", "usuario", "predio"
     RESTART IDENTITY CASCADE
   `);
@@ -136,7 +136,6 @@ export async function crearEscenario(): Promise<Escenario> {
       nombre: 'Camara de prueba',
       apiKeyPrefijo: prefijo,
       apiKeyHash: await bcrypt.hash(secreto, 4),
-      conteoEsperado: 10,
     },
   });
 

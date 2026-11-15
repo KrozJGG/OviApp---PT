@@ -97,28 +97,6 @@ enum TipoBitacora {
   @@map("tipo_bitacora")
 }
 
-enum TipoAlerta {
-  CONTEO
-  AMENAZA
-
-  @@map("tipo_alerta")
-}
-
-enum NivelAlerta {
-  INFO
-  ADVERTENCIA
-  CRITICA
-
-  @@map("nivel_alerta")
-}
-
-enum EstadoAlerta {
-  NUEVA
-  REVISADA
-
-  @@map("estado_alerta")
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // Entidades
 // ─────────────────────────────────────────────────────────────────────────────
@@ -135,7 +113,6 @@ model Predio {
   animales          Animal[]
   eventos           Evento[]
   tareas            Tarea[]
-  alertas           Alerta[]
   dispositivosEdge  DispositivoEdge[]
 
   @@map("predio")
@@ -166,7 +143,6 @@ model Usuario {
   tareasCreadas        Tarea[]               @relation("TareaCreador")
   tareasCompletadas    Tarea[]               @relation("TareaCompletadaPor")
   tareasAsignadas      TareaUsuario[]
-  alertasRevisadas     Alerta[]              @relation("AlertaRevisadaPor")
 
   @@index([idPredio, estado])
   @@map("usuario")
@@ -366,42 +342,10 @@ model DispositivoEdge {
   ultimoHeartbeat DateTime? @map("ultimo_heartbeat") @db.Timestamptz(6)
   /// Mediana del conteo de ovejas que el ia-engine envia en cada heartbeat.
   ultimoConteo    Int?      @map("ultimo_conteo")
-  /// Ya no se usa como linea base: la app compara ultimoConteo contra las
-  /// ovejas ACTIVAS del predio. Se conserva para las alertas historicas.
-  conteoEsperado  Int?      @map("conteo_esperado")
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  predio  Predio   @relation(fields: [idPredio], references: [id])
-  alertas Alerta[]
+  predio Predio @relation(fields: [idPredio], references: [id])
 
   @@index([idPredio])
   @@map("dispositivo_edge")
-}
-
-model Alerta {
-  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  /// H11 - RF_19 exige filtrar por el predio del usuario autenticado.
-  idPredio          String       @map("id_predio") @db.Uuid
-  idDispositivoEdge String?      @map("id_dispositivo_edge") @db.Uuid
-  tipoAlerta        TipoAlerta   @map("tipo_alerta")
-  descripcion       String?
-  nivel             NivelAlerta  @default(ADVERTENCIA)
-  conteoAnimales    Int?         @map("conteo_animales")
-  conteoEsperado    Int?         @map("conteo_esperado")
-  /// Marca de tiempo emitida por el modulo edge (RF_17).
-  fechaHora         DateTime     @map("fecha_hora") @db.Timestamptz(6)
-  estado            EstadoAlerta @default(NUEVA)
-  idRevisadoPor     String?      @map("id_revisado_por") @db.Uuid
-  fechaRevision     DateTime?    @map("fecha_revision") @db.Timestamptz(6)
-  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-
-  predio          Predio           @relation(fields: [idPredio], references: [id])
-  dispositivoEdge DispositivoEdge? @relation(fields: [idDispositivoEdge], references: [id])
-  revisadoPor     Usuario?         @relation("AlertaRevisadaPor", fields: [idRevisadoPor], references: [id])
-
-  /// Idempotencia de la ingesta edge: la conectividad rural obliga a reintentos.
-  @@unique([idDispositivoEdge, fechaHora, tipoAlerta], map: "uq_alerta_edge")
-  @@index([idPredio, fechaHora(sort: Desc)])
-  @@index([idPredio, estado])
-  @@map("alerta")
 }
