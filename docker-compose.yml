@@ -118,8 +118,10 @@ services:
       RTSP_STREAMS: "rebano=rtsp://mediamtx:8554/rebano"
       MODEL_PATH: "/app/models/sheep_detection.onnx"
       CONFIANZA_MINIMA: 0.35
-      # Salto de frames nativo en Ultralytics (~3 FPS sobre un video de 30 FPS).
-      VID_STRIDE: 10
+      # Teselado para streams 1080p (720 para 720p; 0 desactiva tiling).
+      TILE_SIZE: 1080
+      # Salto de frames nativo en Ultralytics (2 FPS sobre 60 FPS -> ~10 muestras cada 5 s).
+      VID_STRIDE: 30
       # Cantidad de muestras recientes para estabilizar el conteo por mediana.
       VENTANA_MEDIANA: 5
       # Cada 5 s se envia al backend la MEDIANA del conteo para mantener latencia < 10 s.

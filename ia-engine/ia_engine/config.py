@@ -35,11 +35,17 @@ class Config(BaseSettings):
     confianza_minima: float = Field(default=0.35, gt=0.0, le=1.0)
     """Umbral de confianza mínimo para aceptar una detección de oveja."""
 
+    tile_size: int = Field(default=1080, ge=0)
+    """
+    Tamaño de ventana para teselado de alta resolución en Ultralytics.
+    1080 es el valor por defecto para streams 1080p (720 para 720p; 0 desactiva tiling).
+    """
+
     # ── Procesamiento RTSP y estabilización ──────────────────────────────
-    vid_stride: int = Field(default=10, ge=1)
+    vid_stride: int = Field(default=30, ge=1)
     """
     Salto de fotogramas nativo de Ultralytics.
-    Sobre un stream de 30 FPS, vid_stride=10 procesa ~3 FPS y vid_stride=15 ~2 FPS.
+    Sobre un stream de 60 FPS, vid_stride=30 procesa 2 FPS (~10 muestras cada 5 s).
     """
 
     ventana_mediana: int = Field(default=5, ge=1)

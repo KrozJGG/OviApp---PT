@@ -69,8 +69,16 @@ def main() -> None:
             nombre_stream,
         )
 
+    tile_activo = config.tile_size if config.tile_size > 0 else None
+
     logger.info("Stream '%s' → %s", nombre_stream, url_rtsp)
-    logger.info("Modelo ONNX: %s (confianza=%.2f, vid_stride=%d)", config.model_path, config.confianza_minima, config.vid_stride)
+    logger.info(
+        "Modelo ONNX: %s (confianza=%.2f, tile=%s, vid_stride=%d)",
+        config.model_path,
+        config.confianza_minima,
+        tile_activo,
+        config.vid_stride,
+    )
     logger.info("Mediana sobre %d muestras | Heartbeat cada %d s", config.ventana_mediana, config.heartbeat_intervalo_seg)
 
     modelo = YOLO(config.model_path, task="detect")
@@ -97,6 +105,7 @@ def main() -> None:
                 source=url_rtsp,
                 stream=True,
                 stream_buffer=False,
+                tile=tile_activo,
                 vid_stride=config.vid_stride,
                 conf=config.confianza_minima,
                 device="cpu",
