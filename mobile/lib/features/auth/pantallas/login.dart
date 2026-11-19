@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/red/cliente_api.dart';
+import '../../../core/router/rutas.dart';
 import '../../../core/tema/ovi_colores.dart';
 import '../../../core/widgets/ovi_widgets.dart';
 import '../sesion.dart';
@@ -140,9 +142,16 @@ class _PantallaLoginState extends ConsumerState<PantallaLogin> {
                             )
                           : const Text('Entrar'),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: _enviando
+                          ? null
+                          : () => context.pushNamed(Rutas.registro),
+                      child: const Text('Registrar nuevo predio'),
+                    ),
+                    const SizedBox(height: 18),
                     Text(
-                      'Si no tienes cuenta, pídele al productor del predio que te cree una.',
+                      '¿Primera vez en OviApp? Registra tu predio arriba. Si eres trabajador, pídele al productor que te cree una cuenta.',
                       textAlign: TextAlign.center,
                       style: texto.bodySmall,
                     ),

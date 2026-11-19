@@ -4,7 +4,8 @@ import { env } from '../../config/env';
 import { firmarAcceso } from '../../middleware/autenticar';
 import type { ContextoUsuario } from '../../shared/contexto';
 import { prisma } from '../../shared/db';
-import { ErrorNoAutenticado } from '../../shared/errores';
+import { ErrorConflicto, ErrorNoAutenticado } from '../../shared/errores';
+import type { DatosRegistro } from './auth.esquemas';
 
 /**
  * Autenticación — IF6-ENT y H13 del plan.
@@ -78,6 +79,142 @@ export async function login(email: string, password: string): Promise<Sesion> {
       idPredio: usuario.idPredio,
       predio: usuario.predio.nombre,
       fotoUrl: usuario.fotoUrl,
+    },
+  };
+}
+
+/**
+ * Alta inicial del predio y su productor titular (con trabajadores opcionales).
+ * Todo ocurre en una única transacción para no dejar predios huérfanos si falla
+ * un correo duplicado, y devuelve la sesión iniciada del productor titular.
+ */
+export async function registrar(datos: DatosRegistro): Promise<Sesion> {
+  const correosSolicitados = [
+    datos.email,
+    ...datos.trabajadores.map((t) => t.email),
+  ];
+
+  if (new Set(correosSolicitados).size !== correosSolicitados.length) {
+    throw new ErrorConflicto(
+      'EMAIL_DUPLICADO',
+      'No puedes repetir el mismo correo electrónico entre los usuarios.',
+    );
+  }
+
+  const existente = await prisma.usuario.findFirst({
+    where: { email: { in: correosSolicitados } },
+    select: { id: true },
+  });
+  if (existente) {
+    throw new ErrorConflicto(
+      'EMAIL_DUPLICADO',
+      'Ya existe un usuario registrado con ese correo electrónico.',
+    );
+  }
+
+  const nombrePredioLimpio = datos.predio?.nombre?.trim();
+  const nombrePredio =
+    nombrePredioLimpio && nombrePredioLimpio.length > 0
+      ? nombrePredioLimpio
+      : `Predio de ${datos.nombre}`;
+
+  const ubicacionPredioLimpia = datos.predio?.ubicacion?.trim();
+  const ubicacionPredio =
+    ubicacionPredioLimpia && ubicacionPredioLimpia.length > 0
+      ? ubicacionPredioLimpia
+      : null;
+
+  const [hashTitular, hashesTrabajadores] = await Promise.all([
+    bcrypt.hash(datos.password, env.BCRYPT_ROUNDS),
+    Promise.all(
+      datos.trabajadores.map((t) => bcrypt.hash(t.password, env.BCRYPT_ROUNDS)),
+    ),
+  ]);
+
+  let creado: {
+    id: string;
+    nombre: string;
+    email: string;
+    rol: 'PRODUCTOR' | 'TRABAJADOR';
+    idPredio: string;
+    fotoUrl: string | null;
+    predioNombre: string;
+  };
+
+  try {
+    creado = await prisma.$transaction(async (tx) => {
+      const predio = await tx.predio.create({
+        data: {
+          nombre: nombrePredio,
+          ubicacion: ubicacionPredio,
+        },
+      });
+
+      const titular = await tx.usuario.create({
+        data: {
+          idPredio: predio.id,
+          nombre: datos.nombre,
+          email: datos.email,
+          passwordHash: hashTitular,
+          rol: 'PRODUCTOR',
+          rut: datos.rut || null,
+          telefono: datos.telefono || null,
+        },
+      });
+
+      if (datos.trabajadores.length > 0) {
+        await tx.usuario.createMany({
+          data: datos.trabajadores.map((t, idx) => ({
+            idPredio: predio.id,
+            nombre: t.nombre,
+            email: t.email,
+            passwordHash: hashesTrabajadores[idx]!,
+            rol: t.rol ?? 'TRABAJADOR',
+            rut: t.rut || null,
+            telefono: t.telefono || null,
+          })),
+        });
+      }
+
+      return {
+        id: titular.id,
+        nombre: titular.nombre,
+        email: titular.email,
+        rol: titular.rol,
+        idPredio: predio.id,
+        fotoUrl: titular.fotoUrl,
+        predioNombre: predio.nombre,
+      };
+    });
+  } catch (e) {
+    if (esUnicidadEmail(e)) {
+      throw new ErrorConflicto(
+        'EMAIL_DUPLICADO',
+        'Ya existe un usuario registrado con ese correo electrónico.',
+      );
+    }
+    throw e;
+  }
+
+  const ctx: ContextoUsuario = {
+    idUsuario: creado.id,
+    idPredio: creado.idPredio,
+    rol: creado.rol,
+    email: creado.email,
+  };
+
+  return {
+    accessToken: firmarAcceso(ctx),
+    refreshToken: await emitirRefresh(creado.id),
+    expiraEn: env.JWT_ACCESS_TTL,
+    usuario: {
+      id: creado.id,
+      nombre: creado.nombre,
+      email: creado.email,
+      rol: creado.rol,
+      idPredio: creado.idPredio,
+      predio: creado.predioNombre,
+      fotoUrl: creado.fotoUrl,
     },
   };
 }
@@ -179,4 +316,12 @@ async function emitirRefresh(idUsuario: string): Promise<string> {
  */
 function hashear(token: string): string {
   return createHash('sha256').update(token).digest('hex');
+}
+
+function esUnicidadEmail(e: unknown): boolean {
+  if (typeof e !== 'object' || e === null) return false;
+  if ((e as { code?: unknown }).code !== 'P2002') return false;
+  const destino = (e as { meta?: { target?: unknown } }).meta?.target;
+  if (destino === undefined) return true;
+  return Array.isArray(destino) ? destino.includes('email') : String(destino).includes('email');
 }

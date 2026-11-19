@@ -24,26 +24,25 @@ class OviTarjeta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final contenido = Container(
-      decoration: BoxDecoration(
-        color: color ?? OviColores.tarjeta,
-        borderRadius: BorderRadius.circular(OviTema.radioTarjeta),
-        border: Border.all(color: OviColores.borde),
-      ),
-      padding: padding,
-      child: child,
+    final forma = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(OviTema.radioTarjeta),
+      side: const BorderSide(color: OviColores.borde),
     );
 
-    final envuelto = alTocar == null
-        ? contenido
-        : Material(
-            color: Colors.transparent,
-            child: InkWell(
+    final cuerpo = Padding(padding: padding, child: child);
+
+    final envuelto = Material(
+      color: color ?? OviColores.tarjeta,
+      shape: forma,
+      clipBehavior: Clip.antiAlias,
+      child: alTocar == null
+          ? cuerpo
+          : InkWell(
               onTap: alTocar,
-              borderRadius: BorderRadius.circular(OviTema.radioTarjeta),
-              child: contenido,
+              customBorder: forma,
+              child: cuerpo,
             ),
-          );
+    );
 
     return atenuada ? Opacity(opacity: 0.55, child: envuelto) : envuelto;
   }

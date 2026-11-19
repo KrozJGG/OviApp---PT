@@ -6,16 +6,16 @@ import { ctxDe } from '../../shared/contexto';
 import { prisma } from '../../shared/db';
 import { ErrorNoEncontrado } from '../../shared/errores';
 import { validarCuerpo } from '../../shared/validacion';
-import { esquemaLogin, esquemaLogout, esquemaRefresh } from './auth.esquemas';
-import { login, logout, refrescar } from './auth.servicio';
+import { esquemaLogin, esquemaLogout, esquemaRefresh, esquemaRegistro } from './auth.esquemas';
+import { login, logout, refrescar, registrar } from './auth.servicio';
 
 /** Sesión — IF6-ENT y RF_00 (H13 del plan). */
 export const enrutadorAuth = Router();
 
 /**
- * RNF_03 — el login es el único endpoint público que recibe credenciales, así
- * que es el único que conviene limitar por IP. Se desactiva en tests para que
- * la suite pueda hacer decenas de logins seguidos.
+ * RNF_03 — el login y el registro son los endpoints públicos que reciben credenciales,
+ * así que conviene limitarlos por IP. Se desactiva en tests para que
+ * la suite pueda hacer decenas de solicitudes seguidas.
  */
 const limiteLogin = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -34,6 +34,11 @@ const limiteLogin = rateLimit({
 enrutadorAuth.post('/login', limiteLogin, async (req: Request, res: Response) => {
   const datos = validarCuerpo(esquemaLogin, req);
   res.json(await login(datos.email, datos.password));
+});
+
+enrutadorAuth.post('/registro', limiteLogin, async (req: Request, res: Response) => {
+  const datos = validarCuerpo(esquemaRegistro, req);
+  res.status(201).json(await registrar(datos));
 });
 
 enrutadorAuth.post('/refresh', async (req: Request, res: Response) => {

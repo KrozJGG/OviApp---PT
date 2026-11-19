@@ -5,6 +5,35 @@ import '../../core/almacenamiento/almacen_sesion.dart';
 import '../../core/proveedores.dart';
 import '../../core/red/cliente_api.dart';
 
+/// Datos de un trabajador opcional al registrar el predio por primera vez.
+class TrabajadorRegistro {
+  const TrabajadorRegistro({
+    required this.nombre,
+    required this.email,
+    required this.password,
+    this.rol = 'TRABAJADOR',
+    this.rut,
+    this.telefono,
+  });
+
+  final String nombre;
+  final String email;
+  final String password;
+  final String rol;
+  final String? rut;
+  final String? telefono;
+
+  Map<String, dynamic> aJson() => {
+        'nombre': nombre.trim(),
+        'email': email.trim(),
+        'password': password,
+        'rol': rol,
+        if (rut != null && rut!.trim().isNotEmpty) 'rut': rut!.trim(),
+        if (telefono != null && telefono!.trim().isNotEmpty)
+          'telefono': telefono!.trim(),
+      };
+}
+
 /// Estado de sesion de la aplicacion — IF6-ENT.
 ///
 /// Es la fuente de verdad del router: mientras esta en `loading` se muestra la
@@ -57,6 +86,56 @@ class SesionNotifier extends AsyncNotifier<SesionGuardada?> {
     } catch (e, s) {
       // El estado vuelve a "sin sesion": un login fallido no debe dejar la app
       // atrapada en un error del que no se puede salir.
+      state = const AsyncValue.data(null);
+      Error.throwWithStackTrace(comoErrorApi(e), s);
+    }
+  }
+
+  /// Alta inicial del predio, su productor titular y trabajadores opcionales.
+  Future<void> registrarPredio({
+    required String nombre,
+    required String email,
+    required String password,
+    String? rut,
+    String? telefono,
+    String? nombrePredio,
+    String? ubicacionPredio,
+    List<TrabajadorRegistro> trabajadores = const [],
+  }) async {
+    try {
+      final dio = ref.read(dioProvider);
+      final r = await dio.post<Map<String, dynamic>>(
+        '/auth/registro',
+        data: {
+          'nombre': nombre.trim(),
+          'email': email.trim(),
+          'password': password,
+          if (rut != null && rut.trim().isNotEmpty) 'rut': rut.trim(),
+          if (telefono != null && telefono.trim().isNotEmpty)
+            'telefono': telefono.trim(),
+          'predio': {
+            if (nombrePredio != null && nombrePredio.trim().isNotEmpty)
+              'nombre': nombrePredio.trim(),
+            if (ubicacionPredio != null && ubicacionPredio.trim().isNotEmpty)
+              'ubicacion': ubicacionPredio.trim(),
+          },
+          'trabajadores': trabajadores.map((t) => t.aJson()).toList(),
+        },
+        options: Options(extra: {'sinAuth': true}),
+      );
+
+      final datos = r.data!;
+      final sesion = SesionGuardada(
+        accessToken: datos['accessToken'] as String,
+        refreshToken: datos['refreshToken'] as String,
+        usuario: Map<String, dynamic>.from(datos['usuario'] as Map),
+      );
+
+      await _almacen.guardar(sesion);
+      await ref.read(cacheRespuestasProvider).limpiar();
+      _cliente.usarToken(sesion.accessToken);
+      state = AsyncValue.data(sesion);
+    } catch (e, s) {
       state = const AsyncValue.data(null);
       Error.throwWithStackTrace(comoErrorApi(e), s);
     }

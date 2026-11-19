@@ -5,15 +5,10 @@ import 'package:flutter/foundation.dart';
 
 import '../almacenamiento/almacen_sesion.dart';
 import '../cache/cache_respuestas.dart';
+import '../config/conf_global.dart';
 import 'error_api.dart';
 
-// URL De Cloudflare (proxy inverso) el cual luego se comunicará con el servidor
-
-String get urlBaseApi => const String.fromEnvironment(
-  'API_URL',
-  defaultValue:
-      'https://attached-grammar-college-biodiversity.trycloudflare.com/api/v1',
-);
+String get urlBaseApi => ConfGlobal.urlBaseApi;
 
 // Cliente HTTP
 /// Resuelve tres cosas de una vez: adjunta el token a cada peticion, renueva la
@@ -35,9 +30,9 @@ class ClienteApi {
                baseUrl: urlBase ?? urlBaseApi,
                // RNF_01 pide respuestas bajo 3 s en 4G; 15 s da margen para una
                // señal rural mala antes de declarar el intento perdido.
-               connectTimeout: const Duration(seconds: 15),
-               receiveTimeout: const Duration(seconds: 20),
-               sendTimeout: const Duration(seconds: 20),
+               connectTimeout: ConfGlobal.timeoutConexion,
+               receiveTimeout: ConfGlobal.timeoutRecepcion,
+               sendTimeout: ConfGlobal.timeoutEnvio,
                contentType: Headers.jsonContentType,
                // Los status de error los traduce el interceptor, no Dio.
                validateStatus: (s) => s != null && s < 400,

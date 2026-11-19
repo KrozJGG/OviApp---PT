@@ -6,6 +6,7 @@ import '../../features/administracion/pantallas/formulario_usuario.dart';
 import '../../features/administracion/pantallas/usuarios.dart';
 import '../../features/auth/pantallas/arranque.dart';
 import '../../features/auth/pantallas/login.dart';
+import '../../features/auth/pantallas/registro.dart';
 import '../../features/auth/sesion.dart';
 import '../../features/bitacora/pantallas/bitacora.dart';
 import '../../features/calendario/pantallas/calendario.dart';
@@ -30,6 +31,7 @@ import 'shell_principal.dart';
 abstract final class Rutas {
   static const arranque = 'arranque';
   static const login = 'login';
+  static const registro = 'registro';
 
   static const inicio = 'inicio';
 
@@ -75,8 +77,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       final ruta = estado.matchedLocation;
 
       if (cargando) return ruta == '/arranque' ? null : '/arranque';
-      if (!autenticado) return ruta == '/login' ? null : '/login';
-      if (ruta == '/login' || ruta == '/arranque') return '/inicio';
+      if (!autenticado) {
+        return (ruta == '/login' || ruta == '/registro') ? null : '/login';
+      }
+      if (ruta == '/login' || ruta == '/registro' || ruta == '/arranque') {
+        return '/inicio';
+      }
       return null;
     },
     routes: [
@@ -89,6 +95,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/login',
         name: Rutas.login,
         builder: (_, _) => const PantallaLogin(),
+      ),
+      GoRoute(
+        path: '/registro',
+        name: Rutas.registro,
+        builder: (_, _) => const PantallaRegistro(),
       ),
 
       // Las cinco pestañas fijas del mockup: Inicio, Rebaño, Calendario,

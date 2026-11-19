@@ -87,6 +87,150 @@ describe('Autenticación (IF6-ENT)', () => {
     });
   });
 
+  describe('POST /auth/registro', () => {
+    it('crea el predio, el productor titular y devuelve la sesión iniciada (201)', async () => {
+      const r = await api(e.app)
+        .post('/auth/registro')
+        .send({
+          nombre: 'Laura González',
+          email: 'Laura@NuevoPredio.cl',
+          password: PASSWORD,
+          rut: '14.222.333-4',
+          telefono: '+56 9 1111 2222',
+          predio: {
+            nombre: 'Estancia Las Lengas',
+            ubicacion: 'Coyhaique, Aysén',
+          },
+        });
+
+      expect(r.status).toBe(201);
+      expect(r.body.accessToken).toBeTypeOf('string');
+      expect(r.body.refreshToken).toBeTypeOf('string');
+      expect(r.body.usuario).toMatchObject({
+        nombre: 'Laura González',
+        email: 'laura@nuevopredio.cl',
+        rol: 'PRODUCTOR',
+        predio: 'Estancia Las Lengas',
+      });
+      expect(r.body.usuario).not.toHaveProperty('passwordHash');
+
+      const predioCreado = await prisma.predio.findUnique({
+        where: { id: r.body.usuario.idPredio },
+      });
+      expect(predioCreado).toMatchObject({
+        nombre: 'Estancia Las Lengas',
+        ubicacion: 'Coyhaique, Aysén',
+      });
+    });
+
+    it('asigna un nombre por defecto al predio cuando no se envía o viene vacío', async () => {
+      const r = await api(e.app)
+        .post('/auth/registro')
+        .send({
+          nombre: 'Carlos Muñoz',
+          email: 'carlos@sinpredio.cl',
+          password: PASSWORD,
+          predio: { nombre: '   ' },
+        });
+
+      expect(r.status).toBe(201);
+      expect(r.body.usuario.predio).toBe('Predio de Carlos Muñoz');
+    });
+
+    it('permite registrar trabajadores opcionales en el mismo acto y todos quedan en el nuevo predio', async () => {
+      const r = await api(e.app)
+        .post('/auth/registro')
+        .send({
+          nombre: 'Laura González',
+          email: 'laura@laslengas.cl',
+          password: PASSWORD,
+          predio: { nombre: 'Las Lengas' },
+          trabajadores: [
+            {
+              nombre: 'Mateo Soto',
+              email: 'mateo@laslengas.cl',
+              password: PASSWORD,
+              telefono: '+56 9 3333 4444',
+            },
+            {
+              nombre: 'Ana Vera',
+              email: 'ana@laslengas.cl',
+              password: PASSWORD,
+              rol: 'PRODUCTOR',
+            },
+          ],
+        });
+
+      expect(r.status).toBe(201);
+      const idPredio = r.body.usuario.idPredio as string;
+
+      const usuariosPredio = await prisma.usuario.findMany({
+        where: { idPredio },
+        orderBy: { email: 'asc' },
+      });
+      expect(usuariosPredio).toHaveLength(3);
+      expect(usuariosPredio.map((u) => ({ email: u.email, rol: u.rol }))).toEqual([
+        { email: 'ana@laslengas.cl', rol: 'PRODUCTOR' },
+        { email: 'laura@laslengas.cl', rol: 'PRODUCTOR' },
+        { email: 'mateo@laslengas.cl', rol: 'TRABAJADOR' },
+      ]);
+
+      // El trabajador recién creado puede iniciar sesión de inmediato
+      const loginTrabajador = await api(e.app).post('/auth/login').send({
+        email: 'mateo@laslengas.cl',
+        password: PASSWORD,
+      });
+      expect(loginTrabajador.status).toBe(200);
+      expect(loginTrabajador.body.usuario.idPredio).toBe(idPredio);
+    });
+
+    it('rechaza con 409 si el correo del titular o de un trabajador ya existe y no deja predios huérfanos', async () => {
+      const prediosAntes = await prisma.predio.count();
+
+      const r = await api(e.app)
+        .post('/auth/registro')
+        .send({
+          nombre: 'Laura González',
+          email: 'laura@laslengas.cl',
+          password: PASSWORD,
+          predio: { nombre: 'Predio Fallido' },
+          trabajadores: [
+            {
+              nombre: 'Duplicado',
+              email: e.trabajador.email,
+              password: PASSWORD,
+            },
+          ],
+        });
+
+      expect(r.status).toBe(409);
+      expect(r.body.error.codigo).toBe('EMAIL_DUPLICADO');
+
+      const prediosDespues = await prisma.predio.count();
+      expect(prediosDespues).toBe(prediosAntes);
+    });
+
+    it('rechaza con 409 si se repite el mismo correo dentro del formulario de registro', async () => {
+      const r = await api(e.app)
+        .post('/auth/registro')
+        .send({
+          nombre: 'Laura González',
+          email: 'repetido@laslengas.cl',
+          password: PASSWORD,
+          trabajadores: [
+            {
+              nombre: 'Mateo Soto',
+              email: 'REPETIDO@laslengas.cl',
+              password: PASSWORD,
+            },
+          ],
+        });
+
+      expect(r.status).toBe(409);
+      expect(r.body.error.codigo).toBe('EMAIL_DUPLICADO');
+    });
+  });
+
   describe('POST /auth/refresh', () => {
     it('renueva la sesión y rota el token de refresco', async () => {
       const sesion = await api(e.app)
