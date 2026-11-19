@@ -1,4 +1,5 @@
 import '../../../core/red/json.dart';
+import 'region_interes.dart';
 
 /// Dispositivo edge del predio y su estado operativo (IF2-SAL).
 class DispositivoEdge {
@@ -9,6 +10,8 @@ class DispositivoEdge {
     this.ultimoHeartbeat,
     this.ultimoConteo,
     this.conteoEsperado,
+    this.regionInteres,
+    this.regionInteresUpdatedAt,
   });
 
   final String id;
@@ -19,10 +22,16 @@ class DispositivoEdge {
   final DateTime? ultimoHeartbeat;
   final int? ultimoConteo;
   final int? conteoEsperado;
+  final RegionInteres? regionInteres;
+  final DateTime? regionInteresUpdatedAt;
 
   /// El conteo cuadra con la línea base del rebaño.
   bool get conteoNormal =>
       ultimoConteo != null && conteoEsperado != null && ultimoConteo! >= conteoEsperado!;
+
+  bool get tieneRoi => regionInteres != null;
+
+  String get resumenRoi => regionInteres?.resumen ?? 'Imagen completa';
 
   factory DispositivoEdge.desdeJson(Map<String, dynamic> j) => DispositivoEdge(
         id: j['id'] as String,
@@ -31,6 +40,8 @@ class DispositivoEdge {
         ultimoHeartbeat: fechaNulaDe(j['ultimoHeartbeat']),
         ultimoConteo: enteroNulo(j['ultimoConteo']),
         conteoEsperado: enteroNulo(j['conteoEsperado']),
+        regionInteres: RegionInteres.desdeJsonNula(j['regionInteres']),
+        regionInteresUpdatedAt: fechaNulaDe(j['regionInteresUpdatedAt']),
       );
 }
 

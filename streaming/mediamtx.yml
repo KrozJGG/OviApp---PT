@@ -1,5 +1,6 @@
 # mediamtx.yml
 hls: yes
+hlsAlwaysRemux: yes
 hlsVariant: fmp4
 hlsSegmentCount: 7
 hlsSegmentDuration: 1s

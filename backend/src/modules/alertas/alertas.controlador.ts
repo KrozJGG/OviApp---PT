@@ -1,10 +1,13 @@
 import type { Request, Response } from 'express';
 import { ctxDe, edgeDe } from '../../shared/contexto';
-import { validarCuerpo } from '../../shared/validacion';
-import { esquemaHeartbeat } from './alertas.esquemas';
+import { esquemaParamId, validarCuerpo, validarParams } from '../../shared/validacion';
+import { esquemaHeartbeat, esquemaRegionInteres } from './alertas.esquemas';
 import {
+  actualizarRegionInteres,
   desconectarDispositivo,
+  eliminarRegionInteres,
   estadoVigilancia,
+  obtenerConfiguracionEdge,
   registrarHeartbeat,
 } from './alertas.servicio';
 
@@ -32,9 +35,35 @@ export async function desconexion(req: Request, res: Response): Promise<void> {
   res.status(204).end();
 }
 
+/** GET /edge/configuracion - entrega la ROI activa al modulo ia-engine. */
+export async function configuracionEdge(req: Request, res: Response): Promise<void> {
+  const edge = edgeDe(req);
+
+  res.json(await obtenerConfiguracionEdge(edge.idDispositivo));
+}
+
 /** GET /vigilancia/estado - IF2-SAL */
 export async function estado(req: Request, res: Response): Promise<void> {
   const ctx = ctxDe(req);
 
   res.json(await estadoVigilancia(ctx.idPredio));
+}
+
+/** PUT /vigilancia/dispositivos/:id/roi - guarda o reemplaza la Region de Interes. */
+export async function guardarRoi(req: Request, res: Response): Promise<void> {
+  const ctx = ctxDe(req);
+  const { id } = validarParams(esquemaParamId, req);
+  const datos = validarCuerpo(esquemaRegionInteres, req);
+
+  res.json(await actualizarRegionInteres(id, ctx.idPredio, datos));
+}
+
+/** DELETE /vigilancia/dispositivos/:id/roi - elimina la Region de Interes (imagen completa). */
+export async function eliminarRoi(req: Request, res: Response): Promise<void> {
+  const ctx = ctxDe(req);
+  const { id } = validarParams(esquemaParamId, req);
+
+  await eliminarRegionInteres(id, ctx.idPredio);
+
+  res.status(204).end();
 }

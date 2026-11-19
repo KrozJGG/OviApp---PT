@@ -8,12 +8,24 @@ import '../../../core/widgets/ovi_estados.dart';
 /// ExoPlayer y AVPlayer reproducen HLS de forma nativa, así que alcanza con
 /// apuntarlos al manifiesto.
 class ReproductorVivo extends StatefulWidget {
-  const ReproductorVivo({super.key, required this.url, required this.alFallar});
+  const ReproductorVivo({
+    super.key,
+    required this.url,
+    required this.alFallar,
+    this.superposicion,
+    this.bloquearControles = false,
+  });
 
   final Uri url;
 
   /// Se invoca cuando la reproducción se cae; la pantalla decide qué mostrar.
   final VoidCallback alFallar;
+
+  /// Capa opcional alineada exactamente al fotograma (ROI de lectura o editor).
+  final Widget? superposicion;
+
+  /// En móvil mantiene la firma homogénea con el reproductor web.
+  final bool bloquearControles;
 
   @override
   State<ReproductorVivo> createState() => _ReproductorVivoState();
@@ -77,7 +89,13 @@ class _ReproductorVivoState extends State<ReproductorVivo> {
 
     return AspectRatio(
       aspectRatio: controlador.value.aspectRatio,
-      child: VideoPlayer(controlador),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          VideoPlayer(controlador),
+          if (widget.superposicion != null) widget.superposicion!,
+        ],
+      ),
     );
   }
 }

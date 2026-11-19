@@ -7,6 +7,8 @@ pydantic-settings valida tipos y valores por defecto.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
@@ -32,13 +34,19 @@ class Config(BaseSettings):
     model_path: str = "models/sheep_detection.onnx"
     """Ruta del modelo YOLO exportado a ONNX (clase única: sheep)."""
 
-    confianza_minima: float = Field(default=0.35, gt=0.0, le=1.0)
+    imgsz: int = Field(default=1280, ge=320)
+    """Resolución de entrada del modelo (debe coincidir con el ONNX exportado)."""
+
+    confianza_minima: float = Field(default=0.25, gt=0.0, le=1.0)
     """Umbral de confianza mínimo para aceptar una detección de oveja."""
 
-    tile_size: int = Field(default=1080, ge=0)
+    iou_nms: float = Field(default=0.50, gt=0.0, le=1.0)
+    """Umbral IoU de NMS para suprimir cajas duplicadas sobre una misma oveja."""
+
+    tile_size: int = Field(default=0, ge=0)
     """
     Tamaño de ventana para teselado de alta resolución en Ultralytics.
-    1080 es el valor por defecto para streams 1080p (720 para 720p; 0 desactiva tiling).
+    0 desactiva el tiling (recomendado al inferir fotograma completo con imgsz=1280).
     """
 
     # ── Procesamiento RTSP y estabilización ──────────────────────────────
@@ -54,6 +62,23 @@ class Config(BaseSettings):
     # ── Heartbeat ────────────────────────────────────────────────────────
     heartbeat_intervalo_seg: int = Field(default=5, gt=0)
     """Segundos entre cada envío de conteo estabilizado al backend."""
+
+    # ── Región de Interés (ROI) y cadencia de inferencia ─────────────────
+    roi_modo: Literal["recorte", "filtro"] = "recorte"
+    """
+    Estrategia cuando existe ROI activa:
+    - "recorte": recorta al bounding box de la ROI con margen y filtra por polígono.
+    - "filtro": infiere fotograma completo y filtra centros dentro del polígono.
+    """
+
+    roi_margen_recorte: float = Field(default=0.03, ge=0.0, le=0.2)
+    """Margen normalizado extra alrededor del bounding box de la ROI al recortar."""
+
+    roi_sync_intervalo_seg: int = Field(default=5, gt=0)
+    """Segundos entre consultas al backend para detectar cambios de ROI."""
+
+    intervalo_inferencia_seg: float = Field(default=0.5, gt=0.0)
+    """Segundos mínimos entre inferencias consecutivas (~2 FPS por defecto)."""
 
     model_config = {"env_prefix": "", "case_sensitive": False}
 

@@ -23,12 +23,24 @@ extension type _Hls._(JSObject _) implements JSObject {
 /// Safari sí lo soporta de forma nativa y en ese caso se usa directo, sin la
 /// librería.
 class ReproductorVivo extends StatefulWidget {
-  const ReproductorVivo({super.key, required this.url, required this.alFallar});
+  const ReproductorVivo({
+    super.key,
+    required this.url,
+    required this.alFallar,
+    this.superposicion,
+    this.bloquearControles = false,
+  });
 
   final Uri url;
 
   /// Se invoca cuando la reproducción se cae; la pantalla decide qué mostrar.
   final VoidCallback alFallar;
+
+  /// Capa opcional alineada exactamente al fotograma (ROI de lectura o editor).
+  final Widget? superposicion;
+
+  /// Desactiva los controles y eventos del DOM para permitir dibujar encima.
+  final bool bloquearControles;
 
   @override
   State<ReproductorVivo> createState() => _ReproductorVivoState();
@@ -41,6 +53,7 @@ class _ReproductorVivoState extends State<ReproductorVivo> {
   late final String _tipoVista;
   late final web.HTMLVideoElement _video;
   _Hls? _hls;
+  double _aspectRatio = 16 / 9;
 
   @override
   void initState() {
@@ -49,15 +62,26 @@ class _ReproductorVivoState extends State<ReproductorVivo> {
     _video = web.HTMLVideoElement()
       ..autoplay = true
       // Sin silenciar, el navegador bloquea la reproducción automática.
-      ..muted = true
-      ..controls = true;
+      ..muted = true;
 
     _video.style
       ..setProperty('width', '100%')
       ..setProperty('height', '100%')
       ..setProperty('object-fit', 'contain');
 
+    _actualizarInteraccionVideo();
+
     _video.addEventListener('error', ((web.Event _) => widget.alFallar()).toJS);
+    _video.addEventListener(
+      'loadedmetadata',
+      ((web.Event _) {
+        final ancho = _video.videoWidth;
+        final alto = _video.videoHeight;
+        if (mounted && ancho > 0 && alto > 0) {
+          setState(() => _aspectRatio = ancho / alto);
+        }
+      }).toJS,
+    );
 
     _tipoVista = 'ovi-video-vivo-${_secuencia++}';
     ui_web.platformViewRegistry.registerViewFactory(_tipoVista, (int _) => _video);
@@ -65,9 +89,22 @@ class _ReproductorVivoState extends State<ReproductorVivo> {
     _cargar(widget.url);
   }
 
+  void _actualizarInteraccionVideo() {
+    _video.controls = !widget.bloquearControles;
+    _video.style.setProperty(
+      'pointer-events',
+      widget.bloquearControles ? 'none' : 'auto',
+    );
+  }
+
   @override
   void didUpdateWidget(ReproductorVivo anterior) {
     super.didUpdateWidget(anterior);
+
+    if (widget.bloquearControles != anterior.bloquearControles) {
+      _actualizarInteraccionVideo();
+    }
+
     if (widget.url == anterior.url) return;
 
     // Renovación del permiso: basta con cambiarle la fuente a la instancia que
@@ -105,8 +142,17 @@ class _ReproductorVivoState extends State<ReproductorVivo> {
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: HtmlElementView(viewType: _tipoVista),
+      aspectRatio: _aspectRatio,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          IgnorePointer(
+            ignoring: widget.bloquearControles,
+            child: HtmlElementView(viewType: _tipoVista),
+          ),
+          if (widget.superposicion != null) widget.superposicion!,
+        ],
+      ),
     );
   }
 }

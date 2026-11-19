@@ -14,6 +14,13 @@ rootProject.layout.buildDirectory.value(newBuildDir)
 subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
+    if (project.name != "app") {
+        afterEvaluate {
+            extensions.findByName("android")?.let { ext ->
+                com.flutter.gradle.AgpCommonExtensionWrapper(ext).compileSdk = 36
+            }
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")

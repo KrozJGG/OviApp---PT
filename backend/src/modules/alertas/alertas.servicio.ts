@@ -1,5 +1,8 @@
+import { Prisma } from '../../generated/prisma/client';
 import { prisma } from '../../shared/db';
-import type { DatosHeartbeat } from './alertas.esquemas';
+import { ErrorNoEncontrado } from '../../shared/errores';
+import type { DatosHeartbeat, DatosRegionInteres } from './alertas.esquemas';
+import { redondearCoord } from './alertas.geometria';
 
 /**
  * Reglas de negocio del Modulo 6 - Vigilancia y conteo de ovejas (IF2-SAL).
@@ -66,6 +69,11 @@ async function tocarDispositivo(
 // Estado de vigilancia (IF2-SAL)
 // ─────────────────────────────────────────────────────────────────────────────
 
+export interface RegionInteres {
+  tipo: 'RECTANGULO' | 'POLIGONO';
+  puntos: Array<{ x: number; y: number }>;
+}
+
 export interface DispositivoEstado {
   id: string;
   nombre: string;
@@ -75,10 +83,23 @@ export interface DispositivoEstado {
   /// Ovejas ACTIVAS registradas en el predio: contra esto se compara lo detectado.
   conteoEsperado: number;
   enLinea: boolean;
+  regionInteres: RegionInteres | null;
+  regionInteresUpdatedAt: Date | null;
 }
 
 export interface EstadoVigilancia {
   dispositivos: DispositivoEstado[];
+}
+
+export interface RespuestaRoi {
+  id: string;
+  regionInteres: RegionInteres;
+  regionInteresUpdatedAt: Date;
+}
+
+export interface ConfiguracionEdge {
+  regionInteres: RegionInteres | null;
+  regionInteresUpdatedAt: Date | null;
 }
 
 /** Un dispositivo esta en linea si latio dentro de los ultimos MINUTOS_EN_LINEA. */
@@ -103,6 +124,8 @@ export async function estadoVigilancia(idPredio: string): Promise<EstadoVigilanc
         nombre: true,
         ultimoHeartbeat: true,
         ultimoConteo: true,
+        regionInteres: true,
+        regionInteresUpdatedAt: true,
       },
       orderBy: { nombre: 'asc' },
     }),
@@ -114,8 +137,92 @@ export async function estadoVigilancia(idPredio: string): Promise<EstadoVigilanc
   return {
     dispositivos: dispositivos.map((d) => ({
       ...d,
+      regionInteres: (d.regionInteres as RegionInteres | null) ?? null,
       conteoEsperado: animalesActivos,
       enLinea: estaEnLinea(d.ultimoHeartbeat, ahora),
     })),
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Region de Interes (ROI) del dispositivo edge
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function exigirDispositivoDelPredio(idDispositivo: string, idPredio: string): Promise<void> {
+  // findFirst con ambos ids: un dispositivo de otro predio responde 404 igual
+  // que uno inexistente (RNF_08).
+  const dispositivo = await prisma.dispositivoEdge.findFirst({
+    where: { id: idDispositivo, idPredio },
+    select: { id: true },
+  });
+
+  if (!dispositivo) {
+    throw new ErrorNoEncontrado('No se encontro la camara solicitada.');
+  }
+}
+
+/** PUT /vigilancia/dispositivos/:id/roi - guarda o reemplaza la ROI del dispositivo. */
+export async function actualizarRegionInteres(
+  idDispositivo: string,
+  idPredio: string,
+  roi: DatosRegionInteres,
+): Promise<RespuestaRoi> {
+  await exigirDispositivoDelPredio(idDispositivo, idPredio);
+
+  const roiNormalizada: RegionInteres = {
+    tipo: roi.tipo,
+    puntos: roi.puntos.map((p) => ({
+      x: redondearCoord(p.x),
+      y: redondearCoord(p.y),
+    })),
+  };
+
+  const actualizado = await prisma.dispositivoEdge.update({
+    where: { id: idDispositivo },
+    data: {
+      regionInteres: roiNormalizada as unknown as Prisma.InputJsonValue,
+      regionInteresUpdatedAt: new Date(),
+    },
+    select: {
+      id: true,
+      regionInteres: true,
+      regionInteresUpdatedAt: true,
+    },
+  });
+
+  return {
+    id: actualizado.id,
+    regionInteres: actualizado.regionInteres as unknown as RegionInteres,
+    regionInteresUpdatedAt: actualizado.regionInteresUpdatedAt!,
+  };
+}
+
+/** DELETE /vigilancia/dispositivos/:id/roi - vuelve a deteccion en imagen completa. */
+export async function eliminarRegionInteres(idDispositivo: string, idPredio: string): Promise<void> {
+  await exigirDispositivoDelPredio(idDispositivo, idPredio);
+
+  await prisma.dispositivoEdge.update({
+    where: { id: idDispositivo },
+    data: {
+      regionInteres: Prisma.DbNull,
+      regionInteresUpdatedAt: new Date(),
+    },
+    select: { id: true },
+  });
+}
+
+/** GET /edge/configuracion - entrega la ROI vigente al modulo ia-engine. */
+export async function obtenerConfiguracionEdge(idDispositivo: string): Promise<ConfiguracionEdge> {
+  const dispositivo = await prisma.dispositivoEdge.findUniqueOrThrow({
+    where: { id: idDispositivo },
+    select: {
+      regionInteres: true,
+      regionInteresUpdatedAt: true,
+    },
+  });
+
+  return {
+    regionInteres: (dispositivo.regionInteres as RegionInteres | null) ?? null,
+    regionInteresUpdatedAt: dispositivo.regionInteresUpdatedAt,
   };
 }

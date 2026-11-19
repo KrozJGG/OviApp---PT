@@ -14,7 +14,7 @@ services:
     volumes:
       - oviapp-db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U oviapp -d oviapp"]
+      test: [ "CMD-SHELL", "pg_isready -U oviapp -d oviapp" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -33,7 +33,7 @@ services:
     ports:
       - "5434:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U oviapp -d oviapp_test"]
+      test: [ "CMD-SHELL", "pg_isready -U oviapp -d oviapp_test" ]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -117,21 +117,30 @@ services:
       EDGE_API_KEY: "${EDGE_API_KEY:-edge_hatonorte.7f3a91c4e08b45d2a6f1}"
       RTSP_STREAMS: "rebano=rtsp://mediamtx:8554/rebano"
       MODEL_PATH: "/app/models/sheep_detection.onnx"
-      CONFIANZA_MINIMA: 0.35
-      # Teselado para streams 1080p (720 para 720p; 0 desactiva tiling).
-      TILE_SIZE: 1080
+      IMGSZ: 1280
+      CONFIANZA_MINIMA: 0.25
+      IOU_NMS: 0.50
+      # Teselado desactivado (0) al inferir a imgsz=1280 sobre fotograma completo.
+      TILE_SIZE: 0
       # Salto de frames nativo en Ultralytics (2 FPS sobre 60 FPS -> ~10 muestras cada 5 s).
       VID_STRIDE: 30
       # Cantidad de muestras recientes para estabilizar el conteo por mediana.
       VENTANA_MEDIANA: 5
       # Cada 5 s se envia al backend la MEDIANA del conteo para mantener latencia < 10 s.
       HEARTBEAT_INTERVALO_SEG: 5
+      # Configuracion de Region de Interes (ROI): "recorte" o "filtro".
+      ROI_MODO: "recorte"
+      ROI_MARGEN_RECORTE: 0.03
+      ROI_SYNC_INTERVALO_SEG: 5
+      INTERVALO_INFERENCIA_SEG: 0.5
+      # Evita que ONNX Runtime sature todos los nucleos y afecte a ffmpeg/mediamtx.
+      OMP_NUM_THREADS: 2
+      OPENBLAS_NUM_THREADS: 2
     depends_on:
       mediamtx:
         condition: service_started
       backend:
         condition: service_started
-
 
 volumes:
   oviapp-db-data:

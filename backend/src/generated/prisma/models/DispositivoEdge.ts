@@ -42,6 +42,7 @@ export type DispositivoEdgeMinAggregateOutputType = {
   apiKeyPrefijo: string | null
   ultimoHeartbeat: Date | null
   ultimoConteo: number | null
+  regionInteresUpdatedAt: Date | null
   createdAt: Date | null
 }
 
@@ -53,6 +54,7 @@ export type DispositivoEdgeMaxAggregateOutputType = {
   apiKeyPrefijo: string | null
   ultimoHeartbeat: Date | null
   ultimoConteo: number | null
+  regionInteresUpdatedAt: Date | null
   createdAt: Date | null
 }
 
@@ -64,6 +66,8 @@ export type DispositivoEdgeCountAggregateOutputType = {
   apiKeyPrefijo: number
   ultimoHeartbeat: number
   ultimoConteo: number
+  regionInteres: number
+  regionInteresUpdatedAt: number
   createdAt: number
   _all: number
 }
@@ -85,6 +89,7 @@ export type DispositivoEdgeMinAggregateInputType = {
   apiKeyPrefijo?: true
   ultimoHeartbeat?: true
   ultimoConteo?: true
+  regionInteresUpdatedAt?: true
   createdAt?: true
 }
 
@@ -96,6 +101,7 @@ export type DispositivoEdgeMaxAggregateInputType = {
   apiKeyPrefijo?: true
   ultimoHeartbeat?: true
   ultimoConteo?: true
+  regionInteresUpdatedAt?: true
   createdAt?: true
 }
 
@@ -107,6 +113,8 @@ export type DispositivoEdgeCountAggregateInputType = {
   apiKeyPrefijo?: true
   ultimoHeartbeat?: true
   ultimoConteo?: true
+  regionInteres?: true
+  regionInteresUpdatedAt?: true
   createdAt?: true
   _all?: true
 }
@@ -205,6 +213,8 @@ export type DispositivoEdgeGroupByOutputType = {
   apiKeyPrefijo: string
   ultimoHeartbeat: Date | null
   ultimoConteo: number | null
+  regionInteres: runtime.JsonValue | null
+  regionInteresUpdatedAt: Date | null
   createdAt: Date
   _count: DispositivoEdgeCountAggregateOutputType | null
   _avg: DispositivoEdgeAvgAggregateOutputType | null
@@ -239,6 +249,8 @@ export type DispositivoEdgeWhereInput = {
   apiKeyPrefijo?: Prisma.StringFilter<"DispositivoEdge"> | string
   ultimoHeartbeat?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   ultimoConteo?: Prisma.IntNullableFilter<"DispositivoEdge"> | number | null
+  regionInteres?: Prisma.JsonNullableFilter<"DispositivoEdge">
+  regionInteresUpdatedAt?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DispositivoEdge"> | Date | string
   predio?: Prisma.XOR<Prisma.PredioScalarRelationFilter, Prisma.PredioWhereInput>
 }
@@ -251,6 +263,8 @@ export type DispositivoEdgeOrderByWithRelationInput = {
   apiKeyPrefijo?: Prisma.SortOrder
   ultimoHeartbeat?: Prisma.SortOrderInput | Prisma.SortOrder
   ultimoConteo?: Prisma.SortOrderInput | Prisma.SortOrder
+  regionInteres?: Prisma.SortOrderInput | Prisma.SortOrder
+  regionInteresUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   predio?: Prisma.PredioOrderByWithRelationInput
 }
@@ -266,6 +280,8 @@ export type DispositivoEdgeWhereUniqueInput = Prisma.AtLeast<{
   apiKeyHash?: Prisma.StringFilter<"DispositivoEdge"> | string
   ultimoHeartbeat?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   ultimoConteo?: Prisma.IntNullableFilter<"DispositivoEdge"> | number | null
+  regionInteres?: Prisma.JsonNullableFilter<"DispositivoEdge">
+  regionInteresUpdatedAt?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DispositivoEdge"> | Date | string
   predio?: Prisma.XOR<Prisma.PredioScalarRelationFilter, Prisma.PredioWhereInput>
 }, "id" | "apiKeyPrefijo">
@@ -278,6 +294,8 @@ export type DispositivoEdgeOrderByWithAggregationInput = {
   apiKeyPrefijo?: Prisma.SortOrder
   ultimoHeartbeat?: Prisma.SortOrderInput | Prisma.SortOrder
   ultimoConteo?: Prisma.SortOrderInput | Prisma.SortOrder
+  regionInteres?: Prisma.SortOrderInput | Prisma.SortOrder
+  regionInteresUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.DispositivoEdgeCountOrderByAggregateInput
   _avg?: Prisma.DispositivoEdgeAvgOrderByAggregateInput
@@ -297,6 +315,8 @@ export type DispositivoEdgeScalarWhereWithAggregatesInput = {
   apiKeyPrefijo?: Prisma.StringWithAggregatesFilter<"DispositivoEdge"> | string
   ultimoHeartbeat?: Prisma.DateTimeNullableWithAggregatesFilter<"DispositivoEdge"> | Date | string | null
   ultimoConteo?: Prisma.IntNullableWithAggregatesFilter<"DispositivoEdge"> | number | null
+  regionInteres?: Prisma.JsonNullableWithAggregatesFilter<"DispositivoEdge">
+  regionInteresUpdatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"DispositivoEdge"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"DispositivoEdge"> | Date | string
 }
 
@@ -307,6 +327,8 @@ export type DispositivoEdgeCreateInput = {
   apiKeyPrefijo: string
   ultimoHeartbeat?: Date | string | null
   ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
   predio: Prisma.PredioCreateNestedOneWithoutDispositivosEdgeInput
 }
@@ -319,6 +341,8 @@ export type DispositivoEdgeUncheckedCreateInput = {
   apiKeyPrefijo: string
   ultimoHeartbeat?: Date | string | null
   ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -329,6 +353,8 @@ export type DispositivoEdgeUpdateInput = {
   apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
   ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   predio?: Prisma.PredioUpdateOneRequiredWithoutDispositivosEdgeNestedInput
 }
@@ -341,6 +367,8 @@ export type DispositivoEdgeUncheckedUpdateInput = {
   apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
   ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -352,6 +380,8 @@ export type DispositivoEdgeCreateManyInput = {
   apiKeyPrefijo: string
   ultimoHeartbeat?: Date | string | null
   ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -362,6 +392,8 @@ export type DispositivoEdgeUpdateManyMutationInput = {
   apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
   ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -373,6 +405,8 @@ export type DispositivoEdgeUncheckedUpdateManyInput = {
   apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
   ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -394,6 +428,8 @@ export type DispositivoEdgeCountOrderByAggregateInput = {
   apiKeyPrefijo?: Prisma.SortOrder
   ultimoHeartbeat?: Prisma.SortOrder
   ultimoConteo?: Prisma.SortOrder
+  regionInteres?: Prisma.SortOrder
+  regionInteresUpdatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -409,6 +445,7 @@ export type DispositivoEdgeMaxOrderByAggregateInput = {
   apiKeyPrefijo?: Prisma.SortOrder
   ultimoHeartbeat?: Prisma.SortOrder
   ultimoConteo?: Prisma.SortOrder
+  regionInteresUpdatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -420,6 +457,7 @@ export type DispositivoEdgeMinOrderByAggregateInput = {
   apiKeyPrefijo?: Prisma.SortOrder
   ultimoHeartbeat?: Prisma.SortOrder
   ultimoConteo?: Prisma.SortOrder
+  regionInteresUpdatedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
 
@@ -484,6 +522,8 @@ export type DispositivoEdgeCreateWithoutPredioInput = {
   apiKeyPrefijo: string
   ultimoHeartbeat?: Date | string | null
   ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -494,6 +534,8 @@ export type DispositivoEdgeUncheckedCreateWithoutPredioInput = {
   apiKeyPrefijo: string
   ultimoHeartbeat?: Date | string | null
   ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -534,6 +576,8 @@ export type DispositivoEdgeScalarWhereInput = {
   apiKeyPrefijo?: Prisma.StringFilter<"DispositivoEdge"> | string
   ultimoHeartbeat?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   ultimoConteo?: Prisma.IntNullableFilter<"DispositivoEdge"> | number | null
+  regionInteres?: Prisma.JsonNullableFilter<"DispositivoEdge">
+  regionInteresUpdatedAt?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DispositivoEdge"> | Date | string
 }
 
@@ -544,6 +588,8 @@ export type DispositivoEdgeCreateManyPredioInput = {
   apiKeyPrefijo: string
   ultimoHeartbeat?: Date | string | null
   ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
 }
 
@@ -554,6 +600,8 @@ export type DispositivoEdgeUpdateWithoutPredioInput = {
   apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
   ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -564,6 +612,8 @@ export type DispositivoEdgeUncheckedUpdateWithoutPredioInput = {
   apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
   ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -574,6 +624,8 @@ export type DispositivoEdgeUncheckedUpdateManyWithoutPredioInput = {
   apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
   ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -587,6 +639,8 @@ export type DispositivoEdgeSelect<ExtArgs extends runtime.Types.Extensions.Inter
   apiKeyPrefijo?: boolean
   ultimoHeartbeat?: boolean
   ultimoConteo?: boolean
+  regionInteres?: boolean
+  regionInteresUpdatedAt?: boolean
   createdAt?: boolean
   predio?: boolean | Prisma.PredioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["dispositivoEdge"]>
@@ -599,6 +653,8 @@ export type DispositivoEdgeSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   apiKeyPrefijo?: boolean
   ultimoHeartbeat?: boolean
   ultimoConteo?: boolean
+  regionInteres?: boolean
+  regionInteresUpdatedAt?: boolean
   createdAt?: boolean
   predio?: boolean | Prisma.PredioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["dispositivoEdge"]>
@@ -611,6 +667,8 @@ export type DispositivoEdgeSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   apiKeyPrefijo?: boolean
   ultimoHeartbeat?: boolean
   ultimoConteo?: boolean
+  regionInteres?: boolean
+  regionInteresUpdatedAt?: boolean
   createdAt?: boolean
   predio?: boolean | Prisma.PredioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["dispositivoEdge"]>
@@ -623,10 +681,12 @@ export type DispositivoEdgeSelectScalar = {
   apiKeyPrefijo?: boolean
   ultimoHeartbeat?: boolean
   ultimoConteo?: boolean
+  regionInteres?: boolean
+  regionInteresUpdatedAt?: boolean
   createdAt?: boolean
 }
 
-export type DispositivoEdgeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idPredio" | "nombre" | "apiKeyHash" | "apiKeyPrefijo" | "ultimoHeartbeat" | "ultimoConteo" | "createdAt", ExtArgs["result"]["dispositivoEdge"]>
+export type DispositivoEdgeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idPredio" | "nombre" | "apiKeyHash" | "apiKeyPrefijo" | "ultimoHeartbeat" | "ultimoConteo" | "regionInteres" | "regionInteresUpdatedAt" | "createdAt", ExtArgs["result"]["dispositivoEdge"]>
 export type DispositivoEdgeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   predio?: boolean | Prisma.PredioDefaultArgs<ExtArgs>
 }
@@ -659,6 +719,15 @@ export type $DispositivoEdgePayload<ExtArgs extends runtime.Types.Extensions.Int
      * Mediana del conteo de ovejas que el ia-engine envia en cada heartbeat.
      */
     ultimoConteo: number | null
+    /**
+     * Region de interes normalizada [0, 1] para delimitar el area de deteccion.
+     * NULL indica deteccion sobre la imagen completa.
+     */
+    regionInteres: runtime.JsonValue | null
+    /**
+     * Marca de ultima modificacion o eliminacion de la ROI para sincronizar ia-engine.
+     */
+    regionInteresUpdatedAt: Date | null
     createdAt: Date
   }, ExtArgs["result"]["dispositivoEdge"]>
   composites: {}
@@ -1091,6 +1160,8 @@ export interface DispositivoEdgeFieldRefs {
   readonly apiKeyPrefijo: Prisma.FieldRef<"DispositivoEdge", 'String'>
   readonly ultimoHeartbeat: Prisma.FieldRef<"DispositivoEdge", 'DateTime'>
   readonly ultimoConteo: Prisma.FieldRef<"DispositivoEdge", 'Int'>
+  readonly regionInteres: Prisma.FieldRef<"DispositivoEdge", 'Json'>
+  readonly regionInteresUpdatedAt: Prisma.FieldRef<"DispositivoEdge", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"DispositivoEdge", 'DateTime'>
 }
     

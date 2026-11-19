@@ -7,6 +7,7 @@ import '../../../core/router/rutas.dart';
 import '../../../core/tema/ovi_colores.dart';
 import '../../../core/widgets/ovi_estados.dart';
 import '../../../core/widgets/ovi_widgets.dart';
+import '../../auth/sesion.dart';
 import '../datos/alerta.dart';
 import '../vigilancia_proveedores.dart';
 
@@ -21,6 +22,7 @@ class PantallaVigilancia extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(estadoVigilanciaProvider);
+    final esProductor = ref.watch(esProductorProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -41,7 +43,7 @@ class PantallaVigilancia extends ConsumerWidget {
             OviAsync<EstadoVigilancia>(
               valor: estado,
               alReintentar: () => ref.invalidate(estadoVigilanciaProvider),
-              enDatos: (e) => _TarjetaEstado(estado: e),
+              enDatos: (e) => _TarjetaEstado(estado: e, esProductor: esProductor),
             ),
           ],
         ),
@@ -53,9 +55,10 @@ class PantallaVigilancia extends ConsumerWidget {
 /// Estado del dispositivo: si está en línea, cuándo detectó por última vez y
 /// cuántas ovejas vio frente a las activas registradas.
 class _TarjetaEstado extends StatelessWidget {
-  const _TarjetaEstado({required this.estado});
+  const _TarjetaEstado({required this.estado, required this.esProductor});
 
   final EstadoVigilancia estado;
+  final bool esProductor;
 
   @override
   Widget build(BuildContext context) {
@@ -106,6 +109,25 @@ class _TarjetaEstado extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              const Expanded(
+                child: _Dato(
+                  etiqueta: 'Zona de detección',
+                  valor: '',
+                  ocultarValor: true,
+                ),
+              ),
+              OviChip(
+                texto: d.resumenRoi,
+                tono: d.tieneRoi ? TonoChip.info : TonoChip.neutro,
+                icono: d.tieneRoi
+                    ? Icons.crop_free_rounded
+                    : Icons.fullscreen_rounded,
+              ),
+            ],
+          ),
           const SizedBox(height: 14),
           // Siempre disponible, incluso con el chip en "Sin señal": ese estado
           // dice que el módulo de detección dejó de latir, no que no haya
@@ -122,6 +144,33 @@ class _TarjetaEstado extends StatelessWidget {
               label: const Text('Ver en vivo'),
             ),
           ),
+          if (esProductor) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.tonalIcon(
+                onPressed: () => context.goNamed(
+                  Rutas.vigilanciaEnVivo,
+                  pathParameters: {'idDispositivo': d.id},
+                  queryParameters: const {'editarRoi': 'true'},
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: OviColores.superficieSecundaria,
+                  foregroundColor: OviColores.primaryDark,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  textStyle: const TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                icon: const Icon(Icons.crop_free_rounded, size: 20),
+                label: const Text('Zona de detección'),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -129,10 +178,15 @@ class _TarjetaEstado extends StatelessWidget {
 }
 
 class _Dato extends StatelessWidget {
-  const _Dato({required this.etiqueta, required this.valor});
+  const _Dato({
+    required this.etiqueta,
+    required this.valor,
+    this.ocultarValor = false,
+  });
 
   final String etiqueta;
   final String valor;
+  final bool ocultarValor;
 
   @override
   Widget build(BuildContext context) {
@@ -141,8 +195,10 @@ class _Dato extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(etiqueta, style: texto.bodySmall),
-        const SizedBox(height: 2),
-        Text(valor, style: texto.titleSmall),
+        if (!ocultarValor) ...[
+          const SizedBox(height: 2),
+          Text(valor, style: texto.titleSmall),
+        ],
       ],
     );
   }

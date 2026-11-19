@@ -34,7 +34,7 @@ COPY models/ ./models/
 
 # Garantizar que el modelo ONNX exista si solo se copió el .pt
 RUN if [ ! -f models/sheep_detection.onnx ] && [ -f models/sheep_detection.pt ]; then \
-        python -c "from ultralytics import YOLO; YOLO('models/sheep_detection.pt').export(format='onnx', imgsz=640, simplify=True, dynamic=False, opset=12)"; \
+        python -c "from ultralytics import YOLO; YOLO('models/sheep_detection.pt').export(format='onnx', imgsz=1280, simplify=True, dynamic=False, opset=12)"; \
     fi
 
 # El módulo se ejecuta como paquete Python

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -8,20 +7,15 @@ import '../almacenamiento/almacen_sesion.dart';
 import '../cache/cache_respuestas.dart';
 import 'error_api.dart';
 
-/// URL base de la API.
-///
-/// En el emulador de Android `localhost` es el propio telefono, no el equipo de
-/// desarrollo: hay que usar 10.0.2.2. Se puede sobreescribir al compilar con
-///   flutter run --dart-define=API_URL=https://api.oviapp.cl/api/v1
-String get urlBaseApi {
-  const definida = String.fromEnvironment('API_URL');
-  if (definida.isNotEmpty) return definida;
-  if (!kIsWeb && Platform.isAndroid) return 'http://10.0.2.2:3000/api/v1';
-  return 'http://localhost:3000/api/v1';
-}
+// URL De Cloudflare (proxy inverso) el cual luego se comunicará con el servidor
 
-/// Cliente HTTP de la aplicacion.
-///
+String get urlBaseApi => const String.fromEnvironment(
+  'API_URL',
+  defaultValue:
+      'https://attached-grammar-college-biodiversity.trycloudflare.com/api/v1',
+);
+
+// Cliente HTTP
 /// Resuelve tres cosas de una vez: adjunta el token a cada peticion, renueva la
 /// sesion cuando el access token expira (y reintenta la peticion original), y
 /// traduce cualquier fallo a [ErrorApi] para que las pantallas nunca vean un
@@ -32,22 +26,23 @@ class ClienteApi {
     CacheRespuestas? cache,
     String? urlBase,
     Dio? dio,
-  })  : _almacen = almacen,
-        _cache = cache,
-        dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: urlBase ?? urlBaseApi,
-                // RNF_01 pide respuestas bajo 3 s en 4G; 15 s da margen para una
-                // señal rural mala antes de declarar el intento perdido.
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 20),
-                sendTimeout: const Duration(seconds: 20),
-                contentType: Headers.jsonContentType,
-                // Los status de error los traduce el interceptor, no Dio.
-                validateStatus: (s) => s != null && s < 400,
-              ),
-            ) {
+  }) : _almacen = almacen,
+       _cache = cache,
+       dio =
+           dio ??
+           Dio(
+             BaseOptions(
+               baseUrl: urlBase ?? urlBaseApi,
+               // RNF_01 pide respuestas bajo 3 s en 4G; 15 s da margen para una
+               // señal rural mala antes de declarar el intento perdido.
+               connectTimeout: const Duration(seconds: 15),
+               receiveTimeout: const Duration(seconds: 20),
+               sendTimeout: const Duration(seconds: 20),
+               contentType: Headers.jsonContentType,
+               // Los status de error los traduce el interceptor, no Dio.
+               validateStatus: (s) => s != null && s < 400,
+             ),
+           ) {
     // `this.` es obligatorio: dentro del cuerpo, `dio` es el parametro
     // opcional (nullable), no el campo ya inicializado.
     this.dio.interceptors.add(
@@ -76,7 +71,10 @@ class ClienteApi {
 
   void usarToken(String? token) => _accessToken = token;
 
-  Future<void> _alEnviar(RequestOptions opciones, RequestInterceptorHandler handler) async {
+  Future<void> _alEnviar(
+    RequestOptions opciones,
+    RequestInterceptorHandler handler,
+  ) async {
     _accessToken ??= (await _almacen.leer())?.accessToken;
     if (_accessToken != null && !opciones.extra.containsKey('sinAuth')) {
       opciones.headers['Authorization'] = 'Bearer $_accessToken';
@@ -96,10 +94,9 @@ class ClienteApi {
   /// Clave estable: ruta + consulta ordenada, para que dos peticiones iguales
   /// con los parametros en distinto orden compartan entrada.
   static String _claveDe(RequestOptions o) {
-    final consulta = o.queryParameters.entries
-        .map((e) => '${e.key}=${e.value}')
-        .toList()
-      ..sort();
+    final consulta =
+        o.queryParameters.entries.map((e) => '${e.key}=${e.value}').toList()
+          ..sort();
     return '${o.path}?${consulta.join('&')}';
   }
 
@@ -118,7 +115,10 @@ class ClienteApi {
     handler.next(r);
   }
 
-  Future<void> _alFallar(DioException e, ErrorInterceptorHandler handler) async {
+  Future<void> _alFallar(
+    DioException e,
+    ErrorInterceptorHandler handler,
+  ) async {
     final error = ErrorApi.desdeDio(e);
     final esRutaDeSesion = e.requestOptions.path.startsWith('/auth/');
 
@@ -147,7 +147,9 @@ class ClienteApi {
       final renovado = await _renovarSesion();
       if (renovado) {
         try {
-          final reintento = await dio.fetch<dynamic>(_conTokenNuevo(e.requestOptions));
+          final reintento = await dio.fetch<dynamic>(
+            _conTokenNuevo(e.requestOptions),
+          );
           handler.resolve(reintento);
           return;
         } on DioException catch (e2) {
@@ -201,11 +203,11 @@ class ClienteApi {
   }
 
   DioException _envolver(DioException e, ErrorApi error) => DioException(
-        requestOptions: e.requestOptions,
-        response: e.response,
-        type: e.type,
-        error: error,
-      );
+    requestOptions: e.requestOptions,
+    response: e.response,
+    type: e.type,
+    error: error,
+  );
 
   void cerrar() {
     _sesionCaducada.close();
@@ -221,5 +223,9 @@ ErrorApi comoErrorApi(Object e) {
     final adjunto = e.error;
     return adjunto is ErrorApi ? adjunto : ErrorApi.desdeDio(e);
   }
-  return ErrorApi(codigo: 'DESCONOCIDO', mensaje: 'Ocurrió un error inesperado.', status: null);
+  return ErrorApi(
+    codigo: 'DESCONOCIDO',
+    mensaje: 'Ocurrió un error inesperado.',
+    status: null,
+  );
 }

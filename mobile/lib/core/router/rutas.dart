@@ -217,6 +217,8 @@ final routerProvider = Provider<GoRouter>((ref) {
                     name: Rutas.vigilanciaEnVivo,
                     builder: (_, e) => PantallaVigilanciaEnVivo(
                       idDispositivo: e.pathParameters['idDispositivo']!,
+                      iniciarEdicionRoi:
+                          e.uri.queryParameters['editarRoi'] == 'true',
                     ),
                   ),
                 ],

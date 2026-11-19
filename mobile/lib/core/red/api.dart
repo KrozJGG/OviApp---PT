@@ -55,6 +55,13 @@ extension ApiDio on Dio {
     });
   }
 
+  Future<Map<String, dynamic>> poner(String ruta, {Object? cuerpo}) async {
+    return _intentar(() async {
+      final r = await put<Map<String, dynamic>>(ruta, data: cuerpo);
+      return r.data ?? const {};
+    });
+  }
+
   /// DELETE. El backend responde 204 sin cuerpo.
   Future<void> borrar(String ruta) async {
     await _intentar(() async {

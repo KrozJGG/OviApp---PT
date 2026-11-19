@@ -62,6 +62,36 @@ class ClienteAPI:
         )
         return False
 
+    def obtener_configuracion(self) -> tuple[bool, dict[str, Any] | None]:
+        """
+        Consulta la configuración activa del dispositivo (ROI vigente).
+
+        Retorna `(True, payload)` en caso de éxito y `(False, None)` si hubo un
+        error de red o respuesta inesperada, permitiendo conservar la última ROI
+        conocida durante cortes temporales del backend.
+        """
+        url = f"{self._base_url}/api/v1/edge/configuracion"
+        try:
+            resp = self._session.get(url, timeout=_TIMEOUT_SEG)
+        except requests.RequestException as e:
+            logger.warning("Error de red al consultar la configuración edge: %s", e)
+            return False, None
+
+        if resp.status_code == 200:
+            try:
+                data = resp.json()
+            except ValueError as e:
+                logger.warning("Respuesta JSON inválida en /edge/configuracion: %s", e)
+                return False, None
+            return (True, data) if isinstance(data, dict) else (False, None)
+
+        logger.warning(
+            "Backend respondió %d a /edge/configuracion: %s",
+            resp.status_code,
+            resp.text[:200],
+        )
+        return False, None
+
     def enviar_desconexion(self) -> None:
         """
         Avisa al backend de un apagado limpio (SIGTERM/SIGINT).

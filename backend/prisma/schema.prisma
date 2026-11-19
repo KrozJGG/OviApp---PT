@@ -332,17 +332,22 @@ model TareaAnimal {
 
 /// H4 - emisor de IF5-ENT; su estado alimenta IF2-SAL.
 model DispositivoEdge {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  idPredio        String    @map("id_predio") @db.Uuid
-  nombre          String
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idPredio               String    @map("id_predio") @db.Uuid
+  nombre                 String
   /// Hash bcrypt de la API key entregada al dispositivo.
-  apiKeyHash      String    @map("api_key_hash")
+  apiKeyHash             String    @map("api_key_hash")
   /// Prefijo publico de la key, para localizar el dispositivo sin exponer el secreto.
-  apiKeyPrefijo   String    @unique @map("api_key_prefijo")
-  ultimoHeartbeat DateTime? @map("ultimo_heartbeat") @db.Timestamptz(6)
+  apiKeyPrefijo          String    @unique @map("api_key_prefijo")
+  ultimoHeartbeat        DateTime? @map("ultimo_heartbeat") @db.Timestamptz(6)
   /// Mediana del conteo de ovejas que el ia-engine envia en cada heartbeat.
-  ultimoConteo    Int?      @map("ultimo_conteo")
-  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  ultimoConteo           Int?      @map("ultimo_conteo")
+  /// Region de interes normalizada [0, 1] para delimitar el area de deteccion.
+  /// NULL indica deteccion sobre la imagen completa.
+  regionInteres          Json?     @map("region_interes") @db.JsonB
+  /// Marca de ultima modificacion o eliminacion de la ROI para sincronizar ia-engine.
+  regionInteresUpdatedAt DateTime? @map("region_interes_updated_at") @db.Timestamptz(6)
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   predio Predio @relation(fields: [idPredio], references: [id])
 

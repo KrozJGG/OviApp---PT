@@ -8,6 +8,7 @@ import '../../core/red/api.dart';
 import '../../core/red/cliente_api.dart';
 import 'datos/acceso_stream.dart';
 import 'datos/alerta.dart';
+import 'datos/region_interes.dart';
 
 /// IF2-SAL — estado del dispositivo edge y último conteo detectado.
 /// Se refresca cada 5 s para reflejar los heartbeats del ia-engine (< 10 s).
@@ -57,5 +58,19 @@ class VigilanciaRepositorio {
       url: url,
       expiraEnSeg: (json['expiraEnSeg'] as num?)?.toInt() ?? 600,
     );
+  }
+
+  /// Guarda o reemplaza la Región de Interés del dispositivo (solo Productor).
+  Future<void> guardarRegionInteres(String idDispositivo, RegionInteres roi) async {
+    final dio = _ref.read(dioProvider);
+    await dio.poner('/vigilancia/dispositivos/$idDispositivo/roi', cuerpo: roi.aJson());
+    _ref.invalidate(estadoVigilanciaProvider);
+  }
+
+  /// Elimina la Región de Interés para volver al análisis de imagen completa.
+  Future<void> eliminarRegionInteres(String idDispositivo) async {
+    final dio = _ref.read(dioProvider);
+    await dio.borrar('/vigilancia/dispositivos/$idDispositivo/roi');
+    _ref.invalidate(estadoVigilanciaProvider);
   }
 }

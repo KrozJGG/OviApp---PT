@@ -240,6 +240,8 @@ export const DispositivoEdgeScalarFieldEnum = {
   apiKeyPrefijo: 'apiKeyPrefijo',
   ultimoHeartbeat: 'ultimoHeartbeat',
   ultimoConteo: 'ultimoConteo',
+  regionInteres: 'regionInteres',
+  regionInteresUpdatedAt: 'regionInteresUpdatedAt',
   createdAt: 'createdAt'
 } as const
 
