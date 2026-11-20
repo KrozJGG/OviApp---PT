@@ -158,14 +158,50 @@ class _Entrada extends StatelessWidget {
 
 /// Diálogo para añadir una nota manual (el único tipo que escribe el usuario).
 Future<void> _agregarNota(BuildContext context, WidgetRef ref, String idAnimal) async {
-  final controlador = TextEditingController();
-
   final contenido = await showDialog<String>(
     context: context,
-    builder: (dialogo) => AlertDialog(
+    builder: (_) => const _DialogoNuevaNota(),
+  );
+
+  if (contenido == null || contenido.isEmpty || !context.mounted) return;
+
+  try {
+    await ref.read(dioProvider).enviar(
+          '/animales/$idAnimal/bitacora',
+          cuerpo: {'contenido': contenido},
+        );
+    if (!context.mounted) return;
+    ref.invalidate(bitacoraProvider(idAnimal));
+    mostrarMensaje(context, 'Nota agregada a la bitácora.');
+  } catch (e) {
+    if (context.mounted) {
+      mostrarMensaje(context, comoErrorApi(e).mensaje, esError: true);
+    }
+  }
+}
+
+class _DialogoNuevaNota extends StatefulWidget {
+  const _DialogoNuevaNota();
+
+  @override
+  State<_DialogoNuevaNota> createState() => _DialogoNuevaNotaState();
+}
+
+class _DialogoNuevaNotaState extends State<_DialogoNuevaNota> {
+  final _controlador = TextEditingController();
+
+  @override
+  void dispose() {
+    _controlador.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
       title: const Text('Nueva nota'),
       content: TextField(
-        controller: controlador,
+        controller: _controlador,
         autofocus: true,
         maxLines: 4,
         maxLength: 1000,
@@ -175,30 +211,14 @@ Future<void> _agregarNota(BuildContext context, WidgetRef ref, String idAnimal) 
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(dialogo).pop(),
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(dialogo).pop(controlador.text.trim()),
+          onPressed: () => Navigator.of(context).pop(_controlador.text.trim()),
           child: const Text('Guardar'),
         ),
       ],
-    ),
-  );
-
-  controlador.dispose();
-  if (contenido == null || contenido.isEmpty || !context.mounted) return;
-
-  try {
-    await ref.read(dioProvider).enviar(
-          '/animales/$idAnimal/bitacora',
-          cuerpo: {'contenido': contenido},
-        );
-    ref.invalidate(bitacoraProvider(idAnimal));
-    if (context.mounted) mostrarMensaje(context, 'Nota agregada a la bitácora.');
-  } catch (e) {
-    if (context.mounted) {
-      mostrarMensaje(context, comoErrorApi(e).mensaje, esError: true);
-    }
+    );
   }
 }
