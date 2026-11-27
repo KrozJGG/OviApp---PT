@@ -409,6 +409,7 @@ export const ModelName = {
   TareaUsuario: 'TareaUsuario',
   TareaAnimal: 'TareaAnimal',
   DispositivoEdge: 'DispositivoEdge',
+  EventoVigilancia: 'EventoVigilancia',
   Alerta: 'Alerta'
 } as const
 
@@ -425,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "predio" | "usuario" | "dispositivoUsuario" | "refreshToken" | "animal" | "bitacoraEntrada" | "evento" | "eventoAnimal" | "tarea" | "tareaUsuario" | "tareaAnimal" | "dispositivoEdge" | "alerta"
+    modelProps: "predio" | "usuario" | "dispositivoUsuario" | "refreshToken" | "animal" | "bitacoraEntrada" | "evento" | "eventoAnimal" | "tarea" | "tareaUsuario" | "tareaAnimal" | "dispositivoEdge" | "eventoVigilancia" | "alerta"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1317,6 +1318,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    EventoVigilancia: {
+      payload: Prisma.$EventoVigilanciaPayload<ExtArgs>
+      fields: Prisma.EventoVigilanciaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EventoVigilanciaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EventoVigilanciaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>
+        }
+        findFirst: {
+          args: Prisma.EventoVigilanciaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EventoVigilanciaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>
+        }
+        findMany: {
+          args: Prisma.EventoVigilanciaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>[]
+        }
+        create: {
+          args: Prisma.EventoVigilanciaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>
+        }
+        createMany: {
+          args: Prisma.EventoVigilanciaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EventoVigilanciaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>[]
+        }
+        delete: {
+          args: Prisma.EventoVigilanciaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>
+        }
+        update: {
+          args: Prisma.EventoVigilanciaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>
+        }
+        deleteMany: {
+          args: Prisma.EventoVigilanciaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EventoVigilanciaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EventoVigilanciaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>[]
+        }
+        upsert: {
+          args: Prisma.EventoVigilanciaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EventoVigilanciaPayload>
+        }
+        aggregate: {
+          args: Prisma.EventoVigilanciaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEventoVigilancia>
+        }
+        groupBy: {
+          args: Prisma.EventoVigilanciaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventoVigilanciaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EventoVigilanciaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EventoVigilanciaCountAggregateOutputType> | number
+        }
+      }
+    }
     Alerta: {
       payload: Prisma.$AlertaPayload<ExtArgs>
       fields: Prisma.AlertaFieldRefs
@@ -1595,6 +1670,21 @@ export const DispositivoEdgeScalarFieldEnum = {
 } as const
 
 export type DispositivoEdgeScalarFieldEnum = (typeof DispositivoEdgeScalarFieldEnum)[keyof typeof DispositivoEdgeScalarFieldEnum]
+
+
+export const EventoVigilanciaScalarFieldEnum = {
+  id: 'id',
+  idPredio: 'idPredio',
+  idDispositivo: 'idDispositivo',
+  tipo: 'tipo',
+  conteoDetectado: 'conteoDetectado',
+  animalesActivos: 'animalesActivos',
+  diferencia: 'diferencia',
+  ocurridoEn: 'ocurridoEn',
+  createdAt: 'createdAt'
+} as const
+
+export type EventoVigilanciaScalarFieldEnum = (typeof EventoVigilanciaScalarFieldEnum)[keyof typeof EventoVigilanciaScalarFieldEnum]
 
 
 export const AlertaScalarFieldEnum = {
@@ -1882,6 +1972,20 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
 
 
 /**
+ * Reference to a field of type 'TipoEventoVigilancia'
+ */
+export type EnumTipoEventoVigilanciaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoEventoVigilancia'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoEventoVigilancia[]'
+ */
+export type ListEnumTipoEventoVigilanciaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoEventoVigilancia[]'>
+    
+
+
+/**
  * Reference to a field of type 'TipoAlerta'
  */
 export type EnumTipoAlertaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoAlerta'>
@@ -2085,6 +2189,7 @@ export type GlobalOmitConfig = {
   tareaUsuario?: Prisma.TareaUsuarioOmit
   tareaAnimal?: Prisma.TareaAnimalOmit
   dispositivoEdge?: Prisma.DispositivoEdgeOmit
+  eventoVigilancia?: Prisma.EventoVigilanciaOmit
   alerta?: Prisma.AlertaOmit
 }
 

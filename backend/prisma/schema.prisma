@@ -97,6 +97,14 @@ enum TipoBitacora {
   @@map("tipo_bitacora")
 }
 
+/// Eventos historicos del monitoreo IA (Modulo 8 - RF23/RF24).
+enum TipoEventoVigilancia {
+  DISCREPANCIA_CONTEO
+  DESCONEXION
+
+  @@map("tipo_evento_vigilancia")
+}
+
 enum TipoAlerta {
   CONTEO
 
@@ -128,6 +136,7 @@ model Predio {
   eventos           Evento[]
   tareas            Tarea[]
   dispositivosEdge  DispositivoEdge[]
+  eventosVigilancia EventoVigilancia[]
   alertas           Alerta[]
 
   @@map("predio")
@@ -365,11 +374,33 @@ model DispositivoEdge {
   regionInteresUpdatedAt DateTime? @map("region_interes_updated_at") @db.Timestamptz(6)
   createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  predio  Predio   @relation(fields: [idPredio], references: [id])
+  predio             Predio               @relation(fields: [idPredio], references: [id])
+  eventosVigilancia EventoVigilancia[]
   alertas Alerta[]
 
   @@index([idPredio])
   @@map("dispositivo_edge")
+}
+
+/// Historial de eventos relevantes del monitoreo con vision por computadora
+/// (discrepancias de conteo frente al inventario activo y desconexiones).
+model EventoVigilancia {
+  id              String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idPredio        String               @map("id_predio") @db.Uuid
+  idDispositivo   String?              @map("id_dispositivo") @db.Uuid
+  tipo            TipoEventoVigilancia
+  conteoDetectado Int?                 @map("conteo_detectado")
+  animalesActivos Int                  @map("animales_activos")
+  diferencia      Int                  @default(0)
+  ocurridoEn      DateTime             @default(now()) @map("ocurrido_en") @db.Timestamptz(6)
+  createdAt       DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  predio      Predio           @relation(fields: [idPredio], references: [id], onDelete: Restrict)
+  dispositivo DispositivoEdge? @relation(fields: [idDispositivo], references: [id], onDelete: SetNull)
+
+  @@index([idPredio, ocurridoEn])
+  @@index([idDispositivo, tipo, ocurridoEn])
+  @@map("evento_vigilancia")
 }
 
 model Alerta {

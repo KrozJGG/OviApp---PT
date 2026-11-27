@@ -79,6 +79,12 @@ export type TareaAnimal = Prisma.TareaAnimalModel
  */
 export type DispositivoEdge = Prisma.DispositivoEdgeModel
 /**
+ * Model EventoVigilancia
+ * Historial de eventos relevantes del monitoreo con vision por computadora
+ * (discrepancias de conteo frente al inventario activo y desconexiones).
+ */
+export type EventoVigilancia = Prisma.EventoVigilanciaModel
+/**
  * Model Alerta
  * 
  */

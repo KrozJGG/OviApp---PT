@@ -24,6 +24,7 @@ class PantallaInicio extends ConsumerWidget {
     final resumen = ref.watch(resumenInicioProvider);
     final agenda = ref.watch(agendaDeHoyProvider);
     final usuario = ref.watch(usuarioActualProvider);
+    final esProductor = ref.watch(esProductorProvider);
     final texto = Theme.of(context).textTheme;
 
     // El nombre de pila basta: el saludo se lee de un vistazo desde el campo.
@@ -55,6 +56,18 @@ class PantallaInicio extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (esProductor) ...[
+                    IconButton.filledTonal(
+                      onPressed: () => context.goNamed(Rutas.reportes),
+                      tooltip: 'Reportes',
+                      icon: const Icon(Icons.bar_chart_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: OviColores.superficieSecundaria,
+                        foregroundColor: OviColores.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   IconButton.filledTonal(
                     onPressed: () => context.goNamed(Rutas.vigilancia),
                     tooltip: 'Vigilancia',

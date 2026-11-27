@@ -20,6 +20,7 @@ export interface Respuesta {
   body: any;
   headers: Record<string, string>;
   text: string;
+  bytes: Uint8Array;
 }
 
 type Verbo = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
@@ -74,7 +75,8 @@ class Peticion implements PromiseLike<Respuesta> {
       body,
     });
 
-    const text = await r.text();
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    const text = new TextDecoder('utf-8').decode(bytes);
     const tipo = r.headers.get('content-type') ?? '';
 
     let parseado: any = {};
@@ -91,6 +93,7 @@ class Peticion implements PromiseLike<Respuesta> {
       body: parseado,
       headers: Object.fromEntries(r.headers.entries()),
       text,
+      bytes,
     };
   }
 

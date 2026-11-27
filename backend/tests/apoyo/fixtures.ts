@@ -66,7 +66,7 @@ export async function limpiarBd(): Promise<void> {
   evaluadorAlertasService.reiniciarEstado();
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
-      "alerta", "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
+      "alerta", "evento_vigilancia", "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
       "evento", "tarea", "animal", "dispositivo_edge",
       "dispositivo_usuario", "refresh_token", "usuario", "predio"
     RESTART IDENTITY CASCADE

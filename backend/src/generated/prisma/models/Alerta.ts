@@ -703,14 +703,6 @@ export type EnumEstadoAlertaFieldUpdateOperationsInput = {
   set?: $Enums.EstadoAlerta
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type AlertaCreateWithoutPredioInput = {
   id?: string
   tipo?: $Enums.TipoAlerta
