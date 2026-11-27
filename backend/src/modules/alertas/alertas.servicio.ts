@@ -1,14 +1,30 @@
 import { Prisma } from '../../generated/prisma/client';
+import { emitirAPredio } from '../../realtime/socket';
+import type { ContextoEdge, ContextoUsuario } from '../../shared/contexto';
 import { prisma } from '../../shared/db';
-import { ErrorNoEncontrado } from '../../shared/errores';
-import type { DatosHeartbeat, DatosRegionInteres } from './alertas.esquemas';
+import { ErrorConflicto, ErrorNoEncontrado } from '../../shared/errores';
+import { finDelDia, inicioDelDia } from '../../shared/fechas';
+import { aSkipTake, paginar, type Paginado } from '../../shared/paginacion';
+import type {
+  DatosCambiarEstadoAlerta,
+  DatosHeartbeat,
+  DatosRegionInteres,
+  FiltrosListadoAlertas,
+} from './alertas.esquemas';
 import { redondearCoord } from './alertas.geometria';
+import {
+  aAlertaDto,
+  evaluadorAlertasService,
+  inclusionAlerta,
+  type AlertaDto,
+} from './evaluadorAlertas.servicio';
 
 /**
- * Reglas de negocio del Modulo 6 - Vigilancia y conteo de ovejas (IF2-SAL).
+ * Reglas de negocio del Modulo 6 - Vigilancia, conteo de ovejas y alertas (IF2-SAL).
  *
  * La deteccion de ovejas corre en el dispositivo edge; el servidor recibe el
- * latido con el conteo actualizado y expone el estado operativo y conteo a la app.
+ * latido con el conteo actualizado, evalua las reglas de alerta por falta de
+ * ovejas (CONTEO) y expone el estado operativo y el historial a la app.
  */
 
 /**
@@ -21,34 +37,49 @@ export const MINUTOS_EN_LINEA = 3;
 
 const MS_EN_LINEA = MINUTOS_EN_LINEA * 60 * 1000;
 
+export type { AlertaDto };
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Latido de presencia y conteo del dispositivo (IF5-ENT)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * POST /edge/heartbeat - el dispositivo informa que sigue vivo y reporta el
- * conteo mas reciente de ovejas detectadas para mantener IF2-SAL al dia.
+ * POST /edge/heartbeat - el dispositivo informa que sigue vivo y reporta la
+ * mediana del conteo de ovejas detectadas. Ademas de actualizar IF2-SAL,
+ * evalua las alertas por deficit contra el conteo de animales ACTIVOS del predio.
  */
 export async function registrarHeartbeat(
-  idDispositivo: string,
+  edge: ContextoEdge,
   datos: DatosHeartbeat,
 ): Promise<void> {
-  await tocarDispositivo(idDispositivo, datos.conteoActual);
+  await tocarDispositivo(edge.idDispositivo, datos.conteoActual);
+
+  if (datos.conteoActual !== undefined) {
+    const conteoEsperado = await prisma.animal.count({
+      where: { idPredio: edge.idPredio, estado: 'ACTIVO' },
+    });
+
+    await evaluadorAlertasService.evaluarConteo({
+      idDispositivoEdge: edge.idDispositivo,
+      idPredio: edge.idPredio,
+      conteoDetectado: datos.conteoActual,
+      conteoEsperado,
+    });
+  }
 }
 
 /**
  * Aviso de apagado limpio del dispositivo edge (SIGTERM/SIGINT).
  *
- * Borra ultimoHeartbeat en vez de solo dejar de recibirlos: asi estaEnLinea()
- * pasa a false de inmediato, sin esperar los MINUTOS_EN_LINEA del timeout.
- * Solo cubre el apagado ordenado — un SIGKILL o corte de energia no llega a
- * avisar, y para esos casos sigue siendo el timeout la unica red de seguridad.
+ * Borra ultimoHeartbeat en vez de solo dejar de recibirlos y reinicia los
+ * contadores en memoria del evaluador (preservando alertas PENDIENTE en BD).
  */
 export async function desconectarDispositivo(idDispositivo: string): Promise<void> {
   await prisma.dispositivoEdge.update({
     where: { id: idDispositivo },
     data: { ultimoHeartbeat: null },
   });
+  evaluadorAlertasService.limpiarSeguimientoDispositivo(idDispositivo);
 }
 
 async function tocarDispositivo(
@@ -63,6 +94,87 @@ async function tocarDispositivo(
     },
     select: { id: true },
   });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Gestion e historial de alertas (RF_18 / RF_19)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * GET /alertas - historial ordenado cronologicamente descendente, aislado por
+ * `idPredio`, con filtros opcionales por estado y rango de fechas (hora local).
+ */
+export async function listarAlertas(
+  idPredio: string,
+  filtros: FiltrosListadoAlertas,
+): Promise<Paginado<AlertaDto>> {
+  const where: Prisma.AlertaWhereInput = {
+    idPredio,
+    ...(filtros.estado ? { estado: filtros.estado } : {}),
+    ...(filtros.desde || filtros.hasta
+      ? {
+          fechaDeteccion: {
+            ...(filtros.desde ? { gte: inicioDelDia(filtros.desde) } : {}),
+            ...(filtros.hasta ? { lt: finDelDia(filtros.hasta) } : {}),
+          },
+        }
+      : {}),
+  };
+
+  const [filas, total] = await Promise.all([
+    prisma.alerta.findMany({
+      where,
+      include: inclusionAlerta,
+      orderBy: [{ fechaDeteccion: 'desc' }, { createdAt: 'desc' }],
+      ...aSkipTake(filtros),
+    }),
+    prisma.alerta.count({ where }),
+  ]);
+
+  return paginar(filas.map(aAlertaDto), total, filtros);
+}
+
+/**
+ * PATCH /alertas/:id/estado - marca una alerta PENDIENTE como RESUELTA o DESCARTADA.
+ * Accesible a PRODUCTOR y TRABAJADOR del mismo predio; registra auditoria,
+ * limpia el estado de seguimiento del dispositivo y sincroniza por Socket.IO.
+ */
+export async function cambiarEstadoAlerta(
+  idAlerta: string,
+  ctx: ContextoUsuario,
+  datos: DatosCambiarEstadoAlerta,
+): Promise<AlertaDto> {
+  const existente = await prisma.alerta.findFirst({
+    where: { id: idAlerta, idPredio: ctx.idPredio },
+    select: { id: true, estado: true, idDispositivoEdge: true },
+  });
+
+  if (!existente) {
+    throw new ErrorNoEncontrado('No se encontro la alerta solicitada.');
+  }
+
+  if (existente.estado !== 'PENDIENTE') {
+    throw new ErrorConflicto(
+      'ALERTA_YA_REVISADA',
+      'Esta alerta ya fue marcada como revisada anteriormente.',
+    );
+  }
+
+  const actualizada = await prisma.alerta.update({
+    where: { id: existente.id },
+    data: {
+      estado: datos.estado,
+      idRevisadoPor: ctx.idUsuario,
+      fechaRevision: new Date(),
+    },
+    include: inclusionAlerta,
+  });
+
+  evaluadorAlertasService.limpiarSeguimientoDispositivo(existente.idDispositivoEdge);
+
+  const dto = aAlertaDto(actualizada);
+  emitirAPredio(ctx.idPredio, 'alerta:actualizada', dto);
+  return dto;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

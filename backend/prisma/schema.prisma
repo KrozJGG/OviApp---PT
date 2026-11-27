@@ -97,6 +97,20 @@ enum TipoBitacora {
   @@map("tipo_bitacora")
 }
 
+enum TipoAlerta {
+  CONTEO
+
+  @@map("tipo_alerta")
+}
+
+enum EstadoAlerta {
+  PENDIENTE
+  RESUELTA
+  DESCARTADA
+
+  @@map("estado_alerta")
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Entidades
 // ─────────────────────────────────────────────────────────────────────────────
@@ -114,6 +128,7 @@ model Predio {
   eventos           Evento[]
   tareas            Tarea[]
   dispositivosEdge  DispositivoEdge[]
+  alertas           Alerta[]
 
   @@map("predio")
 }
@@ -143,6 +158,7 @@ model Usuario {
   tareasCreadas        Tarea[]               @relation("TareaCreador")
   tareasCompletadas    Tarea[]               @relation("TareaCompletadaPor")
   tareasAsignadas      TareaUsuario[]
+  alertasRevisadas     Alerta[]              @relation("AlertaRevisadaPor")
 
   @@index([idPredio, estado])
   @@map("usuario")
@@ -349,8 +365,37 @@ model DispositivoEdge {
   regionInteresUpdatedAt DateTime? @map("region_interes_updated_at") @db.Timestamptz(6)
   createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
-  predio Predio @relation(fields: [idPredio], references: [id])
+  predio  Predio   @relation(fields: [idPredio], references: [id])
+  alertas Alerta[]
 
   @@index([idPredio])
   @@map("dispositivo_edge")
+}
+
+model Alerta {
+  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idPredio          String       @map("id_predio") @db.Uuid
+  idDispositivoEdge String       @map("id_dispositivo_edge") @db.Uuid
+  tipo              TipoAlerta   @default(CONTEO)
+  estado            EstadoAlerta @default(PENDIENTE)
+  conteoDetectado   Int          @map("conteo_detectado")
+  conteoEsperado    Int          @map("conteo_esperado")
+  descripcion       String
+  fechaDeteccion    DateTime     @default(now()) @map("fecha_deteccion") @db.Timestamptz(6)
+  /// Timestamp en que el conteo volvio a >= esperado por 2 heartbeats consecutivos.
+  /// Cuando no es NULL, la alerta queda silenciada definitivamente (posible oclusion).
+  normalizadaEn     DateTime?    @map("normalizada_en") @db.Timestamptz(6)
+  idRevisadoPor     String?      @map("id_revisado_por") @db.Uuid
+  fechaRevision     DateTime?    @map("fecha_revision") @db.Timestamptz(6)
+  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  predio          Predio          @relation(fields: [idPredio], references: [id])
+  dispositivoEdge DispositivoEdge @relation(fields: [idDispositivoEdge], references: [id])
+  revisadoPor     Usuario?        @relation("AlertaRevisadaPor", fields: [idRevisadoPor], references: [id])
+
+  @@index([idPredio, fechaDeteccion(sort: Desc)])
+  @@index([idPredio, estado])
+  @@index([idDispositivoEdge, tipo, estado])
+  @@map("alerta")
 }

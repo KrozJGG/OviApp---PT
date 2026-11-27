@@ -4,6 +4,8 @@ import { crearApp, PREFIJO_API } from '../../src/app';
 import { clienteDe } from './cliente';
 import { prisma } from '../../src/config/prisma';
 import type { RolUsuario } from '../../src/generated/prisma/enums';
+import { evaluadorAlertasService } from '../../src/modules/alertas/evaluadorAlertas.servicio';
+import { cerrarSocket, inicializarSocket } from '../../src/realtime/socket';
 
 /**
  * Escenario base compartido por toda la suite.
@@ -42,6 +44,7 @@ let servidorCacheado: http.Server | undefined;
 async function servidor(): Promise<http.Server> {
   if (!servidorCacheado) {
     const s = http.createServer(crearApp());
+    inicializarSocket(s);
     await new Promise<void>((listo) => s.listen(0, '127.0.0.1', () => listo()));
     s.unref();
     servidorCacheado = s;
@@ -54,14 +57,16 @@ export async function cerrarServidor(): Promise<void> {
   if (!servidorCacheado) return;
   const s = servidorCacheado;
   servidorCacheado = undefined;
+  await cerrarSocket();
   await new Promise<void>((listo) => s.close(() => listo()));
 }
 
 /** Deja la base vacia. TRUNCATE no dispara el trigger append-only de RF_06. */
 export async function limpiarBd(): Promise<void> {
+  evaluadorAlertasService.reiniciarEstado();
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
-      "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
+      "alerta", "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
       "evento", "tarea", "animal", "dispositivo_edge",
       "dispositivo_usuario", "refresh_token", "usuario", "predio"
     RESTART IDENTITY CASCADE

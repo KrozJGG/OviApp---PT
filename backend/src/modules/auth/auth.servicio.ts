@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { env } from '../../config/env';
 import { firmarAcceso } from '../../middleware/autenticar';
+import { desconectarUsuario } from '../../realtime/socket';
 import type { ContextoUsuario } from '../../shared/contexto';
 import { prisma } from '../../shared/db';
 import { ErrorConflicto, ErrorNoAutenticado } from '../../shared/errores';
@@ -296,6 +297,7 @@ export async function revocarSesionesDe(idUsuario: string): Promise<void> {
     where: { idUsuario, revocadoEn: null },
     data: { revocadoEn: new Date() },
   });
+  desconectarUsuario(idUsuario);
 }
 
 async function emitirRefresh(idUsuario: string): Promise<string> {

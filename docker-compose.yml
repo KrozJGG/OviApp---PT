@@ -94,6 +94,9 @@ services:
       FIREBASE_CREDENCIALES_JSON: ""
       CRON_HABILITADO: "false"
       CRON_RECORDATORIOS: "0 8 * * *"
+      ALERTA_HEARTBEATS_CONFIRMACION: "3"
+      ALERTA_HEARTBEATS_NORMALIZACION: "2"
+      ALERTA_RENOTIFICACION_SEG: "60"
     depends_on:
       db:
         condition: service_healthy

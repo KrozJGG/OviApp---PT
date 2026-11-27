@@ -49,6 +49,11 @@ const esquemaEnv = z.object({
     .enum(['true', 'false'])
     .default('false')
     .transform((v) => v === 'true'),
+
+  // Alertas en tiempo real por falta de ovejas (CONTEO).
+  ALERTA_HEARTBEATS_CONFIRMACION: z.coerce.number().int().min(1).max(20).default(3),
+  ALERTA_HEARTBEATS_NORMALIZACION: z.coerce.number().int().min(1).max(20).default(2),
+  ALERTA_RENOTIFICACION_SEG: z.coerce.number().int().min(5).max(3600).default(60),
 });
 
 const resultado = esquemaEnv.safeParse(process.env);

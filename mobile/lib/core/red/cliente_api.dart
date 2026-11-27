@@ -61,6 +61,11 @@ class ClienteApi {
   final _sesionCaducada = StreamController<void>.broadcast();
   Stream<void> get sesionCaducada => _sesionCaducada.stream;
 
+  /// Emite el nuevo access token tras cada renovacion automatica para mantener
+  /// sincronizado el servicio de alertas en tiempo real (Socket.IO).
+  final _tokenRenovado = StreamController<String>.broadcast();
+  Stream<String> get tokenRenovado => _tokenRenovado.stream;
+
   String? _accessToken;
   bool _renovando = false;
 
@@ -189,6 +194,7 @@ class ClienteApi {
         accessToken: datos['accessToken'] as String,
         refreshToken: datos['refreshToken'] as String,
       );
+      if (!_tokenRenovado.isClosed) _tokenRenovado.add(_accessToken!);
       return true;
     } on DioException {
       return false;
@@ -206,6 +212,7 @@ class ClienteApi {
 
   void cerrar() {
     _sesionCaducada.close();
+    _tokenRenovado.close();
     datosDeCache.dispose();
     dio.close(force: true);
   }

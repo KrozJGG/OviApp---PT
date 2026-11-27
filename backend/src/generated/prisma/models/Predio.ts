@@ -187,6 +187,7 @@ export type PredioWhereInput = {
   eventos?: Prisma.EventoListRelationFilter
   tareas?: Prisma.TareaListRelationFilter
   dispositivosEdge?: Prisma.DispositivoEdgeListRelationFilter
+  alertas?: Prisma.AlertaListRelationFilter
 }
 
 export type PredioOrderByWithRelationInput = {
@@ -200,6 +201,7 @@ export type PredioOrderByWithRelationInput = {
   eventos?: Prisma.EventoOrderByRelationAggregateInput
   tareas?: Prisma.TareaOrderByRelationAggregateInput
   dispositivosEdge?: Prisma.DispositivoEdgeOrderByRelationAggregateInput
+  alertas?: Prisma.AlertaOrderByRelationAggregateInput
 }
 
 export type PredioWhereUniqueInput = Prisma.AtLeast<{
@@ -216,6 +218,7 @@ export type PredioWhereUniqueInput = Prisma.AtLeast<{
   eventos?: Prisma.EventoListRelationFilter
   tareas?: Prisma.TareaListRelationFilter
   dispositivosEdge?: Prisma.DispositivoEdgeListRelationFilter
+  alertas?: Prisma.AlertaListRelationFilter
 }, "id">
 
 export type PredioOrderByWithAggregationInput = {
@@ -251,6 +254,7 @@ export type PredioCreateInput = {
   eventos?: Prisma.EventoCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaCreateNestedManyWithoutPredioInput
 }
 
 export type PredioUncheckedCreateInput = {
@@ -264,6 +268,7 @@ export type PredioUncheckedCreateInput = {
   eventos?: Prisma.EventoUncheckedCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaUncheckedCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaUncheckedCreateNestedManyWithoutPredioInput
 }
 
 export type PredioUpdateInput = {
@@ -277,6 +282,7 @@ export type PredioUpdateInput = {
   eventos?: Prisma.EventoUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioUncheckedUpdateInput = {
@@ -290,6 +296,7 @@ export type PredioUncheckedUpdateInput = {
   eventos?: Prisma.EventoUncheckedUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUncheckedUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUncheckedUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioCreateManyInput = {
@@ -427,6 +434,20 @@ export type PredioUpdateOneRequiredWithoutDispositivosEdgeNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PredioUpdateToOneWithWhereWithoutDispositivosEdgeInput, Prisma.PredioUpdateWithoutDispositivosEdgeInput>, Prisma.PredioUncheckedUpdateWithoutDispositivosEdgeInput>
 }
 
+export type PredioCreateNestedOneWithoutAlertasInput = {
+  create?: Prisma.XOR<Prisma.PredioCreateWithoutAlertasInput, Prisma.PredioUncheckedCreateWithoutAlertasInput>
+  connectOrCreate?: Prisma.PredioCreateOrConnectWithoutAlertasInput
+  connect?: Prisma.PredioWhereUniqueInput
+}
+
+export type PredioUpdateOneRequiredWithoutAlertasNestedInput = {
+  create?: Prisma.XOR<Prisma.PredioCreateWithoutAlertasInput, Prisma.PredioUncheckedCreateWithoutAlertasInput>
+  connectOrCreate?: Prisma.PredioCreateOrConnectWithoutAlertasInput
+  upsert?: Prisma.PredioUpsertWithoutAlertasInput
+  connect?: Prisma.PredioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PredioUpdateToOneWithWhereWithoutAlertasInput, Prisma.PredioUpdateWithoutAlertasInput>, Prisma.PredioUncheckedUpdateWithoutAlertasInput>
+}
+
 export type PredioCreateWithoutUsuariosInput = {
   id?: string
   nombre: string
@@ -437,6 +458,7 @@ export type PredioCreateWithoutUsuariosInput = {
   eventos?: Prisma.EventoCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaCreateNestedManyWithoutPredioInput
 }
 
 export type PredioUncheckedCreateWithoutUsuariosInput = {
@@ -449,6 +471,7 @@ export type PredioUncheckedCreateWithoutUsuariosInput = {
   eventos?: Prisma.EventoUncheckedCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaUncheckedCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaUncheckedCreateNestedManyWithoutPredioInput
 }
 
 export type PredioCreateOrConnectWithoutUsuariosInput = {
@@ -477,6 +500,7 @@ export type PredioUpdateWithoutUsuariosInput = {
   eventos?: Prisma.EventoUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioUncheckedUpdateWithoutUsuariosInput = {
@@ -489,6 +513,7 @@ export type PredioUncheckedUpdateWithoutUsuariosInput = {
   eventos?: Prisma.EventoUncheckedUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUncheckedUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUncheckedUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioCreateWithoutAnimalesInput = {
@@ -501,6 +526,7 @@ export type PredioCreateWithoutAnimalesInput = {
   eventos?: Prisma.EventoCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaCreateNestedManyWithoutPredioInput
 }
 
 export type PredioUncheckedCreateWithoutAnimalesInput = {
@@ -513,6 +539,7 @@ export type PredioUncheckedCreateWithoutAnimalesInput = {
   eventos?: Prisma.EventoUncheckedCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaUncheckedCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaUncheckedCreateNestedManyWithoutPredioInput
 }
 
 export type PredioCreateOrConnectWithoutAnimalesInput = {
@@ -541,6 +568,7 @@ export type PredioUpdateWithoutAnimalesInput = {
   eventos?: Prisma.EventoUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioUncheckedUpdateWithoutAnimalesInput = {
@@ -553,6 +581,7 @@ export type PredioUncheckedUpdateWithoutAnimalesInput = {
   eventos?: Prisma.EventoUncheckedUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUncheckedUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUncheckedUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioCreateWithoutEventosInput = {
@@ -565,6 +594,7 @@ export type PredioCreateWithoutEventosInput = {
   animales?: Prisma.AnimalCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaCreateNestedManyWithoutPredioInput
 }
 
 export type PredioUncheckedCreateWithoutEventosInput = {
@@ -577,6 +607,7 @@ export type PredioUncheckedCreateWithoutEventosInput = {
   animales?: Prisma.AnimalUncheckedCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaUncheckedCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaUncheckedCreateNestedManyWithoutPredioInput
 }
 
 export type PredioCreateOrConnectWithoutEventosInput = {
@@ -605,6 +636,7 @@ export type PredioUpdateWithoutEventosInput = {
   animales?: Prisma.AnimalUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioUncheckedUpdateWithoutEventosInput = {
@@ -617,6 +649,7 @@ export type PredioUncheckedUpdateWithoutEventosInput = {
   animales?: Prisma.AnimalUncheckedUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUncheckedUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUncheckedUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioCreateWithoutTareasInput = {
@@ -629,6 +662,7 @@ export type PredioCreateWithoutTareasInput = {
   animales?: Prisma.AnimalCreateNestedManyWithoutPredioInput
   eventos?: Prisma.EventoCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaCreateNestedManyWithoutPredioInput
 }
 
 export type PredioUncheckedCreateWithoutTareasInput = {
@@ -641,6 +675,7 @@ export type PredioUncheckedCreateWithoutTareasInput = {
   animales?: Prisma.AnimalUncheckedCreateNestedManyWithoutPredioInput
   eventos?: Prisma.EventoUncheckedCreateNestedManyWithoutPredioInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaUncheckedCreateNestedManyWithoutPredioInput
 }
 
 export type PredioCreateOrConnectWithoutTareasInput = {
@@ -669,6 +704,7 @@ export type PredioUpdateWithoutTareasInput = {
   animales?: Prisma.AnimalUpdateManyWithoutPredioNestedInput
   eventos?: Prisma.EventoUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioUncheckedUpdateWithoutTareasInput = {
@@ -681,6 +717,7 @@ export type PredioUncheckedUpdateWithoutTareasInput = {
   animales?: Prisma.AnimalUncheckedUpdateManyWithoutPredioNestedInput
   eventos?: Prisma.EventoUncheckedUpdateManyWithoutPredioNestedInput
   dispositivosEdge?: Prisma.DispositivoEdgeUncheckedUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUncheckedUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioCreateWithoutDispositivosEdgeInput = {
@@ -693,6 +730,7 @@ export type PredioCreateWithoutDispositivosEdgeInput = {
   animales?: Prisma.AnimalCreateNestedManyWithoutPredioInput
   eventos?: Prisma.EventoCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaCreateNestedManyWithoutPredioInput
 }
 
 export type PredioUncheckedCreateWithoutDispositivosEdgeInput = {
@@ -705,6 +743,7 @@ export type PredioUncheckedCreateWithoutDispositivosEdgeInput = {
   animales?: Prisma.AnimalUncheckedCreateNestedManyWithoutPredioInput
   eventos?: Prisma.EventoUncheckedCreateNestedManyWithoutPredioInput
   tareas?: Prisma.TareaUncheckedCreateNestedManyWithoutPredioInput
+  alertas?: Prisma.AlertaUncheckedCreateNestedManyWithoutPredioInput
 }
 
 export type PredioCreateOrConnectWithoutDispositivosEdgeInput = {
@@ -733,6 +772,7 @@ export type PredioUpdateWithoutDispositivosEdgeInput = {
   animales?: Prisma.AnimalUpdateManyWithoutPredioNestedInput
   eventos?: Prisma.EventoUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUpdateManyWithoutPredioNestedInput
 }
 
 export type PredioUncheckedUpdateWithoutDispositivosEdgeInput = {
@@ -745,6 +785,75 @@ export type PredioUncheckedUpdateWithoutDispositivosEdgeInput = {
   animales?: Prisma.AnimalUncheckedUpdateManyWithoutPredioNestedInput
   eventos?: Prisma.EventoUncheckedUpdateManyWithoutPredioNestedInput
   tareas?: Prisma.TareaUncheckedUpdateManyWithoutPredioNestedInput
+  alertas?: Prisma.AlertaUncheckedUpdateManyWithoutPredioNestedInput
+}
+
+export type PredioCreateWithoutAlertasInput = {
+  id?: string
+  nombre: string
+  ubicacion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  usuarios?: Prisma.UsuarioCreateNestedManyWithoutPredioInput
+  animales?: Prisma.AnimalCreateNestedManyWithoutPredioInput
+  eventos?: Prisma.EventoCreateNestedManyWithoutPredioInput
+  tareas?: Prisma.TareaCreateNestedManyWithoutPredioInput
+  dispositivosEdge?: Prisma.DispositivoEdgeCreateNestedManyWithoutPredioInput
+}
+
+export type PredioUncheckedCreateWithoutAlertasInput = {
+  id?: string
+  nombre: string
+  ubicacion?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  usuarios?: Prisma.UsuarioUncheckedCreateNestedManyWithoutPredioInput
+  animales?: Prisma.AnimalUncheckedCreateNestedManyWithoutPredioInput
+  eventos?: Prisma.EventoUncheckedCreateNestedManyWithoutPredioInput
+  tareas?: Prisma.TareaUncheckedCreateNestedManyWithoutPredioInput
+  dispositivosEdge?: Prisma.DispositivoEdgeUncheckedCreateNestedManyWithoutPredioInput
+}
+
+export type PredioCreateOrConnectWithoutAlertasInput = {
+  where: Prisma.PredioWhereUniqueInput
+  create: Prisma.XOR<Prisma.PredioCreateWithoutAlertasInput, Prisma.PredioUncheckedCreateWithoutAlertasInput>
+}
+
+export type PredioUpsertWithoutAlertasInput = {
+  update: Prisma.XOR<Prisma.PredioUpdateWithoutAlertasInput, Prisma.PredioUncheckedUpdateWithoutAlertasInput>
+  create: Prisma.XOR<Prisma.PredioCreateWithoutAlertasInput, Prisma.PredioUncheckedCreateWithoutAlertasInput>
+  where?: Prisma.PredioWhereInput
+}
+
+export type PredioUpdateToOneWithWhereWithoutAlertasInput = {
+  where?: Prisma.PredioWhereInput
+  data: Prisma.XOR<Prisma.PredioUpdateWithoutAlertasInput, Prisma.PredioUncheckedUpdateWithoutAlertasInput>
+}
+
+export type PredioUpdateWithoutAlertasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  ubicacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usuarios?: Prisma.UsuarioUpdateManyWithoutPredioNestedInput
+  animales?: Prisma.AnimalUpdateManyWithoutPredioNestedInput
+  eventos?: Prisma.EventoUpdateManyWithoutPredioNestedInput
+  tareas?: Prisma.TareaUpdateManyWithoutPredioNestedInput
+  dispositivosEdge?: Prisma.DispositivoEdgeUpdateManyWithoutPredioNestedInput
+}
+
+export type PredioUncheckedUpdateWithoutAlertasInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  ubicacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  usuarios?: Prisma.UsuarioUncheckedUpdateManyWithoutPredioNestedInput
+  animales?: Prisma.AnimalUncheckedUpdateManyWithoutPredioNestedInput
+  eventos?: Prisma.EventoUncheckedUpdateManyWithoutPredioNestedInput
+  tareas?: Prisma.TareaUncheckedUpdateManyWithoutPredioNestedInput
+  dispositivosEdge?: Prisma.DispositivoEdgeUncheckedUpdateManyWithoutPredioNestedInput
 }
 
 
@@ -758,6 +867,7 @@ export type PredioCountOutputType = {
   eventos: number
   tareas: number
   dispositivosEdge: number
+  alertas: number
 }
 
 export type PredioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -766,6 +876,7 @@ export type PredioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   eventos?: boolean | PredioCountOutputTypeCountEventosArgs
   tareas?: boolean | PredioCountOutputTypeCountTareasArgs
   dispositivosEdge?: boolean | PredioCountOutputTypeCountDispositivosEdgeArgs
+  alertas?: boolean | PredioCountOutputTypeCountAlertasArgs
 }
 
 /**
@@ -813,6 +924,13 @@ export type PredioCountOutputTypeCountDispositivosEdgeArgs<ExtArgs extends runti
   where?: Prisma.DispositivoEdgeWhereInput
 }
 
+/**
+ * PredioCountOutputType without action
+ */
+export type PredioCountOutputTypeCountAlertasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AlertaWhereInput
+}
+
 
 export type PredioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -825,6 +943,7 @@ export type PredioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   eventos?: boolean | Prisma.Predio$eventosArgs<ExtArgs>
   tareas?: boolean | Prisma.Predio$tareasArgs<ExtArgs>
   dispositivosEdge?: boolean | Prisma.Predio$dispositivosEdgeArgs<ExtArgs>
+  alertas?: boolean | Prisma.Predio$alertasArgs<ExtArgs>
   _count?: boolean | Prisma.PredioCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["predio"]>
 
@@ -859,6 +978,7 @@ export type PredioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   eventos?: boolean | Prisma.Predio$eventosArgs<ExtArgs>
   tareas?: boolean | Prisma.Predio$tareasArgs<ExtArgs>
   dispositivosEdge?: boolean | Prisma.Predio$dispositivosEdgeArgs<ExtArgs>
+  alertas?: boolean | Prisma.Predio$alertasArgs<ExtArgs>
   _count?: boolean | Prisma.PredioCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PredioIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -872,6 +992,7 @@ export type $PredioPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     eventos: Prisma.$EventoPayload<ExtArgs>[]
     tareas: Prisma.$TareaPayload<ExtArgs>[]
     dispositivosEdge: Prisma.$DispositivoEdgePayload<ExtArgs>[]
+    alertas: Prisma.$AlertaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1278,6 +1399,7 @@ export interface Prisma__PredioClient<T, Null = never, ExtArgs extends runtime.T
   eventos<T extends Prisma.Predio$eventosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Predio$eventosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventoPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tareas<T extends Prisma.Predio$tareasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Predio$tareasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TareaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   dispositivosEdge<T extends Prisma.Predio$dispositivosEdgeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Predio$dispositivosEdgeArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$DispositivoEdgePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  alertas<T extends Prisma.Predio$alertasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Predio$alertasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AlertaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1822,6 +1944,30 @@ export type Predio$dispositivosEdgeArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.DispositivoEdgeScalarFieldEnum | Prisma.DispositivoEdgeScalarFieldEnum[]
+}
+
+/**
+ * Predio.alertas
+ */
+export type Predio$alertasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Alerta
+   */
+  select?: Prisma.AlertaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Alerta
+   */
+  omit?: Prisma.AlertaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AlertaInclude<ExtArgs> | null
+  where?: Prisma.AlertaWhereInput
+  orderBy?: Prisma.AlertaOrderByWithRelationInput | Prisma.AlertaOrderByWithRelationInput[]
+  cursor?: Prisma.AlertaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AlertaScalarFieldEnum | Prisma.AlertaScalarFieldEnum[]
 }
 
 /**

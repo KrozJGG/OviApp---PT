@@ -35,6 +35,9 @@ abstract final class ConfGlobal {
     return urlApiPorDefecto;
   }
 
+  /// Origen HTTP/WS para Socket.IO (mismo host y puerto que la API, sin `/api/v1`).
+  static String get urlBaseSocket => Uri.parse(urlBaseApi).origin;
+
   /// Tiempos de espera HTTP (RNF_01: margen para señal rural).
   static const Duration timeoutConexion = Duration(seconds: 15);
   static const Duration timeoutRecepcion = Duration(seconds: 20);

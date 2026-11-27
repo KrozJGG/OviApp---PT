@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { esquemaPaginacion } from '../../shared/paginacion';
 import {
   AREA_MINIMA_ROI,
   LADO_MINIMO_BBOX_ROI,
@@ -86,3 +87,25 @@ export const esquemaRegionInteres = z
   });
 
 export type DatosRegionInteres = z.infer<typeof esquemaRegionInteres>;
+
+export const ESTADOS_ALERTA = ['PENDIENTE', 'RESUELTA', 'DESCARTADA'] as const;
+export const ESTADOS_CIERRE_ALERTA = ['RESUELTA', 'DESCARTADA'] as const;
+
+/** GET /alertas - historial paginado con filtros opcionales por estado y rango de fechas. */
+export const esquemaListadoAlertas = esquemaPaginacion.extend({
+  estado: z.enum(ESTADOS_ALERTA, 'El estado de la alerta no es valido.').optional(),
+  desde: z.iso.date('La fecha inicial del rango no es valida.').optional(),
+  hasta: z.iso.date('La fecha final del rango no es valida.').optional(),
+});
+
+export type FiltrosListadoAlertas = z.infer<typeof esquemaListadoAlertas>;
+
+/** PATCH /alertas/:id/estado - marca una alerta pendiente como RESUELTA o DESCARTADA. */
+export const esquemaCambiarEstadoAlerta = z.object({
+  estado: z.enum(
+    ESTADOS_CIERRE_ALERTA,
+    'El estado debe ser RESUELTA o DESCARTADA.',
+  ),
+});
+
+export type DatosCambiarEstadoAlerta = z.infer<typeof esquemaCambiarEstadoAlerta>;

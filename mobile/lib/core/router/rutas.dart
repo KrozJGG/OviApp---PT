@@ -20,6 +20,7 @@ import '../../features/rebano/pantallas/rebano.dart';
 import '../../features/tareas/pantallas/detalle_tarea.dart';
 import '../../features/tareas/pantallas/formulario_tarea.dart';
 import '../../features/tareas/pantallas/tareas.dart';
+import '../../features/vigilancia/pantallas/historial_alertas.dart';
 import '../../features/vigilancia/pantallas/vigilancia.dart';
 import '../../features/vigilancia/pantallas/vigilancia_en_vivo.dart';
 import 'shell_principal.dart';
@@ -52,6 +53,7 @@ abstract final class Rutas {
 
   static const vigilancia = 'vigilancia';
   static const vigilanciaEnVivo = 'vigilanciaEnVivo';
+  static const vigilanciaAlertas = 'vigilanciaAlertas';
 
   static const mas = 'mas';
   static const usuarios = 'usuarios';
@@ -231,6 +233,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                       iniciarEdicionRoi:
                           e.uri.queryParameters['editarRoi'] == 'true',
                     ),
+                  ),
+                  GoRoute(
+                    path: 'alertas',
+                    name: Rutas.vigilanciaAlertas,
+                    builder: (_, _) => const PantallaHistorialAlertas(),
                   ),
                 ],
               ),

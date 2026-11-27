@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/vigilancia/vigilancia_proveedores.dart';
 import '../proveedores.dart';
 import '../tema/ovi_colores.dart';
 import '../widgets/aviso_datos_en_cache.dart';
@@ -27,6 +28,9 @@ class ShellPrincipal extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hayAlertasPendientes =
+        (ref.watch(alertasPendientesProvider).valueOrNull?.isNotEmpty) ?? false;
+
     return Scaffold(
       body: navegacion,
       // El aviso de «datos del caché» va encima de la barra y no arriba de la
@@ -52,6 +56,7 @@ class ShellPrincipal extends ConsumerWidget {
                         child: _BotonPestana(
                           pestana: _pestanas[i],
                           activa: navegacion.currentIndex == i,
+                          conAviso: i == 3 && hayAlertasPendientes,
                           // Tocar la pestaña activa vuelve a su raiz: es la forma
                           // mas rapida de salir de un formulario a medio llenar.
                           alTocar: () => navegacion.goBranch(
@@ -84,11 +89,13 @@ class _BotonPestana extends StatelessWidget {
     required this.pestana,
     required this.activa,
     required this.alTocar,
+    this.conAviso = false,
   });
 
   final _Pestana pestana;
   final bool activa;
   final VoidCallback alTocar;
+  final bool conAviso;
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +110,29 @@ class _BotonPestana extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(activa ? pestana.iconoActivo : pestana.icono, size: 24, color: color),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  activa ? pestana.iconoActivo : pestana.icono,
+                  size: 24,
+                  color: color,
+                ),
+                if (conAviso)
+                  Positioned(
+                    right: -3,
+                    top: -2,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: const BoxDecoration(
+                        color: OviColores.peligro,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 3),
             Text(
               pestana.etiqueta,

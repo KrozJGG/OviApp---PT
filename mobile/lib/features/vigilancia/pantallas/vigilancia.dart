@@ -10,6 +10,7 @@ import '../../../core/widgets/ovi_widgets.dart';
 import '../../auth/sesion.dart';
 import '../datos/alerta.dart';
 import '../vigilancia_proveedores.dart';
+import '../widgets/banner_alerta_pendiente.dart';
 
 /// Pantalla 10 — Vigilancia del rebaño (IF2-SAL).
 ///
@@ -22,6 +23,7 @@ class PantallaVigilancia extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final estado = ref.watch(estadoVigilanciaProvider);
+    final alertasPendientes = ref.watch(alertasPendientesProvider);
     final esProductor = ref.watch(esProductorProvider);
 
     return Scaffold(
@@ -34,16 +36,72 @@ class PantallaVigilancia extends ConsumerWidget {
           ],
         ),
         titleSpacing: 20,
+        actions: [
+          IconButton(
+            tooltip: 'Historial de alertas',
+            onPressed: () => context.goNamed(Rutas.vigilanciaAlertas),
+            icon: const Icon(Icons.history_rounded),
+          ),
+        ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(estadoVigilanciaProvider),
+        onRefresh: () async {
+          ref.invalidate(estadoVigilanciaProvider);
+          ref.invalidate(alertasPendientesProvider);
+        },
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
           children: [
+            if (alertasPendientes.valueOrNull case final pendientes?
+                when pendientes.isNotEmpty)
+              for (final alerta in pendientes)
+                BannerAlertaPendiente(alerta: alerta),
             OviAsync<EstadoVigilancia>(
               valor: estado,
               alReintentar: () => ref.invalidate(estadoVigilanciaProvider),
               enDatos: (e) => _TarjetaEstado(estado: e, esProductor: esProductor),
+            ),
+            const SizedBox(height: 16),
+            OviTarjeta(
+              alTocar: () => context.goNamed(Rutas.vigilanciaAlertas),
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      color: OviColores.superficieSecundaria,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_active_outlined,
+                      color: OviColores.primary,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Historial de alertas',
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Revisa alertas pasadas, filtros y quién las atendió',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: OviColores.textoSecundario,
+                  ),
+                ],
+              ),
             ),
           ],
         ),

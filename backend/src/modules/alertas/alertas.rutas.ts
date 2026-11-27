@@ -5,12 +5,7 @@ import { soloProductor } from '../../middleware/autorizar';
 import * as controlador from './alertas.controlador';
 
 /**
- * Modulo 6 - Vigilancia y monitoreo de conteo (IF2-SAL).
- *
- * El modelo de vision por computadora corre en el dispositivo edge: aqui se
- * recibe el latido con el conteo actual de ovejas (IF5-ENT), se expone el
- * estado operativo del dispositivo a la app y se administra su Region de
- * Interes (ROI).
+ * Modulo 6 - Vigilancia, monitoreo de conteo y alertas (IF2-SAL / RF_18 / RF_19).
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -20,14 +15,8 @@ export const enrutadorEdge = Router();
 
 enrutadorEdge.use(autenticarEdge);
 
-// Latido de presencia; alimenta el indicador "en linea" y ultimo conteo de IF2-SAL.
 enrutadorEdge.post('/heartbeat', controlador.heartbeat);
-
-// Aviso de apagado limpio: pasa a "sin senal" de inmediato en vez de esperar
-// a que venza MINUTOS_EN_LINEA. Solo cubre SIGTERM/SIGINT, no un SIGKILL.
 enrutadorEdge.post('/desconexion', controlador.desconexion);
-
-// Configuracion activa del dispositivo (ROI vigente o null para imagen completa).
 enrutadorEdge.get('/configuracion', controlador.configuracionEdge);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -43,3 +32,14 @@ enrutadorVigilancia.get('/estado', controlador.estado);
 // Region de Interes - solo Productor (coherente con eventos y administracion).
 enrutadorVigilancia.put('/dispositivos/:id/roi', soloProductor, controlador.guardarRoi);
 enrutadorVigilancia.delete('/dispositivos/:id/roi', soloProductor, controlador.eliminarRoi);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// /api/v1/alertas - historial y gestion de estado de alertas (JWT)
+// ─────────────────────────────────────────────────────────────────────────────
+export const enrutadorAlertas = Router();
+
+enrutadorAlertas.use(autenticar);
+
+// Accesible para PRODUCTOR y TRABAJADOR del mismo predio.
+enrutadorAlertas.get('/', controlador.listar);
+enrutadorAlertas.patch('/:id/estado', controlador.actualizarEstado);

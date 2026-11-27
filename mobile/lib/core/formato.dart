@@ -34,6 +34,9 @@ abstract final class Fmt {
   /// "09:00"
   static String hora(DateTime f) => _hora.format(f.toLocal());
 
+  /// "26 nov 2026 · 14:32"
+  static String fechaHora(DateTime f) => '${fecha(f)} · ${hora(f)}';
+
   /// "Hoy", "Ayer", "Mañana", "28 ago" — vencimiento de una tarea.
   static String fechaRelativa(DateTime f) {
     final local = f.toLocal();
@@ -126,5 +129,17 @@ abstract final class Etiquetas {
         'EVENTO' => 'Evento',
         'NOTA' => 'Nota',
         _ => tipo,
+      };
+
+  static String tipoAlerta(String tipo) => switch (tipo) {
+        'CONTEO' => 'Falta de ovejas',
+        _ => tipo,
+      };
+
+  static String estadoAlerta(String estado) => switch (estado) {
+        'PENDIENTE' => 'Pendiente',
+        'RESUELTA' => 'Resuelta',
+        'DESCARTADA' => 'Descartada',
+        _ => estado,
       };
 }

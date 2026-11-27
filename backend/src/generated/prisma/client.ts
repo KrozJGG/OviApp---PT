@@ -100,3 +100,8 @@ export type TareaAnimal = Prisma.TareaAnimalModel
  * H4 - emisor de IF5-ENT; su estado alimenta IF2-SAL.
  */
 export type DispositivoEdge = Prisma.DispositivoEdgeModel
+/**
+ * Model Alerta
+ * 
+ */
+export type Alerta = Prisma.AlertaModel

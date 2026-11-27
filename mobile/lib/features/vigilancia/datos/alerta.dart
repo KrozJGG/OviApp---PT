@@ -63,3 +63,57 @@ class EstadoVigilancia {
             .toList(growable: false),
       );
 }
+
+/// Alerta generada por el sistema de vigilancia (`GET /api/v1/alertas`).
+class AlertaVigilancia {
+  const AlertaVigilancia({
+    required this.id,
+    required this.idDispositivoEdge,
+    required this.dispositivo,
+    required this.tipo,
+    required this.estado,
+    required this.conteoDetectado,
+    required this.conteoEsperado,
+    required this.descripcion,
+    required this.fechaDeteccion,
+    this.normalizadaEn,
+    this.revisadoPor,
+    this.fechaRevision,
+  });
+
+  final String id;
+  final String idDispositivoEdge;
+  final Referencia dispositivo;
+  final String tipo;
+  final String estado;
+  final int conteoDetectado;
+  final int conteoEsperado;
+  final String descripcion;
+  final DateTime fechaDeteccion;
+
+  /// No nulo cuando el conteo se normalizo por 2 heartbeats consecutivos
+  /// (alerta silenciada definitivamente por posible oclusion).
+  final DateTime? normalizadaEn;
+  final Referencia? revisadoPor;
+  final DateTime? fechaRevision;
+
+  bool get esPendiente => estado == 'PENDIENTE';
+  bool get esNormalizada => normalizadaEn != null;
+
+  factory AlertaVigilancia.desdeJson(Map<String, dynamic> j) => AlertaVigilancia(
+        id: (j['id'] as String?) ?? '',
+        idDispositivoEdge: (j['idDispositivoEdge'] as String?) ?? '',
+        dispositivo:
+            Referencia.desdeJsonNula(j['dispositivo']) ??
+            const Referencia(id: '', nombre: 'Cámara'),
+        tipo: (j['tipo'] as String?) ?? 'CONTEO',
+        estado: (j['estado'] as String?) ?? 'PENDIENTE',
+        conteoDetectado: enteroNulo(j['conteoDetectado']) ?? 0,
+        conteoEsperado: enteroNulo(j['conteoEsperado']) ?? 0,
+        descripcion: (j['descripcion'] as String?) ?? '',
+        fechaDeteccion: fechaDe(j['fechaDeteccion']),
+        normalizadaEn: fechaNulaDe(j['normalizadaEn']),
+        revisadoPor: Referencia.desdeJsonNula(j['revisadoPor']),
+        fechaRevision: fechaNulaDe(j['fechaRevision']),
+      );
+}

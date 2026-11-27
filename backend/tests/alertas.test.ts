@@ -1,3 +1,5 @@
+import type { AddressInfo } from 'node:net';
+import { io as ioClient, type Socket as ClientSocket } from 'socket.io-client';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { prisma } from '../src/config/prisma';
 import { MINUTOS_EN_LINEA } from '../src/modules/alertas/alertas.servicio';
@@ -386,6 +388,176 @@ describe('Vigilancia y conteo de ovejas (IF2-SAL / IF5-ENT)', () => {
         regionInteres: null,
         regionInteresUpdatedAt: null,
       });
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────────────────
+  // Alertas por falta de ovejas (CONTEO), historial REST y Socket.IO
+  // ───────────────────────────────────────────────────────────────────────────
+  describe('Alertas CONTEO, historial y Socket.IO multi-predio', () => {
+    function urlSocket(e: Escenario): string {
+      const dir = e.app.address() as AddressInfo;
+      return `http://127.0.0.1:${dir.port}`;
+    }
+
+    async function conectarSocket(e: Escenario, token?: string): Promise<ClientSocket> {
+      return new Promise((resolve, reject) => {
+        const cliente = ioClient(urlSocket(e), {
+          transports: ['websocket'],
+          reconnection: false,
+          auth: token ? { token } : {},
+        });
+        cliente.once('connect', () => resolve(cliente));
+        cliente.once('connect_error', (err) => {
+          cliente.close();
+          reject(err);
+        });
+      });
+    }
+
+    function esperarEvento<T = Record<string, unknown>>(
+      socket: ClientSocket,
+      evento: string,
+      timeoutMs = 3000,
+    ): Promise<T> {
+      return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+          reject(new Error(`Timeout esperando evento ${evento}`));
+        }, timeoutMs);
+        socket.once(evento, (payload: T) => {
+          clearTimeout(timer);
+          resolve(payload);
+        });
+      });
+    }
+
+    it('crea una sola alerta PENDIENTE al 3er heartbeat con deficit y la normaliza tras 2 normales', async () => {
+      // El escenario tiene 1 animal activo; agregamos 2 mas -> conteoEsperado = 3.
+      await crearAnimal({ idPredio: e.predioA.id, idRegistrador: e.productor.id, numeroOreja: '0002' });
+      await crearAnimal({ idPredio: e.predioA.id, idRegistrador: e.productor.id, numeroOreja: '0003' });
+
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 2, timestamp: HORA_LATIDO });
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 2, timestamp: HORA_LATIDO });
+      expect(await prisma.alerta.count({ where: { idPredio: e.predioA.id } })).toBe(0);
+
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 2, timestamp: HORA_LATIDO });
+      const alertas = await prisma.alerta.findMany({ where: { idPredio: e.predioA.id } });
+      expect(alertas).toHaveLength(1);
+      expect(alertas[0]).toMatchObject({
+        tipo: 'CONTEO',
+        estado: 'PENDIENTE',
+        conteoDetectado: 2,
+        conteoEsperado: 3,
+        normalizadaEn: null,
+      });
+
+      // Un 4to heartbeat en deficit no duplica la fila.
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 1, timestamp: HORA_LATIDO });
+      expect(await prisma.alerta.count({ where: { idPredio: e.predioA.id } })).toBe(1);
+
+      // 2 heartbeats normales consecutivos marcan normalizadaEn sin cambiar estado PENDIENTE.
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 3, timestamp: HORA_LATIDO });
+      let trasUno = await prisma.alerta.findUniqueOrThrow({ where: { id: alertas[0]!.id } });
+      expect(trasUno.normalizadaEn).toBeNull();
+
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 3, timestamp: HORA_LATIDO });
+      trasUno = await prisma.alerta.findUniqueOrThrow({ where: { id: alertas[0]!.id } });
+      expect(trasUno.estado).toBe('PENDIENTE');
+      expect(trasUno.normalizadaEn).not.toBeNull();
+    });
+
+    it('GET /alertas y PATCH /alertas/:id/estado permiten PRODUCTOR y TRABAJADOR con aislamiento por predio', async () => {
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 0, timestamp: HORA_LATIDO });
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 0, timestamp: HORA_LATIDO });
+      await edge(e).post('/edge/heartbeat').send({ conteoActual: 0, timestamp: HORA_LATIDO });
+
+      // Trabajador consulta historial pendiente.
+      const listado = await api(e.app, e.trabajador.token).get('/alertas?estado=PENDIENTE');
+      expect(listado.status).toBe(200);
+      expect(listado.body.datos).toHaveLength(1);
+      const idAlerta = listado.body.datos[0].id as string;
+
+      // Predio ajeno no ve nada ni puede actualizar (404).
+      const listadoAjeno = await api(e.app, e.ajeno.token).get('/alertas');
+      expect(listadoAjeno.status).toBe(200);
+      expect(listadoAjeno.body.datos).toEqual([]);
+
+      const patchAjeno = await api(e.app, e.ajeno.token)
+        .patch(`/alertas/${idAlerta}/estado`)
+        .send({ estado: 'RESUELTA' });
+      expect(patchAjeno.status).toBe(404);
+
+      // Trabajador marca la alerta como RESUELTA y queda registrada la auditoria.
+      const resuelta = await api(e.app, e.trabajador.token)
+        .patch(`/alertas/${idAlerta}/estado`)
+        .send({ estado: 'RESUELTA' });
+      expect(resuelta.status).toBe(200);
+      expect(resuelta.body.estado).toBe('RESUELTA');
+      expect(resuelta.body.revisadoPor).toMatchObject({
+        id: e.trabajador.id,
+        nombre: 'Trabajador A',
+      });
+      expect(resuelta.body.fechaRevision).toBeTruthy();
+
+      // Reintentar cambiar estado sobre una alerta ya revisada responde 409.
+      const duplicado = await api(e.app, e.productor.token)
+        .patch(`/alertas/${idAlerta}/estado`)
+        .send({ estado: 'DESCARTADA' });
+      expect(duplicado.status).toBe(409);
+      expect(duplicado.body.error.codigo).toBe('ALERTA_YA_REVISADA');
+    });
+
+    it('Socket.IO autentica por JWT y emite alerta:nueva y alerta:actualizada solo al predio correspondiente', async () => {
+      // Sin token -> rechazado.
+      await expect(conectarSocket(e)).rejects.toThrow('NO_AUTENTICADO');
+      await expect(conectarSocket(e, 'token-invalido')).rejects.toThrow('TOKEN_INVALIDO');
+
+      const sockProductor = await conectarSocket(e, e.productor.token);
+      const sockTrabajador = await conectarSocket(e, e.trabajador.token);
+      const sockAjeno = await conectarSocket(e, e.ajeno.token);
+
+      let recibidoAjeno = false;
+      sockAjeno.on('alerta:nueva', () => {
+        recibidoAjeno = true;
+      });
+      sockAjeno.on('alerta:actualizada', () => {
+        recibidoAjeno = true;
+      });
+
+      try {
+        const promProdNueva = esperarEvento(sockProductor, 'alerta:nueva');
+        const promTrabNueva = esperarEvento(sockTrabajador, 'alerta:nueva');
+
+        await edge(e).post('/edge/heartbeat').send({ conteoActual: 0, timestamp: HORA_LATIDO });
+        await edge(e).post('/edge/heartbeat').send({ conteoActual: 0, timestamp: HORA_LATIDO });
+        await edge(e).post('/edge/heartbeat').send({ conteoActual: 0, timestamp: HORA_LATIDO });
+
+        const [evProd, evTrab] = await Promise.all([promProdNueva, promTrabNueva]);
+        expect(evProd.tipo).toBe('CONTEO');
+        expect(evProd.estado).toBe('PENDIENTE');
+        expect(evTrab.id).toBe(evProd.id);
+
+        const promProdAct = esperarEvento(sockProductor, 'alerta:actualizada');
+        const promTrabAct = esperarEvento(sockTrabajador, 'alerta:actualizada');
+
+        const r = await api(e.app, e.productor.token)
+          .patch(`/alertas/${evProd.id as string}/estado`)
+          .send({ estado: 'DESCARTADA' });
+        expect(r.status).toBe(200);
+
+        const [actProd, actTrab] = await Promise.all([promProdAct, promTrabAct]);
+        expect(actProd.estado).toBe('DESCARTADA');
+        expect(actTrab.estado).toBe('DESCARTADA');
+        expect((actTrab.revisadoPor as { nombre: string }).nombre).toBe('Productora A');
+
+        // Pequeña espera para confirmar que el predio B nunca recibio nada.
+        await new Promise((r) => setTimeout(r, 100));
+        expect(recibidoAjeno).toBe(false);
+      } finally {
+        sockProductor.close();
+        sockTrabajador.close();
+        sockAjeno.close();
+      }
     });
   });
 });

@@ -48,8 +48,9 @@ export type CodigoError =
   | 'FECHA_PASADA'
   | 'FECHA_FUTURA'
   | 'RANGO_INVALIDO'
-  // Vigilancia (RF_17)
-  | 'STREAM_NO_DISPONIBLE';
+  // Vigilancia y alertas (RF_17 a RF_19)
+  | 'STREAM_NO_DISPONIBLE'
+  | 'ALERTA_YA_REVISADA';
 
 export class ErrorApp extends Error {
   readonly status: number;

@@ -62,7 +62,8 @@ export const ModelName = {
   Tarea: 'Tarea',
   TareaUsuario: 'TareaUsuario',
   TareaAnimal: 'TareaAnimal',
-  DispositivoEdge: 'DispositivoEdge'
+  DispositivoEdge: 'DispositivoEdge',
+  Alerta: 'Alerta'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -246,6 +247,26 @@ export const DispositivoEdgeScalarFieldEnum = {
 } as const
 
 export type DispositivoEdgeScalarFieldEnum = (typeof DispositivoEdgeScalarFieldEnum)[keyof typeof DispositivoEdgeScalarFieldEnum]
+
+
+export const AlertaScalarFieldEnum = {
+  id: 'id',
+  idPredio: 'idPredio',
+  idDispositivoEdge: 'idDispositivoEdge',
+  tipo: 'tipo',
+  estado: 'estado',
+  conteoDetectado: 'conteoDetectado',
+  conteoEsperado: 'conteoEsperado',
+  descripcion: 'descripcion',
+  fechaDeteccion: 'fechaDeteccion',
+  normalizadaEn: 'normalizadaEn',
+  idRevisadoPor: 'idRevisadoPor',
+  fechaRevision: 'fechaRevision',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AlertaScalarFieldEnum = (typeof AlertaScalarFieldEnum)[keyof typeof AlertaScalarFieldEnum]
 
 
 export const SortOrder = {
