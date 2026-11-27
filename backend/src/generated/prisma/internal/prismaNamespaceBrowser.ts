@@ -62,7 +62,8 @@ export const ModelName = {
   Tarea: 'Tarea',
   TareaUsuario: 'TareaUsuario',
   TareaAnimal: 'TareaAnimal',
-  DispositivoEdge: 'DispositivoEdge'
+  DispositivoEdge: 'DispositivoEdge',
+  EventoVigilancia: 'EventoVigilancia'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -246,6 +247,21 @@ export const DispositivoEdgeScalarFieldEnum = {
 } as const
 
 export type DispositivoEdgeScalarFieldEnum = (typeof DispositivoEdgeScalarFieldEnum)[keyof typeof DispositivoEdgeScalarFieldEnum]
+
+
+export const EventoVigilanciaScalarFieldEnum = {
+  id: 'id',
+  idPredio: 'idPredio',
+  idDispositivo: 'idDispositivo',
+  tipo: 'tipo',
+  conteoDetectado: 'conteoDetectado',
+  animalesActivos: 'animalesActivos',
+  diferencia: 'diferencia',
+  ocurridoEn: 'ocurridoEn',
+  createdAt: 'createdAt'
+} as const
+
+export type EventoVigilanciaScalarFieldEnum = (typeof EventoVigilanciaScalarFieldEnum)[keyof typeof EventoVigilanciaScalarFieldEnum]
 
 
 export const SortOrder = {

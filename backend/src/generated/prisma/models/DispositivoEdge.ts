@@ -253,6 +253,7 @@ export type DispositivoEdgeWhereInput = {
   regionInteresUpdatedAt?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DispositivoEdge"> | Date | string
   predio?: Prisma.XOR<Prisma.PredioScalarRelationFilter, Prisma.PredioWhereInput>
+  eventosVigilancia?: Prisma.EventoVigilanciaListRelationFilter
 }
 
 export type DispositivoEdgeOrderByWithRelationInput = {
@@ -267,6 +268,7 @@ export type DispositivoEdgeOrderByWithRelationInput = {
   regionInteresUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   predio?: Prisma.PredioOrderByWithRelationInput
+  eventosVigilancia?: Prisma.EventoVigilanciaOrderByRelationAggregateInput
 }
 
 export type DispositivoEdgeWhereUniqueInput = Prisma.AtLeast<{
@@ -284,6 +286,7 @@ export type DispositivoEdgeWhereUniqueInput = Prisma.AtLeast<{
   regionInteresUpdatedAt?: Prisma.DateTimeNullableFilter<"DispositivoEdge"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"DispositivoEdge"> | Date | string
   predio?: Prisma.XOR<Prisma.PredioScalarRelationFilter, Prisma.PredioWhereInput>
+  eventosVigilancia?: Prisma.EventoVigilanciaListRelationFilter
 }, "id" | "apiKeyPrefijo">
 
 export type DispositivoEdgeOrderByWithAggregationInput = {
@@ -331,6 +334,7 @@ export type DispositivoEdgeCreateInput = {
   regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
   predio: Prisma.PredioCreateNestedOneWithoutDispositivosEdgeInput
+  eventosVigilancia?: Prisma.EventoVigilanciaCreateNestedManyWithoutDispositivoInput
 }
 
 export type DispositivoEdgeUncheckedCreateInput = {
@@ -344,6 +348,7 @@ export type DispositivoEdgeUncheckedCreateInput = {
   regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
+  eventosVigilancia?: Prisma.EventoVigilanciaUncheckedCreateNestedManyWithoutDispositivoInput
 }
 
 export type DispositivoEdgeUpdateInput = {
@@ -357,6 +362,7 @@ export type DispositivoEdgeUpdateInput = {
   regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   predio?: Prisma.PredioUpdateOneRequiredWithoutDispositivosEdgeNestedInput
+  eventosVigilancia?: Prisma.EventoVigilanciaUpdateManyWithoutDispositivoNestedInput
 }
 
 export type DispositivoEdgeUncheckedUpdateInput = {
@@ -370,6 +376,7 @@ export type DispositivoEdgeUncheckedUpdateInput = {
   regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eventosVigilancia?: Prisma.EventoVigilanciaUncheckedUpdateManyWithoutDispositivoNestedInput
 }
 
 export type DispositivoEdgeCreateManyInput = {
@@ -465,6 +472,11 @@ export type DispositivoEdgeSumOrderByAggregateInput = {
   ultimoConteo?: Prisma.SortOrder
 }
 
+export type DispositivoEdgeNullableScalarRelationFilter = {
+  is?: Prisma.DispositivoEdgeWhereInput | null
+  isNot?: Prisma.DispositivoEdgeWhereInput | null
+}
+
 export type DispositivoEdgeCreateNestedManyWithoutPredioInput = {
   create?: Prisma.XOR<Prisma.DispositivoEdgeCreateWithoutPredioInput, Prisma.DispositivoEdgeUncheckedCreateWithoutPredioInput> | Prisma.DispositivoEdgeCreateWithoutPredioInput[] | Prisma.DispositivoEdgeUncheckedCreateWithoutPredioInput[]
   connectOrCreate?: Prisma.DispositivoEdgeCreateOrConnectWithoutPredioInput | Prisma.DispositivoEdgeCreateOrConnectWithoutPredioInput[]
@@ -515,6 +527,22 @@ export type NullableIntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type DispositivoEdgeCreateNestedOneWithoutEventosVigilanciaInput = {
+  create?: Prisma.XOR<Prisma.DispositivoEdgeCreateWithoutEventosVigilanciaInput, Prisma.DispositivoEdgeUncheckedCreateWithoutEventosVigilanciaInput>
+  connectOrCreate?: Prisma.DispositivoEdgeCreateOrConnectWithoutEventosVigilanciaInput
+  connect?: Prisma.DispositivoEdgeWhereUniqueInput
+}
+
+export type DispositivoEdgeUpdateOneWithoutEventosVigilanciaNestedInput = {
+  create?: Prisma.XOR<Prisma.DispositivoEdgeCreateWithoutEventosVigilanciaInput, Prisma.DispositivoEdgeUncheckedCreateWithoutEventosVigilanciaInput>
+  connectOrCreate?: Prisma.DispositivoEdgeCreateOrConnectWithoutEventosVigilanciaInput
+  upsert?: Prisma.DispositivoEdgeUpsertWithoutEventosVigilanciaInput
+  disconnect?: Prisma.DispositivoEdgeWhereInput | boolean
+  delete?: Prisma.DispositivoEdgeWhereInput | boolean
+  connect?: Prisma.DispositivoEdgeWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.DispositivoEdgeUpdateToOneWithWhereWithoutEventosVigilanciaInput, Prisma.DispositivoEdgeUpdateWithoutEventosVigilanciaInput>, Prisma.DispositivoEdgeUncheckedUpdateWithoutEventosVigilanciaInput>
+}
+
 export type DispositivoEdgeCreateWithoutPredioInput = {
   id?: string
   nombre: string
@@ -525,6 +553,7 @@ export type DispositivoEdgeCreateWithoutPredioInput = {
   regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
+  eventosVigilancia?: Prisma.EventoVigilanciaCreateNestedManyWithoutDispositivoInput
 }
 
 export type DispositivoEdgeUncheckedCreateWithoutPredioInput = {
@@ -537,6 +566,7 @@ export type DispositivoEdgeUncheckedCreateWithoutPredioInput = {
   regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regionInteresUpdatedAt?: Date | string | null
   createdAt?: Date | string
+  eventosVigilancia?: Prisma.EventoVigilanciaUncheckedCreateNestedManyWithoutDispositivoInput
 }
 
 export type DispositivoEdgeCreateOrConnectWithoutPredioInput = {
@@ -581,6 +611,74 @@ export type DispositivoEdgeScalarWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"DispositivoEdge"> | Date | string
 }
 
+export type DispositivoEdgeCreateWithoutEventosVigilanciaInput = {
+  id?: string
+  nombre: string
+  apiKeyHash: string
+  apiKeyPrefijo: string
+  ultimoHeartbeat?: Date | string | null
+  ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
+  createdAt?: Date | string
+  predio: Prisma.PredioCreateNestedOneWithoutDispositivosEdgeInput
+}
+
+export type DispositivoEdgeUncheckedCreateWithoutEventosVigilanciaInput = {
+  id?: string
+  idPredio: string
+  nombre: string
+  apiKeyHash: string
+  apiKeyPrefijo: string
+  ultimoHeartbeat?: Date | string | null
+  ultimoConteo?: number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type DispositivoEdgeCreateOrConnectWithoutEventosVigilanciaInput = {
+  where: Prisma.DispositivoEdgeWhereUniqueInput
+  create: Prisma.XOR<Prisma.DispositivoEdgeCreateWithoutEventosVigilanciaInput, Prisma.DispositivoEdgeUncheckedCreateWithoutEventosVigilanciaInput>
+}
+
+export type DispositivoEdgeUpsertWithoutEventosVigilanciaInput = {
+  update: Prisma.XOR<Prisma.DispositivoEdgeUpdateWithoutEventosVigilanciaInput, Prisma.DispositivoEdgeUncheckedUpdateWithoutEventosVigilanciaInput>
+  create: Prisma.XOR<Prisma.DispositivoEdgeCreateWithoutEventosVigilanciaInput, Prisma.DispositivoEdgeUncheckedCreateWithoutEventosVigilanciaInput>
+  where?: Prisma.DispositivoEdgeWhereInput
+}
+
+export type DispositivoEdgeUpdateToOneWithWhereWithoutEventosVigilanciaInput = {
+  where?: Prisma.DispositivoEdgeWhereInput
+  data: Prisma.XOR<Prisma.DispositivoEdgeUpdateWithoutEventosVigilanciaInput, Prisma.DispositivoEdgeUncheckedUpdateWithoutEventosVigilanciaInput>
+}
+
+export type DispositivoEdgeUpdateWithoutEventosVigilanciaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKeyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
+  ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  predio?: Prisma.PredioUpdateOneRequiredWithoutDispositivosEdgeNestedInput
+}
+
+export type DispositivoEdgeUncheckedUpdateWithoutEventosVigilanciaInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  idPredio?: Prisma.StringFieldUpdateOperationsInput | string
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKeyHash?: Prisma.StringFieldUpdateOperationsInput | string
+  apiKeyPrefijo?: Prisma.StringFieldUpdateOperationsInput | string
+  ultimoHeartbeat?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ultimoConteo?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type DispositivoEdgeCreateManyPredioInput = {
   id?: string
   nombre: string
@@ -603,6 +701,7 @@ export type DispositivoEdgeUpdateWithoutPredioInput = {
   regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eventosVigilancia?: Prisma.EventoVigilanciaUpdateManyWithoutDispositivoNestedInput
 }
 
 export type DispositivoEdgeUncheckedUpdateWithoutPredioInput = {
@@ -615,6 +714,7 @@ export type DispositivoEdgeUncheckedUpdateWithoutPredioInput = {
   regionInteres?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   regionInteresUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  eventosVigilancia?: Prisma.EventoVigilanciaUncheckedUpdateManyWithoutDispositivoNestedInput
 }
 
 export type DispositivoEdgeUncheckedUpdateManyWithoutPredioInput = {
@@ -630,6 +730,35 @@ export type DispositivoEdgeUncheckedUpdateManyWithoutPredioInput = {
 }
 
 
+/**
+ * Count Type DispositivoEdgeCountOutputType
+ */
+
+export type DispositivoEdgeCountOutputType = {
+  eventosVigilancia: number
+}
+
+export type DispositivoEdgeCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  eventosVigilancia?: boolean | DispositivoEdgeCountOutputTypeCountEventosVigilanciaArgs
+}
+
+/**
+ * DispositivoEdgeCountOutputType without action
+ */
+export type DispositivoEdgeCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the DispositivoEdgeCountOutputType
+   */
+  select?: Prisma.DispositivoEdgeCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * DispositivoEdgeCountOutputType without action
+ */
+export type DispositivoEdgeCountOutputTypeCountEventosVigilanciaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EventoVigilanciaWhereInput
+}
+
 
 export type DispositivoEdgeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -643,6 +772,8 @@ export type DispositivoEdgeSelect<ExtArgs extends runtime.Types.Extensions.Inter
   regionInteresUpdatedAt?: boolean
   createdAt?: boolean
   predio?: boolean | Prisma.PredioDefaultArgs<ExtArgs>
+  eventosVigilancia?: boolean | Prisma.DispositivoEdge$eventosVigilanciaArgs<ExtArgs>
+  _count?: boolean | Prisma.DispositivoEdgeCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["dispositivoEdge"]>
 
 export type DispositivoEdgeSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -689,6 +820,8 @@ export type DispositivoEdgeSelectScalar = {
 export type DispositivoEdgeOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "idPredio" | "nombre" | "apiKeyHash" | "apiKeyPrefijo" | "ultimoHeartbeat" | "ultimoConteo" | "regionInteres" | "regionInteresUpdatedAt" | "createdAt", ExtArgs["result"]["dispositivoEdge"]>
 export type DispositivoEdgeInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   predio?: boolean | Prisma.PredioDefaultArgs<ExtArgs>
+  eventosVigilancia?: boolean | Prisma.DispositivoEdge$eventosVigilanciaArgs<ExtArgs>
+  _count?: boolean | Prisma.DispositivoEdgeCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type DispositivoEdgeIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   predio?: boolean | Prisma.PredioDefaultArgs<ExtArgs>
@@ -701,6 +834,7 @@ export type $DispositivoEdgePayload<ExtArgs extends runtime.Types.Extensions.Int
   name: "DispositivoEdge"
   objects: {
     predio: Prisma.$PredioPayload<ExtArgs>
+    eventosVigilancia: Prisma.$EventoVigilanciaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1124,6 +1258,7 @@ readonly fields: DispositivoEdgeFieldRefs;
 export interface Prisma__DispositivoEdgeClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   predio<T extends Prisma.PredioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PredioDefaultArgs<ExtArgs>>): Prisma.Prisma__PredioClient<runtime.Types.Result.GetResult<Prisma.$PredioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  eventosVigilancia<T extends Prisma.DispositivoEdge$eventosVigilanciaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.DispositivoEdge$eventosVigilanciaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EventoVigilanciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1561,6 +1696,30 @@ export type DispositivoEdgeDeleteManyArgs<ExtArgs extends runtime.Types.Extensio
    * Limit how many DispositivoEdges to delete.
    */
   limit?: number
+}
+
+/**
+ * DispositivoEdge.eventosVigilancia
+ */
+export type DispositivoEdge$eventosVigilanciaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EventoVigilancia
+   */
+  select?: Prisma.EventoVigilanciaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EventoVigilancia
+   */
+  omit?: Prisma.EventoVigilanciaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EventoVigilanciaInclude<ExtArgs> | null
+  where?: Prisma.EventoVigilanciaWhereInput
+  orderBy?: Prisma.EventoVigilanciaOrderByWithRelationInput | Prisma.EventoVigilanciaOrderByWithRelationInput[]
+  cursor?: Prisma.EventoVigilanciaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EventoVigilanciaScalarFieldEnum | Prisma.EventoVigilanciaScalarFieldEnum[]
 }
 
 /**

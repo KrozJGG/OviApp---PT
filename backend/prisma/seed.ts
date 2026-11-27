@@ -60,7 +60,7 @@ async function main(): Promise<void> {
   // el guardian append-only de la bitacora (RF_06) no bloquea el reseteo.
   await prisma.$executeRawUnsafe(`
     TRUNCATE TABLE
-      "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
+      "evento_vigilancia", "bitacora_entrada", "evento_animal", "tarea_animal", "tarea_usuario",
       "evento", "tarea", "animal", "dispositivo_edge",
       "dispositivo_usuario", "refresh_token", "usuario", "predio"
     RESTART IDENTITY CASCADE
@@ -343,17 +343,95 @@ async function main(): Promise<void> {
 
   // ── Vigilancia ────────────────────────────────────────────────────────────
   const [prefijo, secreto] = API_KEY_EDGE.split('.') as [string, string];
-  await prisma.dispositivoEdge.create({
+  const camara = await prisma.dispositivoEdge.create({
     data: {
       idPredio: predio.id,
       nombre: 'Cámara Hato Norte',
       apiKeyPrefijo: prefijo,
       apiKeyHash: await bcrypt.hash(secreto, 10),
-      ultimoConteo: null,
+      ultimoConteo: 45,
       // Dentro de MINUTOS_EN_LINEA, para que la demo arranque con la camara en
       // linea y se pueda entrar a la vista en vivo.
       ultimoHeartbeat: new Date(Date.now() - 60 * 1000),
     },
+  });
+
+  // Historial de eventos de vigilancia IA y tareas completadas en meses previos
+  // para que el panel de Reportes (RF23/RF24) muestre series mensuales reales.
+  await prisma.eventoVigilancia.createMany({
+    data: [
+      {
+        idPredio: predio.id,
+        idDispositivo: camara.id,
+        tipo: 'DISCREPANCIA_CONTEO',
+        conteoDetectado: 44,
+        animalesActivos: 47,
+        diferencia: 3,
+        ocurridoEn: sumarDias(hoy, -12),
+      },
+      {
+        idPredio: predio.id,
+        idDispositivo: camara.id,
+        tipo: 'DISCREPANCIA_CONTEO',
+        conteoDetectado: 45,
+        animalesActivos: 47,
+        diferencia: 2,
+        ocurridoEn: sumarDias(hoy, -42),
+      },
+      {
+        idPredio: predio.id,
+        idDispositivo: camara.id,
+        tipo: 'DESCONEXION',
+        conteoDetectado: 47,
+        animalesActivos: 47,
+        diferencia: 0,
+        ocurridoEn: sumarDias(hoy, -68),
+      },
+      {
+        idPredio: predio.id,
+        idDispositivo: camara.id,
+        tipo: 'DISCREPANCIA_CONTEO',
+        conteoDetectado: 43,
+        animalesActivos: 47,
+        diferencia: 4,
+        ocurridoEn: sumarDias(hoy, -95),
+      },
+    ],
+  });
+
+  await prisma.tarea.createMany({
+    data: [
+      {
+        idPredio: predio.id,
+        idCreador: manuel.id,
+        titulo: 'Desparasitación preventiva lote sur',
+        descripcion: 'Dosificación oral según peso promedio.',
+        fechaLimite: fechaSolo(sumarDias(hoy, -34)),
+        estado: 'COMPLETADA',
+        completadaEn: sumarDias(hoy, -35),
+        idCompletadaPor: rosa.id,
+      },
+      {
+        idPredio: predio.id,
+        idCreador: manuel.id,
+        titulo: 'Mantención de bebederos invierno',
+        descripcion: 'Limpieza de cañerías y flotadores.',
+        fechaLimite: fechaSolo(sumarDias(hoy, -62)),
+        estado: 'COMPLETADA',
+        completadaEn: sumarDias(hoy, -61),
+        idCompletadaPor: pedro.id,
+      },
+      {
+        idPredio: predio.id,
+        idCreador: manuel.id,
+        titulo: 'Revisión de caravanas y registro SAG',
+        descripcion: 'Verificación de números de oreja activos.',
+        fechaLimite: fechaSolo(sumarDias(hoy, -90)),
+        estado: 'COMPLETADA',
+        completadaEn: sumarDias(hoy, -91),
+        idCompletadaPor: manuel.id,
+      },
+    ],
   });
 
   console.log(`

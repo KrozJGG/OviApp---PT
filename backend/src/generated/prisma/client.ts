@@ -100,3 +100,9 @@ export type TareaAnimal = Prisma.TareaAnimalModel
  * H4 - emisor de IF5-ENT; su estado alimenta IF2-SAL.
  */
 export type DispositivoEdge = Prisma.DispositivoEdgeModel
+/**
+ * Model EventoVigilancia
+ * Historial de eventos relevantes del monitoreo con vision por computadora
+ * (discrepancias de conteo frente al inventario activo y desconexiones).
+ */
+export type EventoVigilancia = Prisma.EventoVigilanciaModel

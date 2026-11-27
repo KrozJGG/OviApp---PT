@@ -77,13 +77,22 @@ class PantallaMas extends ConsumerWidget {
             const SizedBox(height: 14),
           ],
 
-          // RF_20 a RF_22 — administración, exclusiva del Productor. Se oculta
-          // en lugar de deshabilitarse: el backend responde 403 igualmente.
+          // RF20 a RF24 — administracion y reportes, exclusivas del Productor.
+          // Se ocultan en lugar de deshabilitarse: el backend responde 403 igualmente.
           if (esProductor) ...[
             OviTarjeta(
               padding: EdgeInsets.zero,
               child: Column(
                 children: [
+                  ListTile(
+                    leading: const Icon(Icons.bar_chart_rounded,
+                        color: OviColores.primary),
+                    title: const Text('Reportes y métricas'),
+                    subtitle: const Text('Panel consolidado y exportación PDF/CSV'),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => context.goNamed(Rutas.reportes),
+                  ),
+                  const Divider(height: 1),
                   ListTile(
                     leading: const Icon(Icons.group_outlined,
                         color: OviColores.primary),

@@ -19,7 +19,15 @@ import { redondearCoord } from './alertas.geometria';
  */
 export const MINUTOS_EN_LINEA = 3;
 
+/**
+ * Ventana minima entre eventos consecutivos de discrepancia del mismo nodo.
+ * Evita llenar la tabla con un registro cada 5 segundos mientras el rebano
+ * permanece parcialmente fuera del encuadre.
+ */
+export const MINUTOS_COOLDOWN_DISCREPANCIA = 30;
+
 const MS_EN_LINEA = MINUTOS_EN_LINEA * 60 * 1000;
+const MS_COOLDOWN_DISCREPANCIA = MINUTOS_COOLDOWN_DISCREPANCIA * 60 * 1000;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Latido de presencia y conteo del dispositivo (IF5-ENT)
@@ -28,12 +36,48 @@ const MS_EN_LINEA = MINUTOS_EN_LINEA * 60 * 1000;
 /**
  * POST /edge/heartbeat - el dispositivo informa que sigue vivo y reporta el
  * conteo mas reciente de ovejas detectadas para mantener IF2-SAL al dia.
+ *
+ * Si el conteo reportado es menor al inventario activo del predio y vencio el
+ * cooldown, registra un evento historico en `evento_vigilancia` (RF23/RF24).
  */
 export async function registrarHeartbeat(
   idDispositivo: string,
   datos: DatosHeartbeat,
 ): Promise<void> {
-  await tocarDispositivo(idDispositivo, datos.conteoActual);
+  const ahora = new Date();
+  const dispositivo = await tocarDispositivo(idDispositivo, datos.conteoActual, ahora);
+
+  if (datos.conteoActual === undefined) return;
+
+  const animalesActivos = await prisma.animal.count({
+    where: { idPredio: dispositivo.idPredio, estado: 'ACTIVO' },
+  });
+
+  if (datos.conteoActual >= animalesActivos) return;
+
+  const desdeCooldown = new Date(ahora.getTime() - MS_COOLDOWN_DISCREPANCIA);
+  const reciente = await prisma.eventoVigilancia.findFirst({
+    where: {
+      idDispositivo,
+      tipo: 'DISCREPANCIA_CONTEO',
+      ocurridoEn: { gte: desdeCooldown },
+    },
+    select: { id: true },
+  });
+
+  if (reciente) return;
+
+  await prisma.eventoVigilancia.create({
+    data: {
+      idPredio: dispositivo.idPredio,
+      idDispositivo,
+      tipo: 'DISCREPANCIA_CONTEO',
+      conteoDetectado: datos.conteoActual,
+      animalesActivos,
+      diferencia: animalesActivos - datos.conteoActual,
+      ocurridoEn: ahora,
+    },
+  });
 }
 
 /**
@@ -45,23 +89,44 @@ export async function registrarHeartbeat(
  * avisar, y para esos casos sigue siendo el timeout la unica red de seguridad.
  */
 export async function desconectarDispositivo(idDispositivo: string): Promise<void> {
-  await prisma.dispositivoEdge.update({
+  const dispositivo = await prisma.dispositivoEdge.update({
     where: { id: idDispositivo },
     data: { ultimoHeartbeat: null },
+    select: { idPredio: true, ultimoConteo: true },
+  });
+
+  const animalesActivos = await prisma.animal.count({
+    where: { idPredio: dispositivo.idPredio, estado: 'ACTIVO' },
+  });
+
+  await prisma.eventoVigilancia.create({
+    data: {
+      idPredio: dispositivo.idPredio,
+      idDispositivo,
+      tipo: 'DESCONEXION',
+      conteoDetectado: dispositivo.ultimoConteo,
+      animalesActivos,
+      diferencia:
+        dispositivo.ultimoConteo === null
+          ? 0
+          : Math.max(0, animalesActivos - dispositivo.ultimoConteo),
+      ocurridoEn: new Date(),
+    },
   });
 }
 
 async function tocarDispositivo(
   idDispositivo: string,
   conteo: number | undefined,
-): Promise<void> {
-  await prisma.dispositivoEdge.update({
+  ahora: Date,
+): Promise<{ id: string; idPredio: string }> {
+  return prisma.dispositivoEdge.update({
     where: { id: idDispositivo },
     data: {
-      ultimoHeartbeat: new Date(),
+      ultimoHeartbeat: ahora,
       ...(conteo === undefined ? {} : { ultimoConteo: conteo }),
     },
-    select: { id: true },
+    select: { id: true, idPredio: true },
   });
 }
 

@@ -84,7 +84,8 @@ class ClienteApi {
       _cache != null &&
       o.method == 'GET' &&
       !o.path.startsWith('/auth/') &&
-      !o.path.contains('/streaming/');
+      !o.path.contains('/streaming/') &&
+      !o.path.contains('/reportes/exportar');
 
   /// Clave estable: ruta + consulta ordenada, para que dos peticiones iguales
   /// con los parametros en distinto orden compartan entrada.

@@ -17,6 +17,7 @@ import '../../features/mas/pantallas/mas.dart';
 import '../../features/rebano/pantallas/ficha_animal.dart';
 import '../../features/rebano/pantallas/formulario_animal.dart';
 import '../../features/rebano/pantallas/rebano.dart';
+import '../../features/reportes/pantallas/reportes.dart';
 import '../../features/tareas/pantallas/detalle_tarea.dart';
 import '../../features/tareas/pantallas/formulario_tarea.dart';
 import '../../features/tareas/pantallas/tareas.dart';
@@ -54,6 +55,7 @@ abstract final class Rutas {
   static const vigilanciaEnVivo = 'vigilanciaEnVivo';
 
   static const mas = 'mas';
+  static const reportes = 'reportes';
   static const usuarios = 'usuarios';
   static const usuarioNuevo = 'usuarioNuevo';
   static const usuarioEditar = 'usuarioEditar';
@@ -243,6 +245,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 name: Rutas.mas,
                 builder: (_, _) => const PantallaMas(),
                 routes: [
+                  GoRoute(
+                    path: 'reportes',
+                    name: Rutas.reportes,
+                    builder: (_, _) => const PantallaReportes(),
+                  ),
                   GoRoute(
                     path: 'usuarios',
                     name: Rutas.usuarios,
